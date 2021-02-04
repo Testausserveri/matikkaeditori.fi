@@ -1,0 +1,10 @@
+{
+  "short_name": "Matikkaeditori",
+  "name": "Matikkaeditori.fi",
+  "description": "Tuttu ja turvallinen Abitin matikkaeditori selaimessasi muutamilla parannuksilla. Kirjoita ma/fy/ke erikoismerkkejä ja kaavoja helpolla matikkaeditorilla!",
+  "start_url": "/#pwa",
+  "background_color": "#FFFFFF",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#FFFFFF"
+}
