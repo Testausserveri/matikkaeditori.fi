@@ -1,7 +1,7 @@
 function App() {
   return (
     <div>
-      Matikkaeditori.fi, testi
+      Matikkaeditori.fi, testi 2
     </div>
   );
 }
