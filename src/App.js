@@ -39,6 +39,10 @@ function G(){
 		time_at_live: new Date().getTime(), // Time since code first started to run
 		bundle: null
 	}
+	// Public libs
+	window.public = {
+		uuid: uuid
+	}
 	// Run the console component here
 	C.C()
 }

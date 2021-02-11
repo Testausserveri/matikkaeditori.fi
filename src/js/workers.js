@@ -72,7 +72,7 @@ async function onMessage(event, name){
 export async function api(worker, type, content){
 	return new Promise((resolve, reject) => {
 		try {
-			let id = uuid.v4()
+			let id = window.public.uuid.v4()
 			window.internal.workers.handlers[id] = async (message) => {
 				// This will be called when the worker responds
 				resolve(message)
