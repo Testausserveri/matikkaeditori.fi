@@ -1,4 +1,3 @@
-/* global internal, uuid*/
 /**
  * Worker-handler: Register workers, handle events etc.
  */
@@ -9,7 +8,7 @@
  */
 function sendMessage(worker, msg){
 	try {
-		internal.workers.list[worker].postMessage(JSON.stringify(msg))
+		window.internal.workers.list[worker].postMessage(JSON.stringify(msg))
 	}
 	catch(err){
 		console.error("Failed to send message to",worker,":",err)
@@ -27,8 +26,8 @@ async function onMessage(event, name){
 		switch(message.type){
 		case "component":
 			// The worker wants to load a component
-			for(let i = 0; i < internal.workers.components.length; i++){
-				let component = internal.workers.components[i]
+			for(let i = 0; i < window.internal.workers.components.length; i++){
+				let component = window.internal.workers.components[i]
 				if(message.content == component){
 					let c_ = await import("./worker-components/" + message.content)
 					sendMessage(name, {type: "component", content: c_}) // Worker will call c_.default()?
@@ -40,9 +39,9 @@ async function onMessage(event, name){
 		case "response":
 			// The worker is responding to a command
 			if(message.id != undefined){
-				if(typeof internal.workers.handlers[message.id] == "function"){
+				if(typeof window.internal.workers.handlers[message.id] == "function"){
 					// Run the response handler
-					internal.workers.handlers[message.id]()
+					window.internal.workers.handlers[message.id]()
 				}else {
 					console.warn("Worker response handler missing", message)
 				}
@@ -74,7 +73,7 @@ export async function api(worker, type, content){
 	return new Promise((resolve, reject) => {
 		try {
 			let id = uuid.v4()
-			internal.workers.handlers[id] = async (message) => {
+			window.internal.workers.handlers[id] = async (message) => {
 				// This will be called when the worker responds
 				resolve(message)
 			}
@@ -94,7 +93,7 @@ export default function (){
 		fs.onerror = async (e) => {
 			console.error("Worker error:", e)
 		}
-		internal.workers.list["filesystem"] = fs
+		window.internal.workers.list["filesystem"] = fs
 	}
 	catch(err){
 		console.error("Failed to create Filesystem worker:", err)
@@ -106,7 +105,7 @@ export default function (){
 		cs.onerror = async (e) => {
 			console.error("Worker error:", e)
 		}
-		internal.workers.list["cloud_storage"] = cs
+		window.internal.workers.list["cloud_storage"] = cs
 	}
 	catch(err){
 		console.error("Failed to create Cloud storage worker:", err)

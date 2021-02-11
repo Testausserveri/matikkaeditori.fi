@@ -10,7 +10,7 @@ import * as uuid from "./js/worker-components/uuid.js" // This is used globally,
 function G(){
 	// Declare globals
 	// eslint-disable-next-line no-unused-vars
-	var internal = {
+	window.internal = {
 		workers: {
 			list: {},
 			components: [
