@@ -21,6 +21,7 @@ function sendMessage(worker, msg){
  */
 async function onMessage(event, name){
 	try {
+		console.log(event)
 		let message = JSON.parse(event.textContent.toString())
 		// Note: Standard = { type: "any case of the switch below", content: "any data to pass", id: "task id if present"}
 		switch(message.type){
