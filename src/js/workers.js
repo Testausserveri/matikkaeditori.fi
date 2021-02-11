@@ -88,7 +88,7 @@ export async function api(worker, type, content){
 export default function (){
 	// Filesystem
 	try {
-		let fs = new Worker("./workers/filesystem.js")
+		let fs = new Worker("./js/workers/filesystem.js")
 		fs.onmessage = async (e) => {onMessage(e, "filesystem")}
 		fs.onerror = async (e) => {
 			console.error("Worker error:", e)
@@ -100,7 +100,7 @@ export default function (){
 	}
 	// Cloud storage
 	try {
-		let cs = new Worker("./workers/cloud-storage.js")
+		let cs = new Worker("./js/workers/cloud-storage.js")
 		cs.onmessage = async (e) => {onMessage(e, "cloud_storage")}
 		cs.onerror = async (e) => {
 			console.error("Worker error:", e)
