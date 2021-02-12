@@ -112,7 +112,7 @@ onmessage = function(e) {
 		case "component":
 			wo.libs[message.content.as] = message.content.in
 			send("log", null, "Loaded library " + message.content.as)
-			if(wo.libsNro == Object.keys(wo.libs)){
+			if(wo.libsNro == Object.keys(wo.libs).length){
 				send("set", {val: "fs_ready", to: true})
 				send("log", "Filesystem worker ready.")
 				wo.ready = true

@@ -56,6 +56,7 @@ async function onMessage(event, name){
 			break
 		case "set":
 			// The worker want's to set a variable in global scope
+			console.error("[ WORKER - " + name + "] SET",message.content.val,message.content.to)
 			window[message.content.val] = message.content.to
 			break
 		case "error":
