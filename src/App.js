@@ -6,7 +6,7 @@ function App() {
 		<div>
 			Matikkaeditori.fi v3
 			<h1>Zoo:</h1>
-			Rat
+			Rat, Monkey
 		</div>
 	)
 }
