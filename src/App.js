@@ -63,6 +63,7 @@ function App() {
 			<div>
 				Matikkaeditori.fi, testi 1
 			</div>
+			<div>Kissa koira lammas</div>
 		)
 	}else {
 		console.log("Incompatible browser!")
