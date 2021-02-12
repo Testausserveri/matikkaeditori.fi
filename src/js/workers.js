@@ -28,11 +28,11 @@ async function onMessage(event, name){
 			// The worker wants to load a component
 			for(let i = 0; i < window.internal.workers.components.length; i++){
 				let component = window.internal.workers.components[i]
-				if(message.content[0] == component){
-					let c_ = await import("./worker-components/" + message.content[0])
-					sendMessage(name, {type: "component", content: {as: message.content[0], in: c_}}) // Worker will call c_.default()?
+				if(message.content == component){
+					let c_ = await import("./worker-components/" + message.content)
+					sendMessage(name, {type: "component", content: {as: message.content, in: c_}}) // Worker will call c_.default()?
 				}else {
-					console.warn("A worker has requested an unknown component:", message.content[0])
+					console.warn("A worker has requested an unknown component:", message.content)
 				}
 			}
 			break
