@@ -51,11 +51,11 @@ async function onMessage(event, name){
 			break
 		case "error":
 			// The worker wants to report an error
-			console.error("[ WORKER - " + name + "]", ...message.content)
+			console.error("[ WORKER - " + name + "]", message.content)
 			break
 		case "log":
 			// The worker wants to log a message to the browser console
-			console.log("[ WORKER - " + name + "]", ...message.content)
+			console.log("[ WORKER - " + name + "]", message.content)
 			break
 		default:
 			// Unknown message

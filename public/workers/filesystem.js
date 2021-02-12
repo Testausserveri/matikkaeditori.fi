@@ -98,7 +98,9 @@ class Filesystem {
 
 // Message handlers
 async function send(type, id, ...msg){
-	postMessage(JSON.stringify({type:type,id:id,content:[msg]}))
+	for(let i = 0; i < msg.length; i++){
+		postMessage(JSON.stringify({type:type,id:id,content:msg[i]}))
+	}
 }
 onmessage = function(e) {
 	try {
@@ -132,8 +134,8 @@ onmessage = function(e) {
 	}
 }
 // Request components
-send("component", "hash")
-send("component", "uuid")
+send("component", null, "hash")
+send("component", null, "uuid")
 
 // Send loaded log
-send("log", "Filesystem worker loaded!")
+send("log", null, "Filesystem worker loaded!")
