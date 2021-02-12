@@ -62,7 +62,7 @@ function App() {
 		return (
 			<div>
 				<p>Matikkaeditori.fi, testi 1</p>
-				<p>Kissa koira lammas</p>
+				<p>Kissa koira lammas vladimir</p>
 			</div>
 		)
 	}else {
