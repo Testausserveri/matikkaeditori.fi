@@ -54,6 +54,14 @@ function G(){
 	C.C()
 }
 
+// Render
+ReactDOM.render(
+	<React.StrictMode>
+		<App></App>
+	</React.StrictMode>,
+	document.getElementById("root")
+)
+
 // Declare globals
 G()
 
@@ -63,12 +71,6 @@ if(c.c()){
 	// --- This is where the actual application code begins ---
 	// Handle workers
 	Workers.default()
-	ReactDOM.render(
-		<React.StrictMode>
-			<App></App>
-		</React.StrictMode>,
-		document.getElementById("root")
-	)
 	// eslint-disable-next-line no-unexpected-multiline
 	(async () => {
 		// UI is now visible
