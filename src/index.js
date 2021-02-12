@@ -54,16 +54,6 @@ function G(){
 	C.C()
 }
 
-// DOM renderer
-function Render(){
-	ReactDOM.render(
-		<React.StrictMode>
-			<App></App>
-		</React.StrictMode>,
-		document.getElementById("root")
-	)
-}
-
 // Declare globals
 G()
 
@@ -73,7 +63,12 @@ if(c.c()){
 	// --- This is where the actual application code begins ---
 	// Handle workers
 	Workers.default()
-	Render()
+	ReactDOM.render(
+		<React.StrictMode>
+			<App></App>
+		</React.StrictMode>,
+		document.getElementById("root")
+	)
 	// eslint-disable-next-line no-unexpected-multiline
 	(async () => {
 		// UI is now visible
@@ -100,4 +95,10 @@ if(c.c()){
 	})()
 }else {
 	console.log("Incompatible browser!")
+	ReactDOM.render(
+		<React.StrictMode>
+			<p>Incompatible browser!</p>
+		</React.StrictMode>,
+		document.getElementById("root")
+	)
 }
