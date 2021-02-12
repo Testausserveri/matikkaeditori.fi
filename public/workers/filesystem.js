@@ -7,7 +7,8 @@
 var wo = {
 	instances: {},
 	libs: {},
-	ready: false
+	ready: false,
+	libsNro: 0
 }
 // Main class
 /**
@@ -111,7 +112,7 @@ onmessage = function(e) {
 		// Worker
 		case "component":
 			wo.libs[message.content.as] = message.content.in
-			send("log", null, "Loaded library " + message.content.as)
+			send("log", null, "Loaded library " + message.content.as + " " +  Object.keys(wo.libs).length)
 			if(wo.libsNro == Object.keys(wo.libs).length){
 				send("set", {val: "fs_ready", to: true})
 				send("log", "Filesystem worker ready.")
