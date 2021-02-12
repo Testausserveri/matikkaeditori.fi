@@ -134,8 +134,8 @@ onmessage = function(e) {
 	}
 }
 // Request components
-send("component", null, "hash")
-send("component", null, "uuid")
+send("component", null, "hash.js")
+send("component", null, "uuid.js")
 
 // Send loaded log
 send("log", null, "Filesystem worker loaded!")
