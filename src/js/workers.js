@@ -21,7 +21,6 @@ function sendMessage(worker, msg){
  */
 async function onMessage(event, name){
 	try {
-		console.log("msg in")
 		let message = JSON.parse(event.data.toString())
 		// Note: Standard = { type: "any case of the switch below", content: "any data to pass", id: "task id if present"}
 		switch(message.type){
@@ -34,7 +33,7 @@ async function onMessage(event, name){
 				if(message.content == component){
 					sent = true
 					let c_ = await import("./worker-components/" + message.content)
-					console.log("Sending component",message.content + "...")
+					console.log("[ WORKERS ] Processing component load",message.content,"for",name + "...")
 					sendMessage(name, {type: "component", content: {as: message.content, in: c_}}) // Worker will call c_.default()?
 				}
 			}
