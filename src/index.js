@@ -74,6 +74,30 @@ if(c.c()){
 	// Handle workers
 	Workers.default()
 	Render()
+	// eslint-disable-next-line no-unexpected-multiline
+	(async () => {
+		// UI is now visible
+		// Load FS
+		let load_fs = async () => {
+			if(localStorage.getItem("fs_type") == null){
+				// No FS present
+				console.log("[ Filesystem ] No previous save found.")
+				localStorage.setItem("fs_type", "0")
+				Workers.api("filesystem", "init", 0)
+			}else {
+				// Load FS that's present
+				console.log("[ Filesystem ] Previous save found.")
+				Workers.api("filesystem", "init", parseInt(localStorage.getItem("fs_type")))
+			}
+		}
+		// Trigger load_fs when the Filesystem worker is ready
+		let e = setInterval(async () => {
+			if(window.fs_ready == true){
+				clearInterval(e)
+				load_fs()
+			}
+		}, 50)
+	})()
 }else {
 	console.log("Incompatible browser!")
 }

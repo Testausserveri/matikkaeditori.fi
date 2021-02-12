@@ -6,7 +6,8 @@
 // Worker memory
 var wo = {
 	instances: {},
-	libs: {}
+	libs: {},
+	ready: false
 }
 // Main class
 /**
@@ -111,31 +112,38 @@ onmessage = function(e) {
 		case "component":
 			wo.libs[message.content.as] = message.content.in
 			send("log", null, "Loaded library " + message.content.as)
+			if(wo.libsNro == Object.keys(wo.libs)){
+				send("set", {val: "fs_ready", to: true})
+				send("log", "Filesystem worker ready.")
+				wo.ready = true
+			}
 			break
 		// FS
 		case "init": 
-			// eslint-disable-next-line no-case-declarations
-			let f = new Filesystem(message.content)
-			wo.instances[f.id] = f
-			f.init().then(async () => {
-				send("log", null, "Filesystem with type of " + f.type + " was initialized as " + f.id)
-				send("response", message.id, null)
-			}).catch(async err => {
-				send("error", "Failed to initialize filesystem:", err)
-			})
+			if(!wo.ready){
+				send("error", null, "Filesystem worker called too early.")
+			}else {
+				// eslint-disable-next-line no-case-declarations
+				let f = new Filesystem(message.content)
+				wo.instances[f.id] = f
+				f.init().then(async () => {
+					send("log", null, "Filesystem with type of " + f.type + " was initialized as " + f.id)
+					send("response", message.id, null)
+				}).catch(async err => {
+					send("error", null, "Failed to initialize filesystem:", err)
+				})
+			}
 			break
 		default:
-			send("error", "Unknown command:", message.type)
+			send("error", null, "Unknown command:", message.type)
 			break
 		}
 	}
 	catch(err){
-		send("error", "Failed to parse message:",err)
+		send("error", null, "Failed to parse message:",err)
 	}
 }
 // Request components
+wo.libsNro = 2 // How many libs do we need to load before accepting api calls?
 send("component", null, "hash.js")
 send("component", null, "uuid.js")
-
-// Send loaded log
-send("log", null, "Filesystem worker loaded!")

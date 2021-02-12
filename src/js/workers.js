@@ -54,6 +54,10 @@ async function onMessage(event, name){
 				console.warn("Worker response was dropped due to a missing task id:", message)
 			}
 			break
+		case "set":
+			// The worker want's to set a variable in global scope
+			window[message.content.val] = message.content.to
+			break
 		case "error":
 			// The worker wants to report an error
 			console.error("[ WORKER - " + name + "]", message.content)
