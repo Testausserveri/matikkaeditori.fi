@@ -8,8 +8,6 @@ function App() {
 			<h1>Zoo:</h1>
 			Rat, Monkey, Marin
 		</div>
-		<div>
-		</div>
 	)
 }
 
