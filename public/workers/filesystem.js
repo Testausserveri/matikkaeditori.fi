@@ -99,6 +99,7 @@ class Filesystem {
 // Message handlers
 async function send(type, id, ...msg){
 	for(let i = 0; i < msg.length; i++){
+		postMessage(JSON.stringify({type: "log", content: "msg call"}))
 		postMessage(JSON.stringify({type:type,id:id,content:msg[i]}))
 	}
 }
