@@ -27,14 +27,19 @@ async function onMessage(event, name){
 		switch(message.type){
 		case "component":
 			// The worker wants to load a component
+			// eslint-disable-next-line no-case-declarations
+			let sent = false // Only used here
 			for(let i = 0; i < window.internal.workers.components.length; i++){
 				let component = window.internal.workers.components[i]
 				if(message.content == component){
+					sent = true
 					let c_ = await import("./worker-components/" + message.content)
+					console.log("Sending component",message.content + "...")
 					sendMessage(name, {type: "component", content: {as: message.content, in: c_}}) // Worker will call c_.default()?
-				}else {
-					console.warn("A worker has requested an unknown component:", message.content, name, event)
 				}
+			}
+			if(!sent){
+				console.warn("A worker has requested an unknown component:", message.content, name, event)
 			}
 			break
 		case "response":
