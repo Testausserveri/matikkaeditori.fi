@@ -32,7 +32,7 @@ async function onMessage(event, name){
 					let c_ = await import("./worker-components/" + message.content)
 					sendMessage(name, {type: "component", content: {as: message.content, in: c_}}) // Worker will call c_.default()?
 				}else {
-					console.warn("A worker has requested an unknown component:", message.content)
+					console.warn("A worker has requested an unknown component:", message.content, name, event)
 				}
 			}
 			break
