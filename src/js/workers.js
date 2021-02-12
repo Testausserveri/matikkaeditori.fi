@@ -21,7 +21,6 @@ function sendMessage(worker, msg){
  */
 async function onMessage(event, name){
 	try {
-		console.log(event)
 		let message = JSON.parse(event.data.toString())
 		// Note: Standard = { type: "any case of the switch below", content: "any data to pass", id: "task id if present"}
 		switch(message.type){
@@ -29,11 +28,11 @@ async function onMessage(event, name){
 			// The worker wants to load a component
 			for(let i = 0; i < window.internal.workers.components.length; i++){
 				let component = window.internal.workers.components[i]
-				if(message.content == component){
-					let c_ = await import("./worker-components/" + message.content)
-					sendMessage(name, {type: "component", content: c_}) // Worker will call c_.default()?
+				if(message.content[0] == component){
+					let c_ = await import("./worker-components/" + message.content[0])
+					sendMessage(name, {type: "component", content: {as: message.content[0], in: c_}}) // Worker will call c_.default()?
 				}else {
-					console.warn("A worker has requested an unknown component:", message.content)
+					console.warn("A worker has requested an unknown component:", message.content[0])
 				}
 			}
 			break
@@ -42,7 +41,7 @@ async function onMessage(event, name){
 			if(message.id != undefined){
 				if(typeof window.internal.workers.handlers[message.id] == "function"){
 					// Run the response handler
-					window.internal.workers.handlers[message.id]()
+					window.internal.workers.handlers[message.id](message.content)
 				}else {
 					console.warn("Worker response handler missing", message)
 				}
@@ -52,11 +51,11 @@ async function onMessage(event, name){
 			break
 		case "error":
 			// The worker wants to report an error
-			console.error("[ WORKER - " + name + "]", message.content)
+			console.error("[ WORKER - " + name + "]", ...message.content)
 			break
 		case "log":
 			// The worker wants to log a message to the browser console
-			console.log("[ WORKER - " + name + "]", message.content)
+			console.log("[ WORKER - " + name + "]", ...message.content)
 			break
 		default:
 			// Unknown message

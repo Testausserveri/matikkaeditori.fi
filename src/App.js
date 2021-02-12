@@ -19,7 +19,8 @@ function G(){
 				"export.js",
 				"google-drive.js",
 				"hash.js",
-				"onedrive.js"
+				"onedrive.js",
+				"uuid.js"
 			],
 			handlers: {}
 		},
@@ -41,7 +42,8 @@ function G(){
 	}
 	// Public libs
 	window.public = {
-		uuid: uuid
+		uuid: uuid,
+		Workers: Workers
 	}
 	// Run the console component here
 	C.C()
@@ -67,7 +69,7 @@ function App() {
 		// TODO: Make a cleaner unsupported message.
 		return (
 			<p>
-				Your browser is incompatible (Supported: Chrome, Firefox, Edge, Opera... basically any modern browser, except any version of non-chromium IE).
+				Your browser is incompatible (Supported: Chrome, Firefox, Edge... basically any modern browser, except any version of non-chromium IE).
 				<br></br>
 				Some required components are missing.
 			</p>
