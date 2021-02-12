@@ -70,8 +70,7 @@ if(c.c()){
 	console.log("Browser compatibility checks passed!")
 	// --- This is where the actual application code begins ---
 	// Handle workers
-	Workers.default()
-	// eslint-disable-next-line no-unexpected-multiline
+	Workers.default();
 	(async () => {
 		// UI is now visible
 		// Load FS
