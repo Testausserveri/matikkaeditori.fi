@@ -1,6 +1,7 @@
 /**
  * Worker-handler: Register workers, handle events etc.
  */
+
 // Message handlers
 /**
  * Handle messages from
@@ -32,9 +33,19 @@ async function onMessage(event, name){
 				let component = window.internal.workers.components[i]
 				if(message.content == component){
 					sent = true
+					// Import the module
 					let c_ = await import("./worker-components/" + message.content)
+					// Convert module to js object
+					// NOTE: This will only convert something that's on the top level of the module!
+					let k = Object.keys(c_)
+					let b = {}
+					for(let i = 0; i < k.length; i++){
+						let n = k[i]
+						b[n] = typeof c_[n] == "function" ? "FUNCTION-" + c_[n].toString() : c_[n]
+					}
+					console.log(b)
 					console.log("[ WORKERS ] Processing component load",message.content,"for",name + "...")
-					sendMessage(name, {type: "component", content: {as: message.content, in: c_}}) // Worker will call c_.default()?
+					sendMessage(name, {type: "component", content: {as: message.content, in: b}}) // Worker will call c_.default()?
 				}
 			}
 			if(!sent){
@@ -56,20 +67,20 @@ async function onMessage(event, name){
 			break
 		case "set":
 			// The worker want's to set a variable in global scope
-			console.error("[ WORKER - " + name + "] SET",message.content.val,message.content.to)
+			console.log("[ WORKER - " + name + " ] SET",message.content.val,message.content.to)
 			window[message.content.val] = message.content.to
 			break
 		case "error":
 			// The worker wants to report an error
-			console.error("[ WORKER - " + name + "]", message.content)
+			console.error("[ WORKER - " + name + " ]", message.content)
 			break
 		case "log":
 			// The worker wants to log a message to the browser console
-			console.log("[ WORKER - " + name + "]", message.content)
+			console.log("[ WORKER - " + name + " ]", message.content)
 			break
 		default:
 			// Unknown message
-			console.warn("Unknown message from worker:", message)
+			console.warn("[ WORKERS ] Unknown message from worker:", message)
 			break
 		}
 	}
@@ -79,6 +90,12 @@ async function onMessage(event, name){
 	
 }
 // Export client api
+/**
+ * Worker api
+ * @param {*} worker The name of the worker to send the data to
+ * @param {*} type The message type
+ * @param {*} content Message content
+ */
 export async function api(worker, type, content){
 	return new Promise((resolve, reject) => {
 		try {
@@ -87,7 +104,7 @@ export async function api(worker, type, content){
 				// This will be called when the worker responds
 				resolve(message)
 			}
-			sendMessage(worker, {type: type, content: content, id})
+			sendMessage(worker, {type: type, content: content, id: id})
 		}
 		catch(err){
 			reject(err)

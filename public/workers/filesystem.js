@@ -8,7 +8,7 @@ var wo = {
 	instances: {},
 	libs: {},
 	ready: false,
-	libsNro: 0
+	libsNro: 2 // How many libs do we need to load before accepting api calls?
 }
 // Main class
 /**
@@ -47,9 +47,9 @@ class Filesystem {
 						// We need to create the database
 						idb = e.target.result
 						obs = idb.createObjectStore("data", { keyPath: "id" })
-						obs.transaction.oncomplete = async () => {
+						obs.transaction.oncomplete = async (e) => {
 							// Create welcome entry
-							tr = db.transaction("save", "readwrite").objectStore("data")
+							tr = e.target.result.transaction("save", "readwrite").objectStore("data")
 							tr.add({
 								id: wo.libs.uuid.v4(),
 								name: "Tervetuloa!",
@@ -61,13 +61,13 @@ class Filesystem {
 							resolve()
 						}
 					}
-					db.onsuccess = async () => {
+					db.onsuccess = async (e) => {
 						// Create lookup table
-						tr = db.transaction(["data"])
+						tr = e.target.result.transaction("save", "readwrite").objectStore("data")
 						obs = tr.objectStore("data")
 						tr2 = obs.getAll()
 						tr2.onsuccess = async () => {
-							send("log", null, tr.result)
+							send("log", null, tr2.result)
 							send("log", null, "Filesystem instance created!")
 						}
 						tr2.onerror = async err => {
@@ -111,11 +111,37 @@ onmessage = function(e) {
 		switch(message.type){
 		// Worker
 		case "component":
-			wo.libs[message.content.as] = message.content.in
-			send("log", null, "Loaded library " + message.content.as + " " +  Object.keys(wo.libs).length)
+			message.content.as = message.content.as.replace(".js", "") // Remove .js file ending
+			// Convert the strings to code again
+			// eslint-disable-next-line no-case-declarations
+			let b = {}
+			// eslint-disable-next-line no-case-declarations
+			let k = Object.keys(message.content.in)
+			for(let i = 0; i < k.length; i++){
+				let n = k[i]
+				let v = message.content.in[n].toString()
+				let c = v.startsWith("FUNCTION-") ? function(){
+					// Get the args
+					v = v.replace("FUNCTION-", "")
+					let a = v.split("{")[0].split(n)[1].split("(")[1].split(")")[0]
+					a = a == "" ? [] : a.split(",") // TODO: Very basic arg parser. This should be made better to account for strings
+					// Parse the function to the actual code
+					let f = v.split("{")
+					f.splice(0, 1)
+					f = f.join("{")
+					f = f.split("}")
+					f.splice(f.length-1, 1)
+					f = f.join("}")
+					// Create function object
+					return new Function(a, f)
+				} : v
+				b[n] = c
+			}
+			wo.libs[message.content.as] = b // Set the built value
+			send("log", null, "Loaded library " + message.content.as + " " + Object.keys(wo.libs).length + "/" + wo.libsNro)
 			if(wo.libsNro == Object.keys(wo.libs).length){
-				send("set", {val: "fs_ready", to: true})
-				send("log", "Filesystem worker ready.")
+				send("set", null, {val: "fs_ready", to: true})
+				send("log", null, "Filesystem worker ready.")
 				wo.ready = true
 			}
 			break
@@ -141,10 +167,9 @@ onmessage = function(e) {
 		}
 	}
 	catch(err){
-		send("error", null, "Failed to parse message:",err)
+		send("error", null, "Failed to parse message:", err.stack)
 	}
 }
 // Request components
-wo.libsNro = 2 // How many libs do we need to load before accepting api calls?
 send("component", null, "hash.js")
 send("component", null, "uuid.js")

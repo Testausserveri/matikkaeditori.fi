@@ -27,7 +27,8 @@ function G(){
 				"onedrive.js",
 				"uuid.js"
 			],
-			handlers: {}
+			handlers: {},
+			shared: {}
 		},
 		ui: {},
 		console: {
