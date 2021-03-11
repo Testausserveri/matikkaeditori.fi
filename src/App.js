@@ -6,7 +6,7 @@ function App() {
 		<div>
 			Matikkaeditori.fi v3
 			<h2>Zoo:</h2>
-			Rat, Monkey, Marin, Juha, Turtle, Merkel, Nipsu
+			Rat, Monkey, Marin, Juha, Turtle, Merkel, Nipsu, Kalevi
 		</div>
 	)
 }
