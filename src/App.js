@@ -5,8 +5,8 @@ function App() {
 	return (
 		<div>
 			Matikkaeditori.fi v3
-			<h1>Zoo:</h1>
-			Rat, Monkey, Marin, Juha, Turtle, Merkel
+			<h2>Zoo:</h2>
+			Rat, Monkey, Marin, Juha, Turtle, Merkel, Nipsu
 		</div>
 	)
 }
