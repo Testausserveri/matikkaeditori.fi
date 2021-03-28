@@ -53,7 +53,6 @@ async function onMessage(event, name){
                             b[n] = typeof c_[n] == "function" ? "FUNCTION-" + c_[n].toString() : c_[n]
                         }
                     }
-                    console.log(b)
                     console.log("[ WORKERS ] Processing component load",message.content,"for",name + "...")
                     sendMessage(name, {type: "component", content: {as: message.content, in: b}}) // Worker will call c_.default()?
                 }
