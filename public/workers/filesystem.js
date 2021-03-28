@@ -110,7 +110,10 @@ class Filesystem {
                             }))
                             this.index = []
                             let uuid = await this.create([], "Tervetuloa!", 1)
-                            await this.write([], uuid, "Tervetuloa!", "Tervetuloa käyttämään matikkaeditori.fi-palvelua!")
+                            await this.write([], uuid, "Tervetuloa!", [
+								{text: "Tervetuloa käyttämään matikkaeditori.fi-palvelua!"},
+								{math: "1+1=2"}
+							])
                         }
                     }
                     catch(err){
@@ -139,7 +142,7 @@ class Filesystem {
             if (!Array.isArray(path)) throw "Invalid input"
             if (path.length == 0){
                 // This is the root
-                resolve(this.index)
+                return this.index
             } else {
                 let tmp = this.index
                 for(let dir of path){
@@ -304,10 +307,11 @@ class Filesystem {
             if (dir != null){
                 let metadata = {
                     name: name,
-                    uuid: wo.libs.uuid.v4(),
+                    uuid: wo.libs.uuid,
                     edited: new Date().getTime(),
                     type: type
                 }
+				send("log", null, metadata)
                 // Create the data entry
                 switch(this.type){
                     case 0:
@@ -353,6 +357,7 @@ onmessage = function(e) {
             // Convert the strings to code again
             // eslint-disable-next-line no-case-declarations
             let b = null
+			// TODO: This fails? (Unable to generate uuids)
             if(message.content.in.toString().startsWith("CLASS-")){
                 b = eval("(" + message.content.in.replace("CLASS-", "") + ")") // Is this secure...? Probably?
             }else {
@@ -405,7 +410,7 @@ onmessage = function(e) {
                     send("log", null, "Filesystem with type of " + f.type + " was initialized as " + f.id)
                     send("response", message.id, null)
                 }).catch(async err => {
-                    send("error", null, "Failed to initialize filesystem:", err)
+                    send("error", null, "Failed to initialize filesystem: " + err)
                 })
             }
             break
