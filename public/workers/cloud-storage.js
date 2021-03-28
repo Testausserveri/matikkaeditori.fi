@@ -1,6 +1,6 @@
 // TODO: Cloud storage worker
 //onmessage = function(e) {
-//	// Message handler
+//    // Message handler
 //
 //}
 
