@@ -16,8 +16,11 @@ export default class hash {
      * Hash the data with the SHA1 algorithm
      */
     async sha1(){
-        if(this._inputIsValid()){
+        try {
             return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder("utf-8").encode(this.input)))).map(b => ("00" + b.toString(16)).slice(-2)).join("")
-        } 
+        }
+        catch(err){
+            throw "Failed to hash data: " + err.stack != undefined ? err.stack : err
+        }
     }
 }
