@@ -1,0 +1,104 @@
+.sidebar {
+    padding: 0 2rem;
+    width: 18%;
+    /*
+    height: 100vh;
+    overflow-y: auto;
+    position: sticky;
+    top: 0;*/
+}
+
+
+@media only screen and (max-width: 1140px) {
+    .sidebar {
+        width: 22%;
+    }
+}
+@media only screen and (max-width: 950px) {
+    .sidebar {
+        width: 26%;
+    }
+}
+
+
+.filesystemLevel {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+}
+.filesystemLevel li {
+    margin-bottom: 0.7rem;
+    width: calc(100% - 0.7rem - 0.7rem);
+    background-color: white;
+    padding: 0.7rem;
+    box-shadow: var(--small-shadow);
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    transition: background-color .05s ease-out;
+}
+.filesystemLevel li:hover {
+    background-color: #f6f8f9;
+}
+.filesystemLevel li.selected {
+    background-color: #e1e9ec;
+}
+
+.filesystemLevel li.fsFolder {
+    /*
+    background-color: transparent;
+    box-shadow: none;
+    border-radius: var(--radius);
+*/
+}
+
+.filesystemLevel li .fsContent { 
+    flex: 1;
+}
+.filesystemLevel li .fsIcon { 
+    margin-right: 0.5rem;
+}
+.filesystemLevel li .date {
+    font-size: 0.8em;
+    color: rgba(0, 0, 0, 0.5);
+    display: block;
+}
+.sidebar .head {
+    display: flex;  
+    margin: 2rem auto 2rem auto;
+    height: 3rem;
+}
+.sidebar .head button.primary {
+    flex: 1;
+}
+.sidebar .head button.folderSmall {
+    margin-left: 5px;
+    width: 3rem;
+    background-color: transparent;
+    border: 1px solid #2FA3CF;
+    color: #2FA3CF;
+}
+.sidebar .head button.folderSmall:hover {
+    background-color: #2a92ba;
+    border-color: #2a92ba;
+    color: #edf9ff;
+}
+.sidebar .head button {
+    height: 100%;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #2FA3CF;
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--small-shadow);
+    border: 1px solid #2a92ba;
+    color: #edf9ff;
+    transition: background-color 0.1s ease-out, color 0.1s ease-out;
+}
+.sidebar .head button:hover {
+    background-color: #2a92ba;
+}
+
+.sidebar .head button:focus {
+    outline: none;
+}
