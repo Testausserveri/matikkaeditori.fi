@@ -11,13 +11,13 @@ body {
 
 .document {
     flex: 1;
-    padding: 0 2rem;
+    padding: 0 1.5rem;
 }
 
 .document .head {
     width: 800px;
     
-    margin: 2rem auto 2rem auto;
+    margin: 1.5rem auto 1.5rem auto;
 }
 .document .head h2 {
     font-size: 1.5em;
@@ -50,7 +50,7 @@ body {
 }
 .page {
     background-color: white;
-    margin: 2rem auto;
+    margin: 1rem auto;
     width: 800px;
     box-shadow: var(--shadow);
     padding: 50px;

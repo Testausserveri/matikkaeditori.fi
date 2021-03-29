@@ -1,5 +1,5 @@
 .sidebar {
-    padding: 0 2rem;
+    padding: 0 1.5rem;
     width: 18%;
     /*
     height: 100vh;
@@ -65,7 +65,7 @@
 }
 .sidebar .head {
     display: flex;  
-    margin: 2rem auto 2rem auto;
+    margin: 1.5rem auto 1.5rem auto;
     height: 3rem;
 }
 .sidebar .head button.primary {
