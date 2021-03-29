@@ -359,6 +359,7 @@ onmessage = function(e) {
             // eslint-disable-next-line no-case-declarations
             let b = null
 			// TODO: This fails? (Unable to generate uuids)
+            send("log", null, message.content)
             if(message.content.in.toString().startsWith("CLASS-")){
                 // This DOES work!
                 //send("log", null, message.content.in.replace("CLASS-", ""))
