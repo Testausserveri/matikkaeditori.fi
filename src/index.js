@@ -28,7 +28,8 @@ function G(){
                 "uuid.js"
             ],
             handlers: {},
-            shared: {}
+            shared: {},
+            api: Workers.api
         },
         ui: {},
         console: {
@@ -67,31 +68,56 @@ function G(){
  * By: @Esinko (11.02.2021)
  */
 function C(){
-    // Get the values from the internal memory
-    let cache = window.internal.console
-    let functions = Object.keys(cache)
-    for(let i = 0; i < functions.length; i++){
-        let f = functions[i]
-        window.internal.console.cache[f] = console[f] // Cache the real function
-        console[f] = (...args) => {
+    //let e = console.log
+    //console["log"] = (s) => {
+    //    e(s, "e")
+    //} 
+    // Redefine all the functions
+    for(let func of window.internal.console.list){
+        window.internal.console.cache[func] = console[func]
+        console[func] = (...args) => {
             // Apply colors
-            alert(args[0])
-            if(args[0].startsWith("[") && args[0].includes("]")){
-                args.push("color: limegreen;")
-                args[0] = "%c" + args[0]
-                let at0 = args.split("]")[0] + "]"
-                let at1 = args.split("]")[1]
-                args[0] = at0
-                args.splice(1, 0, at1)
+            if(args[0] != undefined && typeof args[0].startsWith == "function" && args[0].startsWith("[") && args[0].includes("]")){
+                let args0 = args[0].split("]")[0] + "]"
+                args[0] = args[0].split("]")[1]
+                args0 = "%c" + args0
+                if(args[0] != ""){
+                    args[0] = args[0].trimLeft()
+                    args.splice(0,0,"")
+                }
+                //window.internal.console.cache[func](args, args.length)
+                window.internal.console.cache[func](args0+"%s", "color: limegreen;", ...args)
+            }else {
+                // Execute the actual function from cache
+                window.internal.console.cache[func](...args)
             }
-            // Execute the actual function from cache
-            window.internal.console.cache[f](...args)
             // Write the data to the cache
             // TODO: Parse css (style) code from the args?
-            window.internal.console.logs.push("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + f.toUpperCase() + " ]", ...args)
+            window.internal.console.logs.push("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ]", ...args)
         }
     }
 }
+
+// Debug stuff
+/* eslint-disable no-unused-vars */
+window.reset = async function () {
+    // This deletes everything
+    localStorage.clear()
+    sessionStorage.clear()
+    let cookies = document.cookie
+    for (let i = 0; i < cookies.split(";").length; ++i){
+        let myCookie = cookies[i]
+        let pos = myCookie.indexOf("=")
+        let name = pos > -1 ? myCookie.substr(0, pos) : myCookie
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT"
+    }
+    window.indexedDB.databases().then((r) => {
+        for (var i = 0; i < r.length; i++) window.indexedDB.deleteDatabase(r[i].name)
+    }).then(() => {
+        window.location.reload()
+    })
+}
+/* eslint-enable no-unused-vars */
 
 try {
     // Render
@@ -117,18 +143,29 @@ try {
             let load_fs = async () => {
                 if(localStorage.getItem("fs_type") == null){
                     // No FS present
-                    console.log("[ Filesystem ] No previous save found.")
+                    console.log("[ Filesystem ] No previous save found. Creating one...")
                     localStorage.setItem("fs_type", "0")
-                    Workers.api("filesystem", "set", {name: "id", value: window.id})
-                    Workers.api("filesystem", "init", 0).then(() => {
+                    await Workers.api("filesystem", "set", {name: "id", value: window.id})
+                    Workers.api("filesystem", "init", "0").then(async id => {
                         // TODO: UI stuff, such as render
+                        Workers.api("filesystem", "index", id).then(index => {
+                            console.log(index)
+                        })
                     }).catch((e) => {
                         error(e)
                     })
                 }else {
                     // Load FS that's present
-                    console.log("[ Filesystem ] Previous save found.")
-                    Workers.api("filesystem", "init", parseInt(localStorage.getItem("fs_type")))
+                    console.log("[ Filesystem ] Previous save found. Loading it...")
+                    await Workers.api("filesystem", "set", {name: "id", value: window.id})
+                    await Workers.api("filesystem", "init", localStorage.getItem("fs_type")).then(async id => {
+                        // TODO: UI stuff, such as render
+                        Workers.api("filesystem", "index", id).then(index => {
+                            console.log(index)
+                        })
+                    }).catch((e) => {
+                        error(e)
+                    })
                 }
             }
             // Trigger load_fs when the Filesystem worker is ready
