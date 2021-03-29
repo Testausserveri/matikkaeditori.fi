@@ -24,11 +24,9 @@ class Filesystem {
      */
     constructor(type){
         this.type = parseInt(type)
-        this.table = {}
-        this.metadata = {}
         this.id = wo.libs.uuid.v4()
         // FS
-        this.index = null
+        this.index = []
         this.data = {}
     }
 
@@ -69,7 +67,7 @@ class Filesystem {
             }
         }
         catch(err){
-            send("error", null, "Metadata validation failed: " + err.stack)
+            send("error", null, "Metadata validation failed: " + err.stack != undefined ? err.stack : err)
         }
     }
     
@@ -89,9 +87,11 @@ class Filesystem {
                             metadata = JSON.parse(metadata)
                             this.validate(metadata, async res => {
                                 if(res){
-                                    this.index = res.index
+                                    send("log", null, "Metadata validated!")
+                                    this.index = metadata.index
                                     resolve()
                                 }else {
+                                    send("log", null, "Unable to verify metadata verity...")
                                     handleConfirm("Unable to verify save verity, are you sure you want to load it?", async res => {
                                         if(res){
                                             this.index = res.index
@@ -114,10 +114,11 @@ class Filesystem {
 								{text: "Tervetuloa käyttämään matikkaeditori.fi-palvelua!"},
 								{math: "1+1=2"}
 							])
+                            resolve()
                         }
                     }
                     catch(err){
-                        send("error", null, "Failed to create instance: " + err.stack)
+                        send("error", null, "Failed to create instance: " + err.stack != undefined ? err.stack : err)
                     }
                     break
                 case 1:
@@ -159,7 +160,7 @@ class Filesystem {
             }
         }
         catch(err){
-            send("error", null, "Failed to resolve: " + err.stack)
+            send("error", null, "Failed to resolve: " + err.stack != undefined ? err.stack : err)
         }
     }
 
@@ -186,7 +187,7 @@ class Filesystem {
             }
         }
         catch(err){
-            throw "Failed to sync metadata: " + err.stack
+            throw "Failed to sync metadata: " + err.stack != undefined ? err.stack : err
         }
     }
 
@@ -199,7 +200,7 @@ class Filesystem {
                 let dir = await this.resolve(path)
                 if (dir != null){
                     let e = null
-                    for(let entry of dir.index){
+                    for(let entry of dir){
                         if(entry.uuid == uuid){
                             e = entry
                         }
@@ -215,7 +216,7 @@ class Filesystem {
                                         key: key,
                                         data: data
                                     })
-                                    entry.edited = new Date().getTime()
+                                    e.edited = new Date().getTime()
                                     await this.syncMetadata()
                                     resolve()
                                 } else {
@@ -237,7 +238,7 @@ class Filesystem {
                 }
             }
             catch(err){
-                send("error", null, "Unable to write: " + err.stack)
+                send("error", null, "Unable to write: " + err.stack != undefined ? err.stack : err)
             }
         })
     }
@@ -307,7 +308,7 @@ class Filesystem {
             if (dir != null){
                 let metadata = {
                     name: name,
-                    uuid: wo.libs.uuid,
+                    uuid: wo.libs.uuid.v4(),
                     edited: new Date().getTime(),
                     type: type
                 }
@@ -335,7 +336,7 @@ class Filesystem {
             }
         }
         catch(err){
-            send("error", null, "Failed to create: " + err.stack)
+            send("error", null, "Failed to create: " + err)
         }
     }
 }
@@ -359,15 +360,18 @@ onmessage = function(e) {
             let b = null
 			// TODO: This fails? (Unable to generate uuids)
             if(message.content.in.toString().startsWith("CLASS-")){
+                // This DOES work!
+                //send("log", null, message.content.in.replace("CLASS-", ""))
                 b = eval("(" + message.content.in.replace("CLASS-", "") + ")") // Is this secure...? Probably?
             }else {
+                // This DOES work!
                 b = {}
                 // eslint-disable-next-line no-case-declarations
                 let k = Object.keys(message.content.in)
                 for(let i = 0; i < k.length; i++){
                     let n = k[i]
                     let v = message.content.in[n].toString()
-                    let c = v.startsWith("FUNCTION-") ? function(){
+                    if(v.startsWith("FUNCTION-")){
                         // Get the args
                         v = v.replace("FUNCTION-", "")
                         let a = v.split("{")[0].split(n)[1].split("(")[1].split(")")[0]
@@ -380,8 +384,8 @@ onmessage = function(e) {
                         f.splice(f.length-1, 1)
                         f = f.join("}")
                         // Create function object
-                        return new Function(a, f)
-                    } : v
+                        c = new Function(a, f)
+                    }
                     b[n] = c
                 }
             }
@@ -398,17 +402,19 @@ onmessage = function(e) {
             break
         case "set":
             wo.vals[message.content.name] = message.content.value
+            send("response", message.id, true)
+            break
         // FS
         case "init": 
             if(!wo.ready){
                 send("error", null, "Filesystem worker called too early.")
             }else {
                 // eslint-disable-next-line no-case-declarations
-                let f = new Filesystem(message.content)
+                let f = new Filesystem(parseInt(message.content))
                 wo.instances[f.id] = f
                 f.init().then(async () => {
                     send("log", null, "Filesystem with type of " + f.type + " was initialized as " + f.id)
-                    send("response", message.id, null)
+                    send("response", message.id, f.id)
                 }).catch(async err => {
                     send("error", null, "Failed to initialize filesystem: " + err)
                 })
@@ -418,14 +424,16 @@ onmessage = function(e) {
 			if(!wo.ready){
                 send("error", null, "Filesystem worker called too early.")
             }else {
-                send("response", message.id, wo.instances[message.content.instance].index)
+                //send("log", null, wo.instances[message.content])
+                send("response", message.id, wo.instances[message.content].index)
             }
             break
 		case "read":
 			if(!wo.ready){
                 send("error", null, "Filesystem worker called too early.")
             }else {
-				wo.instances[message.content.instance].read(message.content.path, message.content.uuid).then(async res => {
+				wo.instances[message.content].read(message.content.path, message.content.uuid).then(async res => {
+                    send("log", null, res)
 					send("response", message.id, res)
 				}).catch(async err => {
 					send("error", null, err)
@@ -438,7 +446,7 @@ onmessage = function(e) {
         }
     }
     catch(err){
-        send("error", null, "Failed to parse message: " + err.stack)
+        send("error", null, "Failed to parse message: " + err.stack != undefined ? err.stack : err)
     }
 }
 
