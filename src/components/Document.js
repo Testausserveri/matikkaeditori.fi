@@ -8,7 +8,7 @@ import "../css/editor.css"
 import { makeRichText } from "../rich-text-editor/rich-text-editor"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faFileExport } from "@fortawesome/free-solid-svg-icons"
+import { faDownload } from "@fortawesome/free-solid-svg-icons"
 
 import Dropdown from "./Dropdown"
 
@@ -220,7 +220,7 @@ export default function Document() {
                 <h2 spellCheck={false} contentEditable={true} id="documentTitle" suppressContentEditableWarning={true} onKeyDown={onDocumentTitleKeyUp}>MAA05 T. 12 S. 8</h2>
                 <Dropdown data={exportDropdown}>
                     <button className="secondary">
-                        <FontAwesomeIcon icon={faFileExport} /> Vie
+                        <FontAwesomeIcon icon={faDownload} /> Vie
                     </button>
                 </Dropdown>
             </div>
