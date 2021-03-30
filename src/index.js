@@ -169,12 +169,10 @@ try {
                 }
             }
             // Trigger load_fs when the Filesystem worker is ready
-            let e = setInterval(async () => {
-                if(window.fs_ready == true){
-                    clearInterval(e)
-                    load_fs()
-                }
-            }, 50)
+            Workers.api("filesystem", "ready", "").then(async () => {
+                // Now ready!
+                load_fs()
+            })
         })()
     }else {
         console.log("Incompatible browser!")

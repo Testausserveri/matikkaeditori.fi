@@ -11,7 +11,8 @@ var wo = {
     vals: {},
     ready: false,
     libsNro: null,
-    confirmHandler: null
+    confirmHandler: null,
+    readyHandlers: []
 }
 // Main class
 /**
@@ -375,7 +376,7 @@ onmessage = function(e) {
                     if(v.startsWith("FUNCTION-")){
                         // Get the args
                         v = v.replace("FUNCTION-", "")
-                        let a = v.split("{")[0].split(n)[1].split("(")[1].split(")")[0]
+                        let a = v.split("{")[0].split("(")[1].split(")")[0]
                         a = a == "" ? [] : a.split(",") // TODO: Very basic arg parser. This should be made better to account for strings
                         // Parse the function to the actual code
                         let f = v.split("{")
@@ -396,6 +397,9 @@ onmessage = function(e) {
                 send("set", null, {val: "fs_ready", to: true})
                 send("log", null, "Filesystem worker ready.")
                 wo.ready = true
+                for(let func of wo.readyHandlers){
+                    func()
+                }
             }
             break
         case "confirm":
@@ -404,6 +408,12 @@ onmessage = function(e) {
         case "set":
             wo.vals[message.content.name] = message.content.value
             send("response", message.id, true)
+            break
+        case "ready":
+            // Send a message back when ready
+            wo.readyHandlers.push(async () => {
+                send("response", message.id, true)
+            })
             break
         // FS
         case "init": 

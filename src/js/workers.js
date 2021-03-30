@@ -35,6 +35,7 @@ async function onMessage(event, name){
                     sent = true
                     // Import the module
                     let c_ = await import("./worker-components/" + message.content)
+                    console.debug("Imported:", c_)
                     let b = null
                     if(
                         Object.keys(c_).length == 1 &&
@@ -53,6 +54,7 @@ async function onMessage(event, name){
                             b[n] = typeof c_[n] == "function" ? "FUNCTION-" + c_[n].toString() : c_[n]
                         }
                     }
+                    console.debug("Exported:", b)
                     console.log("[ WORKERS ] Processing component load",message.content,"for",name + "...")
                     sendMessage(name, {type: "component", content: {as: message.content, in: b}}) // Worker will call c_.default()?
                 }
