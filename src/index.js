@@ -136,46 +136,8 @@ try {
         console.log("Browser compatibility checks passed!")
         // --- This is where the actual application code begins ---
         // Handle workers
-        Workers.default();
-        (async () => {
-            // UI is now visible
-            // Load FS
-            let load_fs = async () => {
-                if(localStorage.getItem("fs_type") == null){
-                    // No FS present
-                    console.log("[ Filesystem ] No previous save found. Creating one...")
-                    localStorage.setItem("fs_type", "0")
-                    await Workers.api("filesystem", "set", {name: "id", value: window.id})
-                    Workers.api("filesystem", "init", "0").then(async id => {
-                        // TODO: UI stuff, such as render
-                        Workers.api("filesystem", "index", id).then(index => {
-                            console.log(index)
-                        })
-                    }).catch((e) => {
-                        error(e)
-                    })
-                }else {
-                    // Load FS that's present
-                    console.log("[ Filesystem ] Previous save found. Loading it...")
-                    await Workers.api("filesystem", "set", {name: "id", value: window.id})
-                    await Workers.api("filesystem", "init", localStorage.getItem("fs_type")).then(async id => {
-                        // TODO: UI stuff, such as render
-                        Workers.api("filesystem", "index", id).then(index => {
-                            console.log(index)
-                        })
-                    }).catch((e) => {
-                        error(e)
-                    })
-                }
-            }
-            // Trigger load_fs when the Filesystem worker is ready
-            let e = setInterval(async () => {
-                if(window.fs_ready == true){
-                    clearInterval(e)
-                    load_fs()
-                }
-            }, 50)
-        })()
+        Workers.default()
+        
     }else {
         console.log("Incompatible browser!")
         ReactDOM.render(

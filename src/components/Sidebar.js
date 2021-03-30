@@ -8,6 +8,7 @@ import { faPlus, faFolder } from "@fortawesome/free-solid-svg-icons"
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 
 function FilesystemItem(props) {
+    console.log("fi", props.data)
     if (props.data.type == "folder") {
         return (
             <li className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
@@ -19,12 +20,12 @@ function FilesystemItem(props) {
                 </div>
             </li>
         )
-    } else if (props.data.type == "answer") {
+    } else if (props.data.type == 1) {
         return (
             <li className={(props.selected ? "selected" : "")} onClick={props.onClick}>
                 <div className="content">
                     <span>{props.data.name}</span>
-                    <span className="date">{formatDate(props.data.lastModified).pretty}</span>
+                    <span className="date">{formatDate(props.data.edited).pretty}</span>
                 </div>
             </li>
         )
@@ -44,7 +45,7 @@ FilesystemItem.propTypes = {
 
 export default function Sidebar(props) {
     // todo implement subtrees
-    props.level.sort((a, b) => b.type.localeCompare(a.type))
+    console.log(props.level)
     return (
         <div className="sidebar">
             <div className="head">
@@ -57,7 +58,11 @@ export default function Sidebar(props) {
                 </button>
             </div>
             <ul className="filesystemLevel">
-                {props.level.map(item => {
+                {Object.keys(props.level).map(key => {
+                    const value = props.level[key]
+                    console.log(value)
+                    return <FilesystemItem key={value.uuid} data={value} />
+                    /*
                     return <FilesystemItem key={item.id} data={item} selected={(props.selectedItem == item.id)} onClick={() => {
                         if (item.type == "answer") {
                             props.openItem(item.id)
@@ -65,7 +70,8 @@ export default function Sidebar(props) {
                         } else if (item.type == "folder") {
                             // open folder
                         }
-                    }} />
+                    }}
+                     />*/
                 })}
             </ul>
         </div>
@@ -73,7 +79,7 @@ export default function Sidebar(props) {
 }
 
 Sidebar.propTypes = {
-    level: PropTypes.arrayOf(filesystemItemType),
+    level: PropTypes.object,
     newDocument: PropTypes.func,
     selectedItem: PropTypes.string,
     openItem: PropTypes.func

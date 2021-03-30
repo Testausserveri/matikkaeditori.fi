@@ -6,6 +6,10 @@ import Sidebar from "./components/Sidebar"
 import logo from "./assets/icon.svg"
 import { useEffect, useState } from "react"
 
+// Import static components
+import error from "./js/error.js"
+import * as Workers from "./js/workers.js"
+
 // Temporarily for fake new document IDs
 function uuidv4() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
@@ -14,26 +18,50 @@ function uuidv4() {
     })
 }
 
+function loadFilesystem() {
+    return new Promise((resolve) => {
+        // UI is now visible
+        // Load FS
+        let load_fs = async () => {
+            if(localStorage.getItem("fs_type") == null){
+                // No FS present
+                console.log("[ Filesystem ] No previous save found. Creating one...")
+                localStorage.setItem("fs_type", "0")
+                await Workers.api("filesystem", "set", {name: "id", value: window.id})
+                Workers.api("filesystem", "init", "0").then(async id => {
+                    // TODO: UI stuff, such as render
+                    Workers.api("filesystem", "index", id).then(index => {
+                        resolve(index)
+                    })
+                }).catch((e) => {
+                    error(e)
+                })
+            }else {
+                // Load FS that's present
+                console.log("[ Filesystem ] Previous save found. Loading it...")
+                await Workers.api("filesystem", "set", {name: "id", value: window.id})
+                await Workers.api("filesystem", "init", localStorage.getItem("fs_type")).then(async id => {
+                    // TODO: UI stuff, such as render
+                    Workers.api("filesystem", "index", id).then(index => {
+                        resolve(index)
+                    })
+                }).catch((e) => {
+                    error(e)
+                })
+            }
+        }
+        // Trigger load_fs when the Filesystem worker is ready
+        let e = setInterval(async () => {
+            if(window.fs_ready == true){
+                clearInterval(e)
+                load_fs()
+            }
+        }, 50)
+    })
+}
 function App() {
     // Return base page
-    const [fsLevel, setfsLevel] = useState([
-        {
-            type: "folder",
-            id: uuidv4(),
-            name: "Esimerkkikansio"
-        },
-        {
-            type: "answer",
-            id: uuidv4(),
-            name: "Nimetön vastaus",
-            lastModified: new Date()
-        },
-        {
-            type: "folder",
-            id: uuidv4(),
-            name: "Toinen kansio"
-        }
-    ])
+    const [fsLevel, setfsLevel] = useState({})
     const [selectedItem, setSelectedItem] = useState("")
 
     function newDocument() {
@@ -47,9 +75,15 @@ function App() {
             ...fsLevel
         ])
     }
-
+    
     useEffect(() => {
-        newDocument()
+        window.onFsReady = function() {
+            loadFilesystem()
+                .then((data) => {
+                    console.log(data)
+                    setfsLevel(data)
+                })
+        }
     }, [])
 
     return (

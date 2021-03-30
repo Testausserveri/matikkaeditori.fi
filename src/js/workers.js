@@ -79,6 +79,7 @@ async function onMessage(event, name){
             console.log("[ WORKER - " + name + " ] SET", message.content.val, message.content.to)
             window[message.content.val] = message.content.to
             if(message.id != null) sendMessage(name, {type : "set", content: true})
+            if (message.content.val == "fs_ready" && message.content.to == true) window.onFsReady()
             break
         case "error":
             // The worker wants to report an error

@@ -6,6 +6,7 @@ Date.prototype.getWeek = function () {
 }
 
 export default function formatDate(date) {
+    date = new Date(date)
     let pretty
     if (new Date().getWeek() == date.getWeek()) {
         pretty = ["Sunnuntaina", "Maanantaina", "Tiistaina", "Keskiviikkona", "Torstaina", "Perjantaina", "Lauantaina"][date.getDay()]
