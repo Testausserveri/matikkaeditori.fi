@@ -27,6 +27,10 @@
     cursor: pointer;
     transition: background-color .05s ease-out;
 }
+.symbols div img {
+    width: 70%;
+    height: 70%;
+}
 .symbols div:hover {
     background-color: #f6f8f9;
 }

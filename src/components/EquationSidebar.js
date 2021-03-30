@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSquareRootAlt } from "@fortawesome/free-solid-svg-icons"
 
 import specialCharacters from "./editor/specialCharacters"
+import latexCommands from "./editor/latexCommands"
 
 function writeSymbol(event) {
     event.preventDefault()
@@ -24,8 +25,9 @@ function SymbolGroup({symbols}) {
                 {symbols.characters.map((character) => {
                     if (character.popular == true || 1 == 1) {
                         return (
-                            <div key={character.character} onMouseDown={writeSymbol} data-latexCommand={character.latexCommand}>
-                                {character.character}
+                            <div key={character.character || character.action} onMouseDown={writeSymbol} data-latexCommand={character.latexCommand || character.action}>
+                                {character.character
+                                || <img src={character.svg} />}
                             </div>
                         )
                     }
@@ -37,13 +39,7 @@ function SymbolGroup({symbols}) {
 SymbolGroup.propTypes = {
     symbols: {
         label: PropTypes.string,
-        characters: PropTypes.arrayOf(
-            {
-                character: PropTypes.string,
-                latexCommand: PropTypes.string,
-                popular: PropTypes.bool
-            }
-        )
+        characters: PropTypes.any
     }
 }
 
@@ -57,6 +53,10 @@ export default function EquationSidebar() {
                 </button>
             </div>
             <div>
+                <SymbolGroup key={"eqgroup"} symbols={{
+                    label: "Kaavat",
+                    characters: latexCommands
+                }} />
                 {specialCharacters.map(group => (
                     <SymbolGroup key={group.label + "group"} symbols={group} />
                 ))}
