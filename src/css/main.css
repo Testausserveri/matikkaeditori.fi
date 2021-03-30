@@ -32,6 +32,7 @@ body {
 }
 .document .head h2::after, .document .head h2::after {
     transition: border-color 0.2s, background-color 0.2s, opacity 0.2s;
+    opacity: 0;
 }
 .document .head h2:hover::after, .document .head h2:focus::after {
     content: ' ';
@@ -45,6 +46,7 @@ body {
     border-radius: 3px;
     z-index: -5;
     opacity: 0.5;
+    box-shadow: var(--small-shadow);
 }
 .document .head h2:focus::after {
     opacity: 1;
