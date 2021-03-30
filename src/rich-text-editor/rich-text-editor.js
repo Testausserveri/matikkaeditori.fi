@@ -15,7 +15,7 @@ const keyCodes = {
     E: 69,
 }
 const $outerPlaceholder = $('<div class="rich-text-editor-hidden" style="display: none;" data-js="outerPlaceholder">')
-const focus = {
+window.math.focus = {
     richText: false,
     latexField: false,
     equationField: false,
@@ -33,7 +33,7 @@ export const makeRichText = (answer, options, onValueChanged = () => {}) => {
     const baseUrl = options.baseUrl || ''
 
     if (firstCall) {
-        math = mathEditor.init($outerPlaceholder, focus, baseUrl, options.updateMathImg)
+        math = mathEditor.init($outerPlaceholder, window.math.focus, baseUrl, options.updateMathImg)
         //const containers = toolbars.init(math, () => focus.richText, l, baseUrl)
         //$toolbar = containers.toolbar
         //const $helpOverlay = containers.helpOverlay
@@ -44,7 +44,7 @@ export const makeRichText = (answer, options, onValueChanged = () => {}) => {
     let pasteInProgress = false
 
     window.math.insertNewEquationSafe = (e) => {
-        if (!focus.equationField && !focus.latexField) {
+        if (!window.math.focus.equationField && !window.math.focus.latexField) {
             e.preventDefault()
             math.insertNewEquation()
         }
@@ -63,7 +63,7 @@ export const makeRichText = (answer, options, onValueChanged = () => {}) => {
             }
         })
         .on('keydown', (e) => {
-            if (u.isCtrlKey(e, keyCodes.E) && !focus.equationField && !focus.latexField) {
+            if (u.isCtrlKey(e, keyCodes.E) && !window.math.focus.equationField && !window.math.focus.latexField) {
                 e.preventDefault()
                 math.insertNewEquation()
             }
@@ -111,7 +111,7 @@ function onRichTextEditorFocus($element) {
 function onRichTextEditorBlur($element) {
     toggleRichTextToolbar(false, $element)
     //toggleRichTextToolbarAnimation()
-    focus.richText = false
+    window.math.focus.richText = false
 }
 
 /*
@@ -123,8 +123,8 @@ function toggleRichTextToolbarAnimation() {
 let richTextEditorBlurTimeout
 
 function onRichTextEditorFocusChanged(e) {
-    focus.richText = e.type === 'focus'
-    $(e.currentTarget).toggleClass('rich-text-focused', focus.richText)
+    window.math.focus.richText = e.type === 'focus'
+    $(e.currentTarget).toggleClass('rich-text-focused', window.math.focus.richText)
 
     clearTimeout(richTextEditorBlurTimeout)
     richTextEditorBlurTimeout = setTimeout(() => {
@@ -138,5 +138,5 @@ function helpOverlayOpen() {
 }
 
 function richTextAndMathBlur() {
-    return !focus.richText && !focus.latexField && !focus.equationField
+    return !window.math.focus.richText && !window.math.focus.latexField && !window.math.focus.equationField
 }

@@ -12,6 +12,11 @@ import latexCommands from "./editor/latexCommands"
 function writeSymbol(event) {
     event.preventDefault()
     const data = JSON.parse(event.target.closest("div[data-data]").dataset.data)
+
+    if (!window.math.focus.equationField && !data.action && document.activeElement.classList.contains("editor")) {
+        document.execCommand("insertText", false, data.character)
+    }
+
     if (data.action) {
         // math equation
         window.math.insertMath(data.action, data.latexCommand, data.useWrite)
