@@ -3,6 +3,7 @@
 import "./css/main.css"
 import Document from "./components/Document"
 import Sidebar from "./components/Sidebar"
+import EquationSidebar from "./components/EquationSidebar"
 import logo from "./assets/icon.svg"
 import { useEffect, useState } from "react"
 
@@ -79,6 +80,7 @@ function App() {
             <div className="app">
                 <Sidebar newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} openItem={setSelectedItem} />
                 <Document />
+                <EquationSidebar />
             </div>
         </>
     )

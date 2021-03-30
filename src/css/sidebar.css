@@ -78,7 +78,7 @@
     border: 1px solid #2FA3CF;
     color: #2FA3CF;
 }
-.sidebar .head button.folderSmall:hover {
+.sidebar .head button.folderSmall:hover, .sidebar .head .secondary:hover {
     background-color: #2a92ba;
     border-color: #2a92ba;
     color: #edf9ff;
@@ -94,6 +94,12 @@
     border: 1px solid #2a92ba;
     color: #edf9ff;
     transition: background-color 0.1s ease-out, color 0.1s ease-out;
+}
+.sidebar .head .secondary {
+    flex: 1;
+    background-color: transparent;
+    border: 1px solid #2FA3CF;
+    color: #2FA3CF;
 }
 .sidebar .head button:hover {
     background-color: #2a92ba;

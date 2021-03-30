@@ -3,6 +3,7 @@
 body {
     background-color: #edf9ff;
     color: rgba(0,0,0,0.9);
+    --document-width: 750px;
 }
 
 .app {
@@ -15,7 +16,7 @@ body {
 }
 
 .document .head {
-    width: 800px;
+    width: var(--document-width);
     
     margin: 1.5rem auto 1.5rem auto;
 }
@@ -51,7 +52,7 @@ body {
 .page {
     background-color: white;
     margin: 1rem auto;
-    width: 800px;
+    width: var(--document-width);
     box-shadow: var(--shadow);
     padding: 50px;
     border-radius: var(--radius);
