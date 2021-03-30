@@ -137,7 +137,7 @@ try {
         // --- This is where the actual application code begins ---
         // Handle workers
         Workers.default()
-        
+
     }else {
         console.log("Incompatible browser!")
         ReactDOM.render(
