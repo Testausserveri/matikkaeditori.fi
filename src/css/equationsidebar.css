@@ -1,5 +1,7 @@
 .symbolGroup {
     margin-bottom: 1rem;
+    overflow: hidden;
+    transition: max-height 0.1s ease-in;
 }
 .symbolGroup h3 {
     font-size: 0.8em;

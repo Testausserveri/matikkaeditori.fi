@@ -154,6 +154,7 @@ export function init(
         $latexField.val($img.prop('alt'))
         onLatexUpdate()
         u.scrollIntoView($mathEditorContainer)
+        if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(true)
     }
 
     function insertMath(symbol, alternativeSymbol, useWrite) {
@@ -194,6 +195,7 @@ export function init(
         focus.equationField = false
         $mathEditorContainer.trigger({ type: 'mathfocus', hasFocus: focus.latexField || focus.equationField })
         $outerPlaceholder.append($mathEditorContainer)
+        if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
         if (setFocusAfterClose) $currentEditor.focus()
     }
 

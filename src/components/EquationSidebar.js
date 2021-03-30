@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import "../css/sidebar.css"
 import "../css/equationsidebar.css"
 import PropTypes from "prop-types"
@@ -26,9 +26,9 @@ function writeSymbol(event) {
     
 }
 
-function SymbolGroup({symbols}) {
+function SymbolGroup({symbols, hidden}) {
     return (
-        <div className="symbolGroup">
+        <div className="symbolGroup" style={{maxHeight: hidden ? "0" : "500px"}}>
             <h3>{symbols.label}</h3>
             <div className="symbols">
                 {symbols.characters.map((character) => {
@@ -49,10 +49,18 @@ SymbolGroup.propTypes = {
     symbols: {
         label: PropTypes.string,
         characters: PropTypes.any
-    }
+    },
+    hidden: PropTypes.any
 }
 
 export default function EquationSidebar() {
+    const [latexCommandsVisible, setLatexCommandsVisible] = useState(false)
+    useEffect(() => {
+        window.setLatexCommandsVisibility = function (state) {
+            setLatexCommandsVisible(state)
+        }
+    }, [])
+
     return (
         <div className="sidebar">
             <div className="head">
@@ -62,10 +70,11 @@ export default function EquationSidebar() {
                 </button>
             </div>
             <div>
-                <SymbolGroup key={"eqgroup"} symbols={{
+                <SymbolGroup hidden={!latexCommandsVisible} symbols={{
                     label: "Kaavat",
                     characters: latexCommands
                 }} />
+                
                 {specialCharacters.map(group => (
                     <SymbolGroup key={group.label + "group"} symbols={group} />
                 ))}
