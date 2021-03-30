@@ -11,10 +11,14 @@ import latexCommands from "./editor/latexCommands"
 
 function writeSymbol(event) {
     event.preventDefault()
-    const symbol = event.target.dataset.latexcommand
-    if (document.activeElement.classList.contains("page")) {
-        document.execCommand("insertText", false, symbol)
+    const data = JSON.parse(event.target.closest("div[data-data]").dataset.data)
+    if (data.action) {
+        // math equation
+        window.math.insertMath(data.action, data.latexCommand, data.useWrite)
+    } else {
+        window.math.insertMath(data.latexCommand || data.character, undefined, !data.noWrite)
     }
+    
 }
 
 function SymbolGroup({symbols}) {
@@ -25,7 +29,7 @@ function SymbolGroup({symbols}) {
                 {symbols.characters.map((character) => {
                     if (character.popular == true || 1 == 1) {
                         return (
-                            <div key={character.character || character.action} onMouseDown={writeSymbol} data-latexCommand={character.latexCommand || character.action}>
+                            <div key={character.character || character.action} onMouseDown={writeSymbol} data-data={JSON.stringify(character)}>
                                 {character.character
                                 || <img src={character.svg} />}
                             </div>
