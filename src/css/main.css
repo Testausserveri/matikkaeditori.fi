@@ -3,7 +3,7 @@
 body {
     background-color: #edf9ff;
     color: rgba(0,0,0,0.9);
-    --document-width: 750px;
+    --document-width: 850px;
 }
 
 .app {
@@ -16,7 +16,7 @@ body {
 }
 
 .document .head {
-    width: var(--document-width);
+    width: calc(var(--document-width) - 50px - 50px);
     
     margin: 1.5rem auto 1.5rem auto;
 }

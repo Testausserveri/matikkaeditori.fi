@@ -179,6 +179,7 @@ export default function Document() {
         // this bitch looks like to be throwing errors if I have chrome developer tools open
         // weird behaviour that's for sure
         initRichTextEditor(answerRef.current, resultRef.current)
+        answerRef.current.focus() // Focus on page load
     }, [resultRef])
 
     function onDocumentTitleKeyUp(event) {
