@@ -68,22 +68,22 @@
     margin: 1.5rem auto 1.5rem auto;
     height: 3rem;
 }
-.sidebar .head button.primary {
+.head button.primary {
     flex: 1;
 }
-.sidebar .head button.folderSmall {
+.head button.folderSmall {
     margin-left: 5px;
     width: 3rem;
     background-color: transparent;
     border: 1px solid #2FA3CF;
     color: #2FA3CF;
 }
-.sidebar .head button.folderSmall:hover, .sidebar .head .secondary:hover {
+.head button.folderSmall:hover, .head .secondary:hover {
     background-color: #2a92ba;
     border-color: #2a92ba;
     color: #edf9ff;
 }
-.sidebar .head button {
+.head button {
     height: 100%;
     font-size: 1rem;
     cursor: pointer;
@@ -95,16 +95,17 @@
     color: #edf9ff;
     transition: background-color 0.1s ease-out, color 0.1s ease-out;
 }
-.sidebar .head .secondary {
-    flex: 1;
+.head .secondary {
     background-color: transparent;
     border: 1px solid #2FA3CF;
     color: #2FA3CF;
+    height: 3rem;
+    padding: 0 1rem;
 }
-.sidebar .head button:hover {
+.head button:hover {
     background-color: #2a92ba;
 }
 
-.sidebar .head button:focus {
+.head button:focus {
     outline: none;
 }

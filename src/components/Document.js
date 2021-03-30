@@ -2,9 +2,15 @@
 
 import React from "react"
 import { useRef, useEffect } from "react"
+
 import "../rich-text-editor/rich-text-editor.css"
 import "../css/editor.css"
 import { makeRichText } from "../rich-text-editor/rich-text-editor"
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faFileExport } from "@fortawesome/free-solid-svg-icons"
+
+import Dropdown from "./Dropdown"
 
 const ERROR_SVG_BASE_64 = window.btoa(`<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg width="17px" height="15px" viewBox="0 0 17 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -169,6 +175,21 @@ const initRichTextEditor = (answerNode, resultNode) => {
 export default function Document() {
     const answerRef = useRef()
     const resultRef = useRef()
+
+    const exportDropdown = [
+        {
+            text: "Tallenna PDF",
+            action: () => {alert("moi")}
+        },
+        {
+            text: "Tallenna kuvana",
+            action: () => {alert("moi")}
+        },
+        {
+            text: "Tallenna HTML",
+            action: () => {alert("moi")}
+        }
+    ]
     // Editor result content is available inside resultRef, the answerRef is just an visual editor with extra stuff
 
     useEffect(() => {
@@ -197,6 +218,11 @@ export default function Document() {
         <div className="document">
             <div className="head">
                 <h2 spellCheck={false} contentEditable={true} id="documentTitle" suppressContentEditableWarning={true} onKeyDown={onDocumentTitleKeyUp}>MAA05 T. 12 S. 8</h2>
+                <Dropdown data={exportDropdown}>
+                    <button className="secondary">
+                        <FontAwesomeIcon icon={faFileExport} /> Vie
+                    </button>
+                </Dropdown>
             </div>
             <div className="page" spellCheck={false}>
                 <div ref={answerRef} className="editor"></div>

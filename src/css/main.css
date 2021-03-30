@@ -19,6 +19,8 @@ body {
     width: calc(var(--document-width) - 50px - 50px);
     
     margin: 1.5rem auto 1.5rem auto;
+    display: flex;
+    justify-content: space-between;
 }
 .document .head h2 {
     font-size: 1.5em;
