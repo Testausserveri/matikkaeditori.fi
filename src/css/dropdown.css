@@ -4,7 +4,7 @@
 .dropdown {
     position: absolute;
     z-index: 100;
-    top: calc(100% + 0. 5rem);
+    top: calc(100% + 0.5rem);
     background-color: white;
     border-radius: var(--radius);
     box-shadow: var(--small-shadow);
