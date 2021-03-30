@@ -1,7 +1,9 @@
 .editor {
     flex: 1;
     background-color: #fff;
+    padding: 50px;
     position: relative;
+    border-radius: var(--radius);
 }
 
 .editor img[src*='/math.svg'],

@@ -47,7 +47,7 @@ export default function EquationSidebar() {
     return (
         <div className="sidebar">
             <div className="head">
-                <button className="primary">
+                <button className="primary" onClick={(e) => {window.math.insertNewEquationSafe(e)}}>
                     <FontAwesomeIcon icon={faSquareRootAlt} />&nbsp;
                     Lisää kaava
                 </button>

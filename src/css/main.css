@@ -56,7 +56,6 @@ body {
     margin: 1rem auto;
     width: var(--document-width);
     box-shadow: var(--shadow);
-    padding: 50px;
     border-radius: var(--radius);
     display: flex;
 }

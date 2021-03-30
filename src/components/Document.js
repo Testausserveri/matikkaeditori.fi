@@ -1,8 +1,9 @@
-/* global MathJax, makeRichText */
+/* global MathJax */
 
 import React from "react"
 import { useRef, useEffect } from "react"
 import "../css/editor.css"
+import { makeRichText } from "../rich-text-editor/rich-text-editor"
 
 const ERROR_SVG_BASE_64 = window.btoa(`<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg width="17px" height="15px" viewBox="0 0 17 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -100,7 +101,6 @@ const setServerSideSvg = ($img, latex) => {
 
 const updateClientSideMath = function (latex, callback, resultNode) {
     const math = MathJax.Hub.getAllJax("MathOutput")[0]
-
     MathJax.Hub.queue.Push(["Text", math, "\\displaystyle{" + latex + "}"])
 
     MathJax.Hub.Queue(() =>
@@ -176,6 +176,8 @@ export default function Document() {
         answerRef.current.innerHTML = ""
         answerRef.current.dispatchEvent(new Event("input"))
 
+        // this bitch looks like to be throwing errors if I have chrome developer tools open
+        // weird behaviour that's for sure
         initRichTextEditor(answerRef.current, resultRef.current)
     }, [resultRef])
 
