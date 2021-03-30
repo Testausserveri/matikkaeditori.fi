@@ -10,14 +10,6 @@ import { useEffect, useState } from "react"
 import error from "./js/error.js"
 import * as Workers from "./js/workers.js"
 
-// Temporarily for fake new document IDs
-function uuidv4() {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == "x" ? r : (r & 0x3 | 0x8)
-        return v.toString(16)
-    })
-}
-
 function loadFilesystem() {
     return new Promise((resolve) => {
         // UI is now visible
@@ -65,25 +57,18 @@ function App() {
     const [selectedItem, setSelectedItem] = useState("")
 
     function newDocument() {
-        setfsLevel([ 
-            {
-                type: "answer",
-                id: uuidv4(),
-                name: "Nimetön vastaus",
-                lastModified: new Date()
-            },
-            ...fsLevel
-        ])
+        console.log("Placeholder")
     }
     
     useEffect(() => {
-        window.onFsReady = function() {
+        Workers.api("filesystem", "ready", "").then(async () => {
+            // Now ready!
             loadFilesystem()
                 .then((data) => {
                     console.log(data)
                     setfsLevel(data)
                 })
-        }
+        })
     }, [])
 
     return (
