@@ -6,8 +6,8 @@ import PropTypes from "prop-types"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSquareRootAlt } from "@fortawesome/free-solid-svg-icons"
 
-import specialCharacters from "./editor/specialCharacters"
-import latexCommands from "./editor/latexCommands"
+import specialCharacters from "../rich-text-editor/specialCharacters"
+import latexCommands from "../rich-text-editor/latexCommandsWithSvg"
 
 function writeSymbol(event) {
     event.preventDefault()

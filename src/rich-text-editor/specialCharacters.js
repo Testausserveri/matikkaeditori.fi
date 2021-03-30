@@ -24,7 +24,7 @@ export default [
             { character: 'η', latexCommand: '\\eta' },
             { character: 'θ', latexCommand: '\\theta' },
             { character: 'ϑ', latexCommand: '\\vartheta' },
-            { character: '&iota;', latexCommand: '\\iota' },
+            { character: 'ι', latexCommand: '\\iota' },
             { character: 'κ', latexCommand: '\\kappa' },
             { character: 'Λ', latexCommand: '\\Lambda' },
             { character: 'λ', latexCommand: '\\lambda' },
