@@ -33,15 +33,10 @@ function FilesystemItem(props) {
 }
 
 const filesystemItemType = {
-    id: PropTypes.string,
-    name: PropTypes.string,
-    lastModified: PropTypes.any,
-    type: PropTypes.oneOf(["answer", "folder"])
+    selected: PropTypes.bool,
+    data: PropTypes.object
 }
-
-FilesystemItem.propTypes = {
-    data: filesystemItemType
-}
+FilesystemItem.propTypes = filesystemItemType
 
 export default function Sidebar(props) {
     // todo implement subtrees
@@ -79,7 +74,7 @@ export default function Sidebar(props) {
 }
 
 Sidebar.propTypes = {
-    level: PropTypes.object,
+    level: PropTypes.array,
     newDocument: PropTypes.func,
     selectedItem: PropTypes.string,
     openItem: PropTypes.func

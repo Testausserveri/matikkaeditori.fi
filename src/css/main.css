@@ -58,6 +58,7 @@ body {
     box-shadow: var(--shadow);
     padding: 50px;
     border-radius: var(--radius);
+    display: flex;
 }
 
 @media only screen and (max-width: 1240px) {

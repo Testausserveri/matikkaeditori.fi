@@ -1,0 +1,59 @@
+.editor {
+    flex: 1;
+    background-color: #fff;
+    position: relative;
+}
+
+.editor img[src*='/math.svg'],
+.editor img[src^='data:image/svg+xml'] {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 4px 0;
+    padding: 3px 10px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.editor img[src$='/math.svg?latex='],
+.editor img[src=''] {
+    display: none;
+}
+
+.editor:focus img[src*='/math.svg'],
+.editor.rich-text-focused img[src*='/math.svg'],
+.editor:focus img[src^='data:image/svg+xml'],
+.editor.rich-text-focused img[src^='data:image/svg+xml'] {
+
+
+    border: 1px solid #d5e0e5;
+    background-color: #edf9ff;
+    border-radius: 3px;
+
+}
+
+.editor img[src*='data:image/png'] {
+    margin: 4px 0;
+}
+
+.editor:focus img[src*='data:image/png'],
+.editor.rich-text-focused img[src*='data:image/png'] {
+    box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.2);
+}
+.editor:focus, .editor.rich-text-focused {
+    outline: none !important;
+}
+
+#MathJax_Message {
+    display: none !important;
+}
+
+.math-editor-equation-field {
+    width: 100%;
+    padding: 5px 10px;
+    border: none;
+    background: #fff;
+  }
+  
+.math-editor-latex-field {
+display: none;
+}
