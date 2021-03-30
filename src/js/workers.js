@@ -35,7 +35,7 @@ async function onMessage(event, name){
                     sent = true
                     // Import the module
                     let c_ = await import("./worker-components/" + message.content)
-                    console.debug("Imported:", c_)
+                    console.debug("Imported:", c_, c_.default)
                     let b = null
                     if(
                         Object.keys(c_).length == 1 &&
