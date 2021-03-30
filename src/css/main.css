@@ -98,6 +98,7 @@ body {
     width: calc(100% - 4rem);
     background-color: white;
     padding: 1rem 2rem;
+    box-shadow: var(--small-shadow);
 }
 .navigation img {
     height: 1rem;
