@@ -2,6 +2,7 @@
 
 import React from "react"
 import { useRef, useEffect } from "react"
+import "../rich-text-editor/rich-text-editor.css"
 import "../css/editor.css"
 import { makeRichText } from "../rich-text-editor/rich-text-editor"
 
