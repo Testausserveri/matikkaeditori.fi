@@ -1,78 +1,40 @@
 .editor {
-    flex: 1;
-    background-color: #fff;
-    padding: 50px;
-    position: relative;
-    border-radius: var(--radius);
-}
-
-.editor img[src*='/math.svg'],
-.editor img[src^='data:image/svg+xml'] {
-    display: inline-block;
-    vertical-align: middle;
-    margin: 4px 0;
-    padding: 3px 10px;
-    cursor: pointer;
-    border: 1px solid transparent;
-}
-
-.editor img[src$='/math.svg?latex='],
-.editor img[src=''] {
-    display: none;
-}
-
-.editor:focus img[src*='/math.svg'],
-.editor.rich-text-focused img[src*='/math.svg'],
-.editor:focus img[src^='data:image/svg+xml'],
-.editor.rich-text-focused img[src^='data:image/svg+xml'] {
-
-
-    border: 1px solid #d5e0e5;
-    background-color: #edf9ff;
-    border-radius: 3px;
-
-}
-
-.editor img[src*='data:image/png'] {
-    margin: 4px 0;
-}
-
-.editor:focus img[src*='data:image/png'],
-.editor.rich-text-focused img[src*='data:image/png'] {
-    box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.2);
-}
-.editor:focus, .editor.rich-text-focused, .math-editor:focus, .math-editor, .rich-text-editor:focus,
-.rich-text-editor.rich-text-focused,
-.rich-text-editor .mq-editable-field.mq-focused,
-.rich-text-editor textarea:focus {
-    outline: none !important;
-}
-
-#MathJax_Message {
-    display: none !important;
-}
-
-.math-editor-equation-field {
     width: 100%;
-    padding: 5px 10px;
-    border: none;
-    background: transparent !important;
-  }
-  
-.math-editor-latex-field {
-    display: none;
-    border-radius: var(--radius);
+    height: 100%;
+    display: block;
+    flex: 1;
+    padding: 10px;
+    font: 17px "Times New Roman";   
 }
-
-.math-editor {
-    z-index: 1;
-    margin: 10px 5px 0;
-    margin: 0;
-    position: relative;
-    box-shadow: var(--small-shadow);
+.editor:focus {
+    outline: none;
+}
+.mathContainer.closed {
+    display: inline-block;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.mathContainer.closed img {
+    background-color: #2fa2cf5e;
     border-radius: var(--radius);
-    display: flex;
-    background-color: #fff;
-    border: 1px solid #359BB7;
-
-  }
+    padding: 5px;
+    padding-top: 3px;
+    padding-bottom: 1px;
+    vertical-align: middle;
+    padding-right: 5px;
+    padding-left: 5px;
+}
+.mathContainer.open {
+    -webkit-box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+    -moz-box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+    box-shadow: #8bd 0 0 1px 2px, inset #6ae 0 0 2px 0;
+    border-color: #709AC0;
+    border-radius: 1px;
+    width: 100%;
+}
+.mathContainer span {
+    display: inline-block;
+}
+.mathImage {
+    display: inline-block;
+}
