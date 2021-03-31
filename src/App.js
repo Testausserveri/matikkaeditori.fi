@@ -12,44 +12,35 @@ import error from "./js/error.js"
 import * as Workers from "./js/workers.js"
 
 function loadFilesystem() {
-    return new Promise((resolve) => {
-        // UI is now visible
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve) => {
         // Load FS
-        let load_fs = async () => {
-            if(localStorage.getItem("fs_type") == null){
-                // No FS present
-                console.log("[ Filesystem ] No previous save found. Creating one...")
-                localStorage.setItem("fs_type", "0")
-                await Workers.api("filesystem", "set", {name: "id", value: window.id})
-                Workers.api("filesystem", "init", "0").then(async id => {
-                    // TODO: UI stuff, such as render
-                    Workers.api("filesystem", "index", id).then(index => {
-                        resolve(index)
-                    })
-                }).catch((e) => {
-                    error(e)
+        if(localStorage.getItem("fs_type") == null){
+            // No FS present
+            console.log("[ Filesystem ] No previous save found. Creating one...")
+            localStorage.setItem("fs_type", "0")
+            await Workers.api("filesystem", "set", {name: "id", value: window.id})
+            Workers.api("filesystem", "init", "0").then(async id => {
+                // TODO: UI stuff, such as render
+                Workers.api("filesystem", "index", id).then(index => {
+                    resolve(index)
                 })
-            }else {
-                // Load FS that's present
-                console.log("[ Filesystem ] Previous save found. Loading it...")
-                await Workers.api("filesystem", "set", {name: "id", value: window.id})
-                await Workers.api("filesystem", "init", localStorage.getItem("fs_type")).then(async id => {
-                    // TODO: UI stuff, such as render
-                    Workers.api("filesystem", "index", id).then(index => {
-                        resolve(index)
-                    })
-                }).catch((e) => {
-                    error(e)
+            }).catch((e) => {
+                error(e)
+            })
+        }else {
+            // Load FS that's present
+            console.log("[ Filesystem ] Previous save found. Loading it...")
+            await Workers.api("filesystem", "set", {name: "id", value: window.id})
+            await Workers.api("filesystem", "init", localStorage.getItem("fs_type")).then(async id => {
+                // TODO: UI stuff, such as render
+                Workers.api("filesystem", "index", id).then(index => {
+                    resolve(index)
                 })
-            }
+            }).catch((e) => {
+                error(e)
+            })
         }
-        // Trigger load_fs when the Filesystem worker is ready
-        let e = setInterval(async () => {
-            if(window.fs_ready == true){
-                clearInterval(e)
-                load_fs()
-            }
-        }, 50)
     })
 }
 function App() {
