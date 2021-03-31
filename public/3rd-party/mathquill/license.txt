@@ -1,0 +1,10 @@
+/**
+ * MathQuill master                http://mathquill.com
+ * by Han, Jeanine, and Mary  maintainers@mathquill.com
+ *
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a copy of the MPL
+ * was not distributed with this file, You can obtain
+ * one at http://mozilla.org/MPL/2.0/.
+ */
+Source Code of MathQuill: https://github.com/mathquill/mathquill/tree/v0.10.1 (Section 3.2)

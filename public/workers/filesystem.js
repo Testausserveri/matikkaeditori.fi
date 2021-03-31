@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-async-promise-executor */
 /**
  * This is the main filesystem worker. It handles all filesystem interactions.
  * 
@@ -112,9 +114,9 @@ class Filesystem {
                             this.index = []
                             let uuid = await this.create([], "Tervetuloa!", 1)
                             await this.write([], uuid, "Tervetuloa!", [
-								{text: "Tervetuloa käyttämään matikkaeditori.fi-palvelua!"},
-								{math: "1+1=2"}
-							])
+                                {text: "Tervetuloa käyttämään matikkaeditori.fi-palvelua!"},
+                                {math: "1+1=2"}
+                            ])
                             resolve()
                         }
                     }
@@ -171,20 +173,21 @@ class Filesystem {
     async syncMetadata(){
         try {
             switch(this.type){
-                case 0:
-                    let hash = new wo.libs.hash(JSON.stringify(this.index) + "-" + wo.vals.id)
-                    hash = await hash.sha1()
-                    await localforage.setItem("matikkaeditori-metadata", JSON.stringify({
-                        key: hash,
-                        index: this.index
-                    }))
-                    break
-                case 1:
+            case 0:
+                // eslint-disable-next-line no-case-declarations
+                let hash = new wo.libs.hash(JSON.stringify(this.index) + "-" + wo.vals.id)
+                hash = await hash.sha1()
+                await localforage.setItem("matikkaeditori-metadata", JSON.stringify({
+                    key: hash,
+                    index: this.index
+                }))
+                break
+            case 1:
 
-                    break
-                case 2:
+                break
+            case 2:
 
-                    break
+                break
             }
         }
         catch(err){
@@ -208,28 +211,29 @@ class Filesystem {
                     }
                     if (e != null){
                         switch(this.type){
-                            case 0:
-                                let data_ = await localforage.getItem(uuid)
-                                if (data_ != null){
-                                    let key = new wo.libs.hash(JSON.stringify(data) + "-" + wo.vals.id)
-                                    key = await key.sha1()
-                                    await localforage.setItem(uuid, {
-                                        key: key,
-                                        data: data
-                                    })
-                                    e.edited = new Date().getTime()
-                                    await this.syncMetadata()
-                                    resolve()
-                                } else {
-                                    throw "Data entry missing for " + uuid
-                                }
-                                break
-                            case 1:
+                        case 0:
+                            // eslint-disable-next-line no-case-declarations
+                            let data_ = await localforage.getItem(uuid)
+                            if (data_ != null){
+                                let key = new wo.libs.hash(JSON.stringify(data) + "-" + wo.vals.id)
+                                key = await key.sha1()
+                                await localforage.setItem(uuid, {
+                                    key: key,
+                                    data: data
+                                })
+                                e.edited = new Date().getTime()
+                                await this.syncMetadata()
+                                resolve()
+                            } else {
+                                throw "Data entry missing for " + uuid
+                            }
+                            break
+                        case 1:
     
-                                break
-                            case 2:
+                            break
+                        case 2:
     
-                                break
+                            break
                         }
                     } else {
                         throw "Entry does not exist"
@@ -262,29 +266,31 @@ class Filesystem {
                 }
                 if(e != null){
                     switch(this.type){
-                        case 0:
-                            let data = JSON.parse(await localforage.getItem(uuid))
-                            // Check data verity
-                            let hash = new wo.libs.hash(JSON.stringify(data.data) + "-" + wo.vals.id)
-                            hash = await hash.sha1()
-                            if(hash == data.key){ // Check the hash
-                                return data.data
-                            }else {
-                                handleConfirm("Unable to verify entry verity, are you sure you want to load it?", async res => {
-                                    if(res){
-                                        return data.data
-                                    }else {
-                                        throw "Interrupted"
-                                    }
-                                })
-                            }
-                            return data
-                        case 1:
+                    case 0:
+                        // eslint-disable-next-line no-case-declarations
+                        let data = JSON.parse(await localforage.getItem(uuid))
+                        // Check data verity
+                        // eslint-disable-next-line no-case-declarations
+                        let hash = new wo.libs.hash(JSON.stringify(data.data) + "-" + wo.vals.id)
+                        hash = await hash.sha1()
+                        if(hash == data.key){ // Check the hash
+                            return data.data
+                        }else {
+                            handleConfirm("Unable to verify entry verity, are you sure you want to load it?", async res => {
+                                if(res){
+                                    return data.data
+                                }else {
+                                    throw "Interrupted"
+                                }
+                            })
+                        }
+                        return data
+                    case 1:
 
-                            break
-                        case 2:
+                        break
+                    case 2:
 
-                            break
+                        break
                     }
                 } else {
                     throw "Entry does not exist"
@@ -313,21 +319,21 @@ class Filesystem {
                     edited: new Date().getTime(),
                     type: type
                 }
-				send("log", null, metadata)
+                send("log", null, metadata)
                 // Create the data entry
                 switch(this.type){
-                    case 0:
-                        await localforage.setItem(metadata.uuid, JSON.stringify({
-                            key: null,
-                            data: []
-                        }))
-                        break
-                    case 1:
+                case 0:
+                    await localforage.setItem(metadata.uuid, JSON.stringify({
+                        key: null,
+                        data: []
+                    }))
+                    break
+                case 1:
 
-                        break
-                    case 2:
+                    break
+                case 2:
 
-                        break
+                    break
                 }
                 dir.push(metadata)
                 await this.syncMetadata()
@@ -359,7 +365,7 @@ onmessage = function(e) {
             // Convert the strings to code again
             // eslint-disable-next-line no-case-declarations
             let b = null
-			// TODO: This fails? (Unable to generate uuids)
+            // TODO: This fails? (Unable to generate uuids)
             send("log", null, message.content)
             if(message.content.in.toString().startsWith("CLASS-")){
                 // This DOES work!
@@ -431,26 +437,26 @@ onmessage = function(e) {
                 })
             }
             break
-		case "index":
-			if(!wo.ready){
+        case "index":
+            if(!wo.ready){
                 send("error", null, "Filesystem worker called too early.")
             }else {
                 //send("log", null, wo.instances[message.content])
                 send("response", message.id, wo.instances[message.content].index)
             }
             break
-		case "read":
-			if(!wo.ready){
+        case "read":
+            if(!wo.ready){
                 send("error", null, "Filesystem worker called too early.")
             }else {
-				wo.instances[message.content].read(message.content.path, message.content.uuid).then(async res => {
+                wo.instances[message.content].read(message.content.path, message.content.uuid).then(async res => {
                     send("log", null, res)
-					send("response", message.id, res)
-				}).catch(async err => {
-					send("error", null, err)
-				})
+                    send("response", message.id, res)
+                }).catch(async err => {
+                    send("error", null, err)
+                })
             }
-			break
+            break
         default:
             send("error", null, "Unknown command:", message.type)
             break

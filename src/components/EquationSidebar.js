@@ -6,24 +6,21 @@ import PropTypes from "prop-types"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSquareRootAlt } from "@fortawesome/free-solid-svg-icons"
 
-import specialCharacters from "../rich-text-editor/specialCharacters"
-import latexCommands from "../rich-text-editor/latexCommandsWithSvg"
+import specialCharacters from "../js/editor/specialChars.js"
+import latexCommands from "../js/editor/commands.js"
 
 function writeSymbol(event) {
     event.preventDefault()
     const data = JSON.parse(event.target.closest("div[data-data]").dataset.data)
-
-    if (!window.math.focus.equationField && !data.action && document.activeElement.classList.contains("editor")) {
+    if(window.editor.mathFocus != null){
+        if(data.action != undefined){
+            window.editor.mathFocus.cmd(data.action)
+        }else {
+            window.editor.mathFocus.typedText(data.character)
+        }
+    }else {
         document.execCommand("insertText", false, data.character)
     }
-
-    if (data.action) {
-        // math equation
-        window.math.insertMath(data.action, data.latexCommand, data.useWrite)
-    } else {
-        window.math.insertMath(data.latexCommand || data.character, undefined, !data.noWrite)
-    }
-    
 }
 
 function SymbolGroup({symbols, hidden}) {
@@ -64,7 +61,7 @@ export default function EquationSidebar() {
     return (
         <div className="sidebar">
             <div className="head">
-                <button className="primary" onClick={(e) => {window.math.insertNewEquationSafe(e)}}>
+                <button className="primary" onClick={() => {window.editor.createMath()}}>
                     <FontAwesomeIcon icon={faSquareRootAlt} />&nbsp;
                     Lisää kaava
                 </button>
