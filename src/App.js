@@ -6,6 +6,7 @@ import Sidebar from "./components/Sidebar"
 import EquationSidebar from "./components/EquationSidebar"
 import logo from "./assets/icon.svg"
 import { useEffect, useState } from "react"
+import useWindowDimensions from "./utils/useWindowDimensions"
 
 // Import static components
 import error from "./js/error.js"
@@ -56,6 +57,7 @@ function App() {
     // Return base page
     const [fsLevel, setfsLevel] = useState({})
     const [selectedItem, setSelectedItem] = useState("")
+    const { width: windowWidth } = useWindowDimensions()
 
     function newDocument() {
         console.log("Placeholder")
@@ -66,21 +68,28 @@ function App() {
             // Now ready!
             loadFilesystem()
                 .then((data) => {
-                    console.log(data)
                     setfsLevel(data)
                 })
         })
     }, [])
-
     return (
         <>
             <div className="navigation">
                 <img src={logo} alt="Matikkaeditori.fi" />
             </div>
             <div className="app">
-                <Sidebar newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} openItem={setSelectedItem} />
-                <Document />
-                <EquationSidebar />
+                {(windowWidth > 800 ?
+                    <>
+                        <Sidebar newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} openItem={setSelectedItem} />
+                        <Document />
+                        <EquationSidebar />
+                    </>
+                    :
+                    <>
+                        <Sidebar style={{flex: "1"}} newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} openItem={setSelectedItem} />
+                    </>
+                )}
+                
             </div>
         </>
     )

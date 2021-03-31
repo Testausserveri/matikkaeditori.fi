@@ -3,7 +3,7 @@
 body {
     background-color: #edf9ff;
     color: rgba(0,0,0,0.9);
-    --document-width: 850px;
+    --document-width: 100%;
 }
 
 .app {
@@ -60,22 +60,6 @@ body {
     box-shadow: var(--shadow);
     border-radius: var(--radius);
     display: flex;
-}
-
-@media only screen and (max-width: 1240px) {
-    .page, .document .head {
-        width: 600px;
-    }
-}
-@media only screen and (max-width: 1030px) {
-    .page, .document .head {
-        width: 500px;
-    }
-}
-@media only screen and (max-width: 940px) {
-    .page, .document .head {
-        width: 400px;
-    }
 }
 
 .page:focus {

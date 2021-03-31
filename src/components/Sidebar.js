@@ -8,7 +8,6 @@ import { faPlus, faFolder } from "@fortawesome/free-solid-svg-icons"
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 
 function FilesystemItem(props) {
-    console.log("fi", props.data)
     if (props.data.type == "folder") {
         return (
             <li className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
@@ -40,9 +39,8 @@ FilesystemItem.propTypes = filesystemItemType
 
 export default function Sidebar(props) {
     // todo implement subtrees
-    console.log(props.level)
     return (
-        <div className="sidebar">
+        <div className="sidebar" style={props.style}>
             <div className="head">
                 <button className="primary" onClick={props.newDocument}>
                     <FontAwesomeIcon icon={faPlus} />&nbsp;
@@ -55,7 +53,6 @@ export default function Sidebar(props) {
             <ul className="filesystemLevel">
                 {Object.keys(props.level).map(key => {
                     const value = props.level[key]
-                    console.log(value)
                     return <FilesystemItem key={value.uuid} data={value} />
                     /*
                     return <FilesystemItem key={item.id} data={item} selected={(props.selectedItem == item.id)} onClick={() => {
@@ -77,5 +74,6 @@ Sidebar.propTypes = {
     level: PropTypes.array,
     newDocument: PropTypes.func,
     selectedItem: PropTypes.string,
-    openItem: PropTypes.func
+    openItem: PropTypes.func,
+    style: PropTypes.any
 }
