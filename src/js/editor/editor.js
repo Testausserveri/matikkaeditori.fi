@@ -35,7 +35,7 @@ export default class Editor {
                 // Create new math element in next line with enter
                 if(e.which == 13 && this.mathFocus != null){
                     e.preventDefault()
-                    window.editor.mathFocus.blur()
+                    if (window.editor.mathFocus) window.editor.mathFocus.blur()
                     this.input.focus()
                     // TODO: Make this open the next line, no idea how to do that rn
                     //document.execCommand("insertText", false, "\n")
@@ -168,8 +168,8 @@ export default class Editor {
                 await container.insertBefore(img, this.maths[id].inputElement)
                 // Modify container size
                 let dims = img.getBoundingClientRect()
-                this.maths[id].container.style.width = Math.ceil(dims.width - 1) + "px"
-                this.maths[id].container.style.height = Math.ceil(dims.height - 5) + "px"
+                this.maths[id].container.style.width = Math.ceil(dims.width - 1 + 10) + "px"
+                this.maths[id].container.style.height = Math.ceil(dims.height - 5 + 10) + "px"
                 // Finalize
                 this.maths[id].inputElement.style.display = "none" // Hide the math element
                 this.maths[id].input.select()
