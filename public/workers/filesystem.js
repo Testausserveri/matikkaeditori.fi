@@ -367,10 +367,27 @@ onmessage = function(e) {
             let b = null
             // TODO: This fails? (Unable to generate uuids)
             send("log", null, message.content)
-            if(message.content.in.toString().startsWith("CLASS-")){
+            if(message.content.in.constructor !== undefined){
                 // This DOES work!
                 //send("log", null, message.content.in.replace("CLASS-", ""))
-                b = eval("(" + message.content.in.replace("CLASS-", "") + ")") // Is this secure...? Probably?
+                b = eval("(class " + message.content.as + "{})") // Is this secure...? Probably?
+                for(let func in message.content.in){
+                    // Get the args
+                    let v= message.content.in[func]
+                    v = v.replace("FUNCTION-", "")
+                    let a = v.split("{")[0].split("(")[1].split(")")[0]
+                    a = a == "" ? [] : a.split(",") // TODO: Very basic arg parser. This should be made better to account for strings
+                    // Parse the function to the actual code
+                    let f = v.split("{")
+                    f.splice(0, 1)
+                    f = f.join("{")
+                    f = f.split("}")
+                    f.splice(f.length-1, 1)
+                    f = f.join("}")
+                    // Create function object
+                    c = new Function(a, f)
+                    b[func] = c
+                }
             }else {
                 // This DOES work!
                 b = {}

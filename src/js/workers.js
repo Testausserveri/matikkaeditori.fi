@@ -38,13 +38,22 @@ async function onMessage(event, name){
                     console.debug("Imported:", c_, c_.default)
                     let b = null
                     if(
-                        Object.keys(c_).length == 1 &&
                         c_.default != undefined &&
-                        c_.default.toString().startsWith("class")
+                        typeof c_.default === "function" &&
+                        c_.default.length !== 0 &&
+                        c_.default.prototype.constructor !== undefined
                     ){
-                        // We'll assume that this is a class
-                        b = "CLASS-" + c_.default.toString()
+                        console.log("Class detected.")
+                        let constructor = c_.default.prototype.constructor
+                        let functions = c_.default.prototype
+                        delete functions.constructor
+                        b = {}
+                        b.constructor = constructor.toString()
+                        for(let func of Object.getOwnPropertyNames(functions)){
+                            b[func] = typeof functions[func] === "function" ? "FUNCTION-" + functions[func].toString() : functions[func]
+                        }
                     } else {
+                        console.log("Object detected.")
                         // Convert module to js object
                         // NOTE: This will only convert something that's on the top level of the module!
                         let k = Object.keys(c_)
