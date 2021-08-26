@@ -367,53 +367,6 @@ onmessage = function(e) {
             let b = null
             // TODO: This fails? (Unable to generate uuids)
             send("log", null, message.content)
-            if(message.content.in.constructor !== undefined){
-                // This DOES work!
-                //send("log", null, message.content.in.replace("CLASS-", ""))
-                b = eval("(class " + message.content.as + "{})") // Is this secure...? Probably?
-                for(let func in message.content.in){
-                    // Get the args
-                    let v= message.content.in[func]
-                    v = v.replace("FUNCTION-", "")
-                    let a = v.split("{")[0].split("(")[1].split(")")[0]
-                    a = a == "" ? [] : a.split(",") // TODO: Very basic arg parser. This should be made better to account for strings
-                    // Parse the function to the actual code
-                    let f = v.split("{")
-                    f.splice(0, 1)
-                    f = f.join("{")
-                    f = f.split("}")
-                    f.splice(f.length-1, 1)
-                    f = f.join("}")
-                    // Create function object
-                    c = new Function(a, f)
-                    b[func] = c
-                }
-            }else {
-                // This DOES work!
-                b = {}
-                // eslint-disable-next-line no-case-declarations
-                let k = Object.keys(message.content.in)
-                for(let i = 0; i < k.length; i++){
-                    let n = k[i]
-                    let v = message.content.in[n].toString()
-                    if(v.startsWith("FUNCTION-")){
-                        // Get the args
-                        v = v.replace("FUNCTION-", "")
-                        let a = v.split("{")[0].split("(")[1].split(")")[0]
-                        a = a == "" ? [] : a.split(",") // TODO: Very basic arg parser. This should be made better to account for strings
-                        // Parse the function to the actual code
-                        let f = v.split("{")
-                        f.splice(0, 1)
-                        f = f.join("{")
-                        f = f.split("}")
-                        f.splice(f.length-1, 1)
-                        f = f.join("}")
-                        // Create function object
-                        c = new Function(a, f)
-                    }
-                    b[n] = c
-                }
-            }
             wo.libs[message.content.as] = b // Set the built value
             send("log", null, "Loaded library " + message.content.as + " " + Object.keys(wo.libs).length + "/" + wo.libsNro)
             if(wo.libsNro == Object.keys(wo.libs).length){

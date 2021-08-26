@@ -2,6 +2,8 @@
  * Worker-handler: Register workers, handle events etc.
  */
 import error from "./error.js"
+import * as Comlink from "comlink"
+
 // Message handlers
 /**
  * Handle messages from
@@ -25,53 +27,6 @@ async function onMessage(event, name){
         let message = JSON.parse(event.data.toString())
         // Note: Standard = { type: "any case of the switch below", content: "any data to pass", id: "task id if present"}
         switch(message.type){
-        case "component":
-            // The worker wants to load a component
-            // eslint-disable-next-line no-case-declarations
-            let sent = false // Only used here
-            for(let i = 0; i < window.internal.workers.components.length; i++){
-                let component = window.internal.workers.components[i]
-                if(message.content == component){
-                    sent = true
-                    // Import the module
-                    let c_ = await import("./worker-components/" + message.content)
-                    console.debug("Imported:", c_, c_.default)
-                    let b = null
-                    if(
-                        c_.default != undefined &&
-                        typeof c_.default === "function" &&
-                        c_.default.length !== 0 &&
-                        c_.default.prototype.constructor !== undefined
-                    ){
-                        console.log("Class detected.")
-                        let constructor = c_.default.prototype.constructor
-                        let functions = c_.default.prototype
-                        delete functions.constructor
-                        b = {}
-                        b.constructor = constructor.toString()
-                        for(let func of Object.getOwnPropertyNames(functions)){
-                            b[func] = typeof functions[func] === "function" ? "FUNCTION-" + functions[func].toString() : functions[func]
-                        }
-                    } else {
-                        console.log("Object detected.")
-                        // Convert module to js object
-                        // NOTE: This will only convert something that's on the top level of the module!
-                        let k = Object.keys(c_)
-                        b = {}
-                        for(let i = 0; i < k.length; i++){
-                            let n = k[i]
-                            b[n] = typeof c_[n] == "function" ? "FUNCTION-" + c_[n].toString() : c_[n]
-                        }
-                    }
-                    console.debug("Exported:", b)
-                    console.log("[ WORKERS ] Processing component load",message.content,"for",name + "...")
-                    sendMessage(name, {type: "component", content: {as: message.content, in: b}}) // Worker will call c_.default()?
-                }
-            }
-            if(!sent){
-                console.warn("A worker has requested an unknown component:", message.content, name, event)
-            }
-            break
         case "response":
             // The worker is responding to a command
             if(message.id != undefined){
@@ -84,12 +39,6 @@ async function onMessage(event, name){
             }else {
                 console.warn("Worker response was dropped due to a missing task id:", message)
             }
-            break
-        case "set":
-            // The worker want's to set a variable in global scope
-            console.log("[ WORKER - " + name + " ] SET", message.content.val, message.content.to)
-            window[message.content.val] = message.content.to
-            if(message.id != null) sendMessage(name, {type : "set", content: true})
             break
         case "error":
             // The worker wants to report an error
@@ -118,6 +67,22 @@ async function onMessage(event, name){
     }
     
 }
+
+/**
+ * Create a worker using comlink
+ * @param {string} name Worker name 
+ */
+async function createWorker(name){
+    const Worker = import("worker-loader!./workers/" + name + ".js")
+    const worker = new Worker()
+    // Standard: { init: <promise to resolve when ready>, share: <data to be added to global memory> }
+    const Core = Comlink.wrap(worker)
+    await Core.init()
+    window.internal.workers.shared[name] = Core.shared
+    window.internal.workers.list[name] = worker
+    worker.addEventListener("message", e => onMessage(e, name))
+}
+
 // Export client api
 /**
  * Worker api
@@ -141,29 +106,20 @@ export async function api(worker, type, content){
     })
 }
 // Main function and export
-export default function (){
+export default async function (){
     // Filesystem
     try {
-        let fs = new Worker("workers/filesystem.js")
-        fs.onmessage = async (e) => {onMessage(e, "filesystem")}
-        fs.onerror = async e => {
-            error("Worker - filesystem", e)
-        }
-        window.internal.workers.list["filesystem"] = fs
+        await createWorker("filesystem")
     }
     catch(err){
         console.error("Failed to create Filesystem worker:", err)
     }
     // Cloud storage
     try {
-        let cs = new Worker("workers/cloud-storage.js")
-        cs.onmessage = async (e) => {onMessage(e, "cloud_storage")}
-        cs.onerror = async e => {
-            error("Worker - cloud_storage", e)
-        }
-        window.internal.workers.list["cloud_storage"] = cs
+        await createWorker("cloud-storage")
     }
     catch(err){
         console.error("Failed to create Cloud storage worker:", err)
     }
+    return true
 }
