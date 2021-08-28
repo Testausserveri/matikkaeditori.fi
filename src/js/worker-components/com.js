@@ -1,4 +1,4 @@
-import uuid from "./uuid.js"
+import * as uuid from "./uuid.js"
 
 // Create the global onMessage handler
 const message_target = new EventTarget()
@@ -20,14 +20,15 @@ export default {
                 reject("Timeout")
             }, 30000)
             // Send message
-            postMessage(JSON.stringify({ type, content, id: content.id | id }))
+            postMessage(JSON.stringify({ type, content, id: content.id || id }))
 
             // Listen for response
             message_target.addEventListener("message", async function (e){
-                if(e.message.id !== null && e.message.id === id){
+                console.log("callback", e)
+                if(e.detail.id !== null && e.detail.id === id){
                     message_target.removeEventListener("message", e)
                     clearTimeout(timeout)
-                    resolve(e.message.content)
+                    resolve(e.detail.content)
                 }
             })
         })

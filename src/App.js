@@ -25,6 +25,8 @@ function App() {
             let fs_type = localStorage.getItem("fs_type")
             if(fs_type === null) fs_type = 0
             const instance = await window.internal.workers.api("Filesystem", "init", { type: fs_type })
+            console.debug(instance)
+            console.log("[ APP ] Initial database instance created!")
             setfsLevel(instance.index)
         }
         catch(e){

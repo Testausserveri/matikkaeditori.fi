@@ -54,10 +54,14 @@ async function onMessage(event, name){
             break
         case "confirm":
             if(confirm(message.content)){
-                sendMessage(name, {type: "confirm", content: {value: true}})
+                sendMessage(name, {type: "callback", content: { value: true }, id: message.id})
             }else {
-                sendMessage(name, {type: "confirm", content: {value: false}})
+                sendMessage(name, {type: "callback", content: { value: false }, id: message.id})
             }
+            break
+        case "callback": 
+            if(window.internal.workers.handlers[message.id] === undefined) console.warn("[ WORKERS] Dropped callback \"" + message.id + "\"")
+            window.internal.workers.handlers[message.id](message.content)
             break
         default:
             // Unknown message

@@ -73,6 +73,7 @@ function G(){
         }else {
             console.log("No upgrades to be done.")
             C()
+            return
         }
     }else {
         // Version is null
@@ -80,6 +81,8 @@ function G(){
             error("Index", "Version is null!")
         }else {
             localStorage.setItem("version", window.internal.version)
+            C()
+            return
         }
     }
 }
