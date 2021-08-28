@@ -68,19 +68,25 @@ async function onMessage(event, name){
     
 }
 
+// TODO: Can this be doen dynamically?
+import Filesystem from "worker-loader!./workers/filesystem.js"
+import CloudStorage from "worker-loader!./workers/cloud-storage.js"
+
 /**
  * Create a worker using comlink
  * @param {string} name Worker name 
  */
 async function createWorker(name){
-    const Worker = import("worker-loader!./workers/" + name + ".js")
+    const Worker = {Filesystem, CloudStorage}[name]
+    console.debug(Worker)
     const worker = new Worker()
     // Standard: { init: <promise to resolve when ready>, share: <data to be added to global memory> }
     const Core = Comlink.wrap(worker)
-    await Core.init()
     window.internal.workers.shared[name] = Core.shared
+    Core.shared.id = window.id
     window.internal.workers.list[name] = worker
     worker.addEventListener("message", e => onMessage(e, name))
+    await Core.init()
 }
 
 // Export client api
@@ -109,14 +115,14 @@ export async function api(worker, type, content){
 export default async function (){
     // Filesystem
     try {
-        await createWorker("filesystem")
+        await createWorker("Filesystem")
     }
     catch(err){
         console.error("Failed to create Filesystem worker:", err)
     }
     // Cloud storage
     try {
-        await createWorker("cloud-storage")
+        await createWorker("CloudStorage")
     }
     catch(err){
         console.error("Failed to create Cloud storage worker:", err)

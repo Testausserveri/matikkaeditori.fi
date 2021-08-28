@@ -7,6 +7,7 @@ import App from "./App"
 // Import static components
 import * as c from "./js/worker-components/compatibility.js"
 import error from "./js/error.js"
+import upgrade from "./hs/upgrade.js"
 import * as Workers from "./js/workers.js"
 // eslint-disable-next-line no-unused-vars
 import * as uuid from "./js/worker-components/uuid.js" // This is used globally, not here though
@@ -18,20 +19,10 @@ function G(){
     window.internal = {
         workers: {
             list: {},
-            components: [
-                // List of files loadable by workers in src/js/worker-components
-                "compress.js",
-                "export.js",
-                "google-drive.js",
-                "hash.js",
-                "onedrive.js",
-                "uuid.js"
-            ],
             handlers: {},
             shared: {},
             api: Workers.api
         },
-        ui: {},
         console: {
             list: [
                 // These values will be put behind a wrapper for log collection
@@ -45,13 +36,21 @@ function G(){
             logs: []
         },
         time_at_live: new Date().getTime(), // Time since code first started to run
-        bundle: null
+        /**
+         * --------------------------------------------------
+         * Very important version field!
+         * CHANGE TO HANDLE BREAKING CHANGES VIA "upgrade.js"
+         * --------------------------------------------------
+         */
+        version: "beta"
     }
+
     // Public libs
     window.public = {
         uuid: uuid,
-        Workers: Workers
+        workers: Workers
     }
+
     // User ID
     let id = localStorage.getItem("id")
     if(id == null){
@@ -59,8 +58,28 @@ function G(){
     }
     localStorage.setItem("id", id)
     window.id = id // This is used to salt all filesystem verity hashes. When cloud saves are implemented, this needs to be exported in to the cloud save location.
-    // Run the console component here
-    C()
+
+    // Handle version upgrades
+    const current_version = localStorage.getItem("version")
+    if(current_version !== null){
+        if(current_version !== window.internal.version){
+            upgrade[current_version]().then(() => {
+                console.log("Upgraded to " + window.internal.version)
+                // Run the console component here
+                C()
+                return
+            }).catch(e => {
+                error("Index", "Failed to upgrade: " + e.stack)
+            }) 
+        }else {
+            console.log("No upgrades to be done.")
+            C()
+        }
+    }else {
+        // Version is null
+        error("Index", "Version is null!")
+        return
+    }
 }
 
 /**
@@ -68,10 +87,6 @@ function G(){
  * By: @Esinko (11.02.2021)
  */
 function C(){
-    //let e = console.log
-    //console["log"] = (s) => {
-    //    e(s, "e")
-    //} 
     // Redefine all the functions
     for(let func of window.internal.console.list){
         window.internal.console.cache[func] = console[func]

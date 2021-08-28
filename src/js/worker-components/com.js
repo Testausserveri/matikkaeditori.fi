@@ -1,0 +1,34 @@
+import uuid from "worker-loader!./uuid.js"
+
+// Create the global onMessage handler
+const message_target = new EventTarget()
+// eslint-disable-next-line no-undef
+onMessage = e => {
+    const message_emitter = new CustomEvent("message", { message: JSON.parse(e.data.toString()) })
+    message_target.dispatchEvent(message_emitter)
+}
+
+export default {
+    send: async function (type, content){
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
+            const id = uuid.v4()
+            const timeout = setTimeout(async () => {
+                reject("Timeout")
+            }, 30000)
+
+            // Send message
+            postMessage(JSON.stringify({ type, content, id }))
+
+            // Listen for response
+            message_target.addEventListener("message", async function (e){
+                if(e.message.id !== null && e.message.id === id){
+                    message_target.removeEventListener("message", e)
+                    clearTimeout(timeout)
+                    resolve(e.message.content)
+                }
+            })
+        })
+    },
+    onMessage: message_target
+}

@@ -5,17 +5,22 @@
  * 
  * By: @Esinko
  */
+
+import * as Comlink from "comlink"
 importScripts(["/3rd-party/localforage.js"])
-// Worker memory
-var wo = {
-    instances: {},
-    libs: {},
-    vals: {},
-    ready: false,
-    libsNro: null,
-    confirmHandler: null,
-    readyHandlers: []
+import uuid from "worker-loader!../worker-components/uuid.js"
+import hash from "worker-loader!../worker-components/hash.js"
+
+const ThisWorker = {
+    init: async function () {
+        // Essential initialization
+        ThisWorker.ready = true
+        return
+    },
+    ready: false
 }
+
+
 // Main class
 /**
  * The filesystem
@@ -356,28 +361,10 @@ async function send(type, id, ...msg){
 }
 onmessage = function(e) {
     try {
-        let message = JSON.parse(e.data.toString())
+        const message = JSON.parse(e.data.toString())
         // Api
         switch(message.type){
         // Worker
-        case "component":
-            message.content.as = message.content.as.replace(".js", "") // Remove .js file ending
-            // Convert the strings to code again
-            // eslint-disable-next-line no-case-declarations
-            let b = null
-            // TODO: This fails? (Unable to generate uuids)
-            send("log", null, message.content)
-            wo.libs[message.content.as] = b // Set the built value
-            send("log", null, "Loaded library " + message.content.as + " " + Object.keys(wo.libs).length + "/" + wo.libsNro)
-            if(wo.libsNro == Object.keys(wo.libs).length){
-                send("set", null, {val: "fs_ready", to: true})
-                send("log", null, "Filesystem worker ready.")
-                wo.ready = true
-                for(let func of wo.readyHandlers){
-                    func()
-                }
-            }
-            break
         case "confirm":
             if(wo.confirmHandler != null) wo.confirmHandler(message.content.value)
             break
@@ -442,8 +429,3 @@ async function handleConfirm(text, handler){
     send("confirm", null, text)
     wo.confirmHandler = handler
 }
-
-// Request components
-wo.libsNro = 2 // How many libs do we need to load before accepting api calls?
-send("component", null, "hash.js")
-send("component", null, "uuid.js")

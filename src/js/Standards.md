@@ -77,10 +77,14 @@ Data in the dump will also be stored in a JSON tree. No type field for the entri
     "<uuid>": {
         date: "<epoch time>",
         name: "<entry name>",
-        data: "<raw document data>"
+        data: "<raw document data>",
+        checksum: "<sha1>"
     }
 }
 ```
 
 ### Checksums and raw storage format
 All forms of data storage are required to include checksums for both the index and the dump. For data validation and safety. The reason for this is to warn the user of possible tampering with their data and notify them that the data loaded may be corrupt and cause unexpected issues. The storage for these checksums will be type specific, but it's recommended to store the in the same place as the data itself.
+
+# Upgrade standard
+Upgrading of save versions to the latest version is handled by "upgrade.js". To create an upgrade handler, define a function with the current latest version name in "upgrade.js". Then modify the version field in window.internal
