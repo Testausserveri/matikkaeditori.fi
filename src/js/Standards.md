@@ -19,7 +19,7 @@
 ```js
 { 
     type: "<command/task name>",
-    content: {...} | "...", // Any data to be passed to the command/task.
+    content: {...} || "...", // Any data to be passed to the command/task.
     id: "<uuid>" // UUIDv4 that will be sent back to the worker in the execution confirmation message
 }
 ```
