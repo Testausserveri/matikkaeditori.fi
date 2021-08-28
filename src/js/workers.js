@@ -3,6 +3,7 @@
  */
 import error from "./error.js"
 import * as Comlink from "comlink"
+import * as uuid from "./worker-components/uuid.js"
 
 // Message handlers
 /**
@@ -11,6 +12,7 @@ import * as Comlink from "comlink"
  */
 function sendMessage(worker, msg){
     try {
+        console.debug("Sending", worker, msg)
         window.internal.workers.list[worker].postMessage(JSON.stringify(msg))
     }
     catch(err){
@@ -24,6 +26,7 @@ function sendMessage(worker, msg){
  */
 async function onMessage(event, name){
     try {
+        console.debug("Got", event, name)
         let message = JSON.parse(event.data.toString())
         // Note: Standard = { type: "any case of the switch below", content: "any data to pass", id: "task id if present"}
         switch(message.type){
@@ -68,7 +71,7 @@ async function onMessage(event, name){
     
 }
 
-// TODO: Can this be doen dynamically?
+// TODO: Can this be done dynamically?
 import Filesystem from "worker-loader!./workers/filesystem.js"
 import CloudStorage from "worker-loader!./workers/cloud-storage.js"
 
@@ -78,14 +81,17 @@ import CloudStorage from "worker-loader!./workers/cloud-storage.js"
  */
 async function createWorker(name){
     const Worker = {Filesystem, CloudStorage}[name]
-    console.debug(Worker)
     const worker = new Worker()
     // Standard: { init: <promise to resolve when ready>, share: <data to be added to global memory> }
     const Core = Comlink.wrap(worker)
     window.internal.workers.shared[name] = Core.shared
     Core.shared.id = window.id
     window.internal.workers.list[name] = worker
-    worker.addEventListener("message", e => onMessage(e, name))
+    worker.addEventListener("message", e => {
+        if(typeof e.data !== "string") return
+        console.debug("Raw", e)
+        onMessage(e, name)
+    }) 
     await Core.init()
 }
 
@@ -99,7 +105,7 @@ async function createWorker(name){
 export async function api(worker, type, content){
     return new Promise((resolve, reject) => {
         try {
-            let id = window.public.uuid.v4()
+            const id = uuid.v4()
             window.internal.workers.handlers[id] = async (message) => {
                 // This will be called when the worker responds
                 resolve(message)
@@ -111,8 +117,11 @@ export async function api(worker, type, content){
         }
     })
 }
+
+
 // Main function and export
 export default async function (){
+    console.log("Staring workers...")
     // Filesystem
     try {
         await createWorker("Filesystem")
@@ -127,5 +136,6 @@ export default async function (){
     catch(err){
         console.error("Failed to create Cloud storage worker:", err)
     }
+    window.internal.workers.essentialsResolve()
     return true
 }

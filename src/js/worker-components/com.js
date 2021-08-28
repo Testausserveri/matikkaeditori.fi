@@ -1,12 +1,15 @@
-import uuid from "worker-loader!./uuid.js"
+import uuid from "./uuid.js"
 
 // Create the global onMessage handler
 const message_target = new EventTarget()
 // eslint-disable-next-line no-undef
-onMessage = e => {
-    const message_emitter = new CustomEvent("message", { message: JSON.parse(e.data.toString()) })
+self.addEventListener("message", e => {
+    if(typeof e.data !== "string") return
+    const message_emitter = new CustomEvent("message", {
+        detail: JSON.parse(e.data)
+    })
     message_target.dispatchEvent(message_emitter)
-}
+})
 
 export default {
     send: async function (type, content){
@@ -16,9 +19,8 @@ export default {
             const timeout = setTimeout(async () => {
                 reject("Timeout")
             }, 30000)
-
             // Send message
-            postMessage(JSON.stringify({ type, content, id }))
+            postMessage(JSON.stringify({ type, content, id: content.id | id }))
 
             // Listen for response
             message_target.addEventListener("message", async function (e){

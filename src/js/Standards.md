@@ -44,6 +44,15 @@ The workers.js script will implement these commands in it's API for workers to u
     - 2: Private external
 
 ## Messaging API
+The filesystem worker implements these base messaging API features:
+<br>
+Note: Location "true" is root!
+<br>
+- "init", creates a new filesystem instance. Returns ``{ instance: "<instance id>, index: <fs index> }``. Takes ``{ type: "<fs type>"}`` as input.
+<br>
+- "read", read data from a filesystem instance. Returns ``{ read: "<fs data>" }``. Takes ``{ instance: "<fs instance id>", id: "<fs entry id>"}`` as input.
+<br>
+- "write", write data to the database. Returns nothing. Takes ``{ instance: "<fs instance id>", id: "<fs entry id>", location: "<fs location>" }`` 
 
 ## Storage format
 Data is stored in 2 parts. In "the index" and in the "dump". The index contains the folder structure information of where files are located and the dump is a raw json tree with data fields with keys as uuids of folders/files referred by the index.

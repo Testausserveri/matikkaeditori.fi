@@ -7,7 +7,7 @@ import App from "./App"
 // Import static components
 import * as c from "./js/worker-components/compatibility.js"
 import error from "./js/error.js"
-import upgrade from "./hs/upgrade.js"
+import upgrade from "./js/upgrade.js"
 import * as Workers from "./js/workers.js"
 // eslint-disable-next-line no-unused-vars
 import * as uuid from "./js/worker-components/uuid.js" // This is used globally, not here though
@@ -45,11 +45,10 @@ function G(){
         version: "beta"
     }
 
-    // Public libs
-    window.public = {
-        uuid: uuid,
-        workers: Workers
-    }
+    // Promise for UI to wait before doing anything
+    window.internal.workers.essentials = new Promise((resolve) => {
+        window.internal.workers.essentialsResolve = resolve
+    })
 
     // User ID
     let id = localStorage.getItem("id")
@@ -77,8 +76,11 @@ function G(){
         }
     }else {
         // Version is null
-        error("Index", "Version is null!")
-        return
+        if(localStorage.length > 1){
+            error("Index", "Version is null!")
+        }else {
+            localStorage.setItem("version", window.internal.version)
+        }
     }
 }
 
