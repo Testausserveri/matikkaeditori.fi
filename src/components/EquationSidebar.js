@@ -9,9 +9,8 @@ import { faSquareRootAlt } from "@fortawesome/free-solid-svg-icons"
 import specialCharacters from "../js/editor/specialChars.js"
 import latexCommands from "../js/editor/commands.js"
 
-function writeSymbol(event) {
+function writeSymbol(event, data) {
     event.preventDefault()
-    const data = JSON.parse(event.target.closest("div[data-data]").dataset.data)
     if(window.editor.mathFocus != null){
         if(data.action != undefined){
             window.editor.mathFocus.cmd(data.action)
@@ -31,7 +30,7 @@ function SymbolGroup({symbols, hidden}) {
                 {symbols.characters.map((character) => {
                     if (character.popular == true || 1 == 1) {
                         return (
-                            <div key={character.character || character.action} onMouseDown={writeSymbol} data-data={JSON.stringify(character)}>
+                            <div key={character.character || character.action} onMouseDown={(event) => {writeSymbol(event, character)}}>
                                 {character.character
                                 || <img src={character.svg} />}
                             </div>

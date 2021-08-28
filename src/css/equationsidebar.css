@@ -28,11 +28,22 @@
     border-radius: var(--radius);
     cursor: pointer;
     transition: background-color .05s ease-out;
+    position: relative;
 }
+
+.symbols div:before {
+    content: "";
+    display: block;
+    padding-top: 100%;
+}
+
 .symbols div img {
+    position: absolute;
     width: 70%;
     height: 70%;
+    object-fit: contain;
 }
+
 .symbols div:hover {
     background-color: #f6f8f9;
 }
