@@ -11,6 +11,8 @@ import upgrade from "./js/upgrade.js"
 import * as Workers from "./js/workers.js"
 // eslint-disable-next-line no-unused-vars
 import * as uuid from "./js/worker-components/uuid.js" // This is used globally, not here though
+import C from "./js/console"
+import { console_config } from "./js/console"
 
 // Global handler
 function G(){
@@ -23,24 +25,7 @@ function G(){
             shared: {},
             api: Workers.api
         },
-        console: {
-            list: [
-                // These values will be put behind a wrapper for log collection
-                "log",
-                "error",
-                "info",
-                "trace",
-                "warn"
-            ],
-            cache: {},
-            logs: [],
-            color: {
-                "warn": "yellow",
-                "error": "red",
-                "log": "limegreen",
-                "default": "limegreen"
-            }
-        },
+        console: console_config(),
         time_at_live: new Date().getTime(), // Time since code first started to run
         /**
          * --------------------------------------------------
@@ -93,39 +78,6 @@ function G(){
     }
 }
 
-/**
- * Console wrapper to collect logs to an internal variable.
- * By: @Esinko (11.02.2021)
- */
-function C(){
-    // Redefine all the functions
-    for(let func of window.internal.console.list){
-        window.internal.console.cache[func] = console[func]
-        const color = window.internal.console.color // I feel lazy
-        console[func] = (...args) => {
-            // Apply colors
-            if(args[0] != undefined && typeof args[0].startsWith == "function" && args[0].startsWith("[") && args[0].includes("]")){
-                let args0 = args[0].split("]")[0] + "]"
-                args[0] = args[0].split("]")[1]
-                args0 = "%c" + args0
-                if(args[0] != ""){
-                    args[0] = args[0].trimLeft()
-                    args.splice(0,0,"")
-                }
-                //window.internal.console.cache[func](args, args.length)
-                window.internal.console.cache[func](args0+"%s", "color: " + color[func] ?? color.default + ";", ...args)
-            }else {
-                // Execute the actual function from cache
-                let args0 = "%c[ ❓ ] " // Unknown or prefix not specified
-                window.internal.console.cache[func](args0, "color: " + color[func] ?? color.default + ";", ...args)
-            }
-            // Write the data to the cache
-            // TODO: Parse css (style) code from the args?
-            window.internal.console.logs.push("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ]", ...args)
-        }
-    }
-}
-
 // Debug stuff
 /* eslint-disable no-unused-vars */
 window.reset = async function () {
@@ -135,6 +87,7 @@ window.reset = async function () {
     let cookies = document.cookie
     for (let i = 0; i < cookies.split(";").length; ++i){
         let myCookie = cookies[i]
+        if(myCookie == undefined) continue
         let pos = myCookie.indexOf("=")
         let name = pos > -1 ? myCookie.substr(0, pos) : myCookie
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT"
@@ -145,6 +98,13 @@ window.reset = async function () {
         window.location.reload()
     })
 }
+
+// Implement embedded worker api
+window.api = async (worker, type, message) => {
+    const req = await window.internal.workers.api(worker, type, message)
+    console.log("Response:", req)
+}
+
 /* eslint-enable no-unused-vars */
 
 try {

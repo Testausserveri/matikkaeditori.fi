@@ -10,23 +10,23 @@ self.addEventListener("message", e => {
     })
     message_target.dispatchEvent(message_emitter)
 })
-
 export default {
     send: async function (type, content){
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
             const id = uuid.v4()
+            let response = false
             const timeout = setTimeout(async () => {
-                reject("Timeout")
+                if(!response) reject("Timeout")
             }, 30000)
             // Send message
             postMessage(JSON.stringify({ type, content, id: content.id || id }))
 
             // Listen for response
             message_target.addEventListener("message", async function (e){
-                console.log("callback", e)
                 if(e.detail.id !== null && e.detail.id === id){
                     message_target.removeEventListener("message", e)
+                    response = true
                     clearTimeout(timeout)
                     resolve(e.detail.content)
                 }

@@ -18,6 +18,10 @@ const localForage = localforage
 import * as uuid from "../worker-components/uuid.js"
 import hash from "../worker-components/hash.js"
 import com from "../worker-components/com.js"
+import C from "../console"
+
+// Configure console
+C()
 
 // Comlink configuration
 const this_worker = {
@@ -62,6 +66,7 @@ class Filesystem {
             try {
                 const _hash = new hash(string)
                 const sha1 = await _hash.sha1() // Is this enough?
+                console.debug("[ Filesystem ] Checksum calculation", string, checksum, sha1)
                 if(checksum === sha1){
                     resolve(true)
                 }else {
@@ -89,10 +94,13 @@ class Filesystem {
                  * -----------------------------------------------
                  */
                 case 0: {
+                    console.debug("[ Filesystem ] Preparing read task...")
                     const json = JSON.parse(await localForage.getItem(id))
-                    const string = JSON.stringify({name: json.name, data: json.data, date: json.date})
-                    const isValid = await this.validate(string, json.checksum)
+                    console.debug("[ Filesystem ] Read raw data:", json)
+                    console.debug("[ Filesystem ] Validating checksum...") 
+                    const isValid = await this.validate(JSON.stringify({name: json.name, data: json.data, date: json.date}), json.checksum)
                     if(isValid){
+                        console.debug("[ Filesystem ] Checksum valid, read task concluded successfully.")
                         resolve(json)
                     }else {
                         // TODO: Handle this better
@@ -175,23 +183,24 @@ class Filesystem {
                     console.log("[ Filesystem ] Preparing write task...")
                     let json = JSON.parse(await localForage.getItem(id))
                     if(json === null) {
-                        console.debug("[ Filesystem] No previous entry found.")
+                        console.debug("[ Filesystem ] No previous entry found.")
                         json = {
-                            id: uuid.v4() // Generate id if new object
+                            id: id ?? uuid.v4() // Generate id if new object
                         }
                     }
-                    const hashInstance = new hash(JSON.stringify({name: json.name, data: json.data, date: json.date}))
-                    const sha1 = await hashInstance.sha1()
                     const base = {
                         name: data.name ?? json.name,
                         data: data.data ?? json.data,
                         date: new Date().getTime(),
-                        checksum: sha1
+                        checksum: null
                     }
+                    const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
+                    const sha1 = await hashInstance.sha1()
+                    base.checksum = sha1
                     console.debug("[ Filesystem ] Write task base:", base)
-                    await localForage.setItem(id, JSON.stringify(base))
+                    await localForage.setItem(id ?? json.id, JSON.stringify(base))
                     // Update index
-                    await this.writeToIndex(location, { t: data.type ?? json.type, i: json.id ?? data.id })
+                    await this.writeToIndex(location, { t: data.type ?? json.type, i: id ?? json.id })
                     console.log("[ Filesystem ] Write task completed successfully.")
                     resolve()
                 }
@@ -286,7 +295,7 @@ com.onMessage.addEventListener("message", async e => {
     case "write": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
         if(!instance) return com.send("error", "No such filesystem instance")
-        await instance.write(e.content.id, e.content.write)
+        await instance.write(e.content.id, e.content.write, e.content.location)
         com.send("callback", { id: e.id })
         break
     }
