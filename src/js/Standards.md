@@ -54,6 +54,27 @@ Note: Location "true" is root!
 <br>
 - "write", write data to the database. Returns nothing. Takes ``{ instance: "<fs instance id>", id: "<fs entry id>", location: "<fs location>" }`` 
 
+### Example usages
+Start the filesystem:
+```js
+const instance = await window.internal.workers.api("Filesystem", "init", { fs_type: 0 })
+```
+
+Write to the filesystem:
+```js
+const write_action = await window.internal.workers.api("Filesystem", "write", { id: "<file id, UUID v4>", name: "<file name>", data: "<data>", instance: "<instance ID, returned by instance creation>" })
+```
+
+Read from the filesystem:
+```js
+const answer = await window.internal.workers.api("Filesystem", "write", { id: "<file id, UUID v4>", instance: "<instance ID, returned by instance creation>" })
+```
+
+Read the index:
+```js
+const index = await window.internal.workers.api("Filesystem", "index", { instance: "<instance ID, returned by instance creation>" })
+```
+
 ## Storage format
 Data is stored in 2 parts. In "the index" and in the "dump". The index contains the folder structure information of where files are located and the dump is a raw json tree with data fields with keys as uuids of folders/files referred by the index.
 

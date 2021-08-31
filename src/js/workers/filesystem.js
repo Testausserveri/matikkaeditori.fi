@@ -303,6 +303,12 @@ com.onMessage.addEventListener("message", async e => {
         // Ignore these. (Handled by com.js)
         break
     }
+    case "index": {
+        const instance = this_worker.shared.filesystem_instances[e.content.instance]
+        if(!instance) return com.send("error", "No such filesystem instance")
+        com.send("callback", { index: instance.index })
+        break
+    }
     default:
         com.send("error", "Unexpected command")
     }
