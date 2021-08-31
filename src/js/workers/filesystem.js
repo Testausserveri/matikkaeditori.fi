@@ -115,10 +115,12 @@ class Filesystem {
     async writeToIndex(id, data){
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
-            console.debug("Writing to index")
+            console.log("[ Filesystem ] Preparing index update...")
+            console.debug("[ Filesystem ] Index snapshot before update:", this.index)
+            console.debug("[ Filesystem] Index entry identifier:", id, "data:", data)
             if(id === true){
                 // In root
-                console.debug("Writing to root")
+                console.debug("[ Filesystem ] Writing to index root...")
                 let replaced = false
                 for(let i = 0; i < this.index.length; i++){
                     if(this.index[i].id === id) {
@@ -129,7 +131,7 @@ class Filesystem {
                 if(!replaced) this.index.push(data)
             }else {
                 // In folder
-                console.debug("Writing to folder")
+                console.debug("[ Filesystem ] Writing to folder...")
                 let replaced = false
                 const find = (tree, id) => {
                     for(let i = 0; i < tree.length; i++){
@@ -144,11 +146,11 @@ class Filesystem {
                 find(this.index, id)
                 if(!replaced) reject("Cannot find such location")
             }
-            console.debug("Index now:", this.index)
             const hashSession = new hash(this.index)
+            console.debug("[ Filesystem] Index after update:", this.index)
             await localForage.setItem("matikkaeditori-checksums", JSON.stringify(await hashSession.sha1()))
             await localForage.setItem("matikkaeditori-index", JSON.stringify(this.index))
-            console.debug("Wrote to index")
+            console.log("[ Filesystem ] Index update completed successfully.")
             resolve()
         })
     }
@@ -170,25 +172,27 @@ class Filesystem {
                  * -----------------------------------------------
                  */
                 case 0: {
+                    console.log("[ Filesystem ] Preparing write task...")
                     let json = JSON.parse(await localForage.getItem(id))
                     if(json === null) {
+                        console.debug("[ Filesystem] No previous entry found.")
                         json = {
                             id: uuid.v4() // Generate id if new object
                         }
                     }
                     const hashInstance = new hash(JSON.stringify({name: json.name, data: json.data, date: json.date}))
                     const sha1 = await hashInstance.sha1()
-                    console.debug(data)
                     const base = {
                         name: data.name ?? json.name,
                         data: data.data ?? json.data,
                         date: new Date().getTime(),
                         checksum: sha1
                     }
+                    console.debug("[ Filesystem ] Write task base:", base)
                     await localForage.setItem(id, JSON.stringify(base))
-                    console.debug("Written")
                     // Update index
                     await this.writeToIndex(location, { t: data.type ?? json.type, i: json.id ?? data.id })
+                    console.log("[ Filesystem ] Write task completed successfully.")
                     resolve()
                 }
                 }
@@ -251,17 +255,15 @@ class Filesystem {
                 }
             }
             catch(e){
-                console.debug(e)
                 reject("Failed to initialize filesystem: \n" + e.stack)
+                console.debug(e)
             }
         })
     }
 }
 
-console.debug("c", com)
-
 com.onMessage.addEventListener("message", async e => {
-    console.debug("Filesystem rec", e)
+    console.debug("[ COM - com.js ] Worker <- Main:", e)
     // Detail is the event data
     e = e.detail
     if(!this_worker.shared.ready) return

@@ -33,7 +33,13 @@ function G(){
                 "warn"
             ],
             cache: {},
-            logs: []
+            logs: [],
+            color: {
+                "warn": "yellow",
+                "error": "red",
+                "log": "limegreen",
+                "default": "limegreen"
+            }
         },
         time_at_live: new Date().getTime(), // Time since code first started to run
         /**
@@ -95,6 +101,7 @@ function C(){
     // Redefine all the functions
     for(let func of window.internal.console.list){
         window.internal.console.cache[func] = console[func]
+        const color = window.internal.console.color // I feel lazy
         console[func] = (...args) => {
             // Apply colors
             if(args[0] != undefined && typeof args[0].startsWith == "function" && args[0].startsWith("[") && args[0].includes("]")){
@@ -106,10 +113,11 @@ function C(){
                     args.splice(0,0,"")
                 }
                 //window.internal.console.cache[func](args, args.length)
-                window.internal.console.cache[func](args0+"%s", "color: limegreen;", ...args)
+                window.internal.console.cache[func](args0+"%s", "color: " + color[func] ?? color.default + ";", ...args)
             }else {
                 // Execute the actual function from cache
-                window.internal.console.cache[func](...args)
+                let args0 = "%c[ ❓ ] " // Unknown or prefix not specified
+                window.internal.console.cache[func](args0, "color: " + color[func] ?? color.default + ";", ...args)
             }
             // Write the data to the cache
             // TODO: Parse css (style) code from the args?

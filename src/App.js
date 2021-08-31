@@ -10,6 +10,7 @@ import useWindowDimensions from "./utils/useWindowDimensions"
 
 function App() {
     // Return base page
+    // eslint-disable-next-line no-unused-vars
     const [fsLevel, setfsLevel] = useState({})
     const [selectedItem, setSelectedItem] = useState("")
     const { width: windowWidth } = useWindowDimensions()
@@ -25,13 +26,13 @@ function App() {
             let fs_type = localStorage.getItem("fs_type")
             if(fs_type === null) fs_type = 0
             const instance = await window.internal.workers.api("Filesystem", "init", { type: fs_type })
-            console.debug(instance)
-            console.log("[ APP ] Initial database instance created!")
-            setfsLevel(instance.index)
+            console.log("[ APP ] Created database instance:", instance)
+            console.warn("[ WARNING ] Cannot set fs level due to incomplete react components.")
+            //setfsLevel(instance.index)
         }
         catch(e){
+            console.error("[ APP] Failed to initialize filesystem")
             console.debug(e)
-            console.error("Failed to initialize filesystem")
         }
     }, [])
     return (

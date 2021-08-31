@@ -12,11 +12,11 @@ import * as uuid from "./worker-components/uuid.js"
  */
 function sendMessage(worker, msg){
     try {
-        console.debug("Sending", worker, msg)
+        console.debug("[ COM - workers.js ] Main ->", worker + ":", msg)
         window.internal.workers.list[worker].postMessage(JSON.stringify(msg))
     }
     catch(err){
-        console.error("Failed to send message to",worker,":",err)
+        console.error("[ COM - workers.js ] Failed to send message to",worker,":",err)
     }
 }
 /**
@@ -26,7 +26,7 @@ function sendMessage(worker, msg){
  */
 async function onMessage(event, name){
     try {
-        console.debug("Got", event, name)
+        console.debug("[ COM - workers.js ] Main <-", name + ":", event)
         let message = JSON.parse(event.data.toString())
         // Note: Standard = { type: "any case of the switch below", content: "any data to pass", id: "task id if present"}
         switch(message.type){
@@ -93,7 +93,6 @@ async function createWorker(name){
     window.internal.workers.list[name] = worker
     worker.addEventListener("message", e => {
         if(typeof e.data !== "string") return
-        console.debug("Raw", e)
         onMessage(e, name)
     }) 
     await Core.init()
