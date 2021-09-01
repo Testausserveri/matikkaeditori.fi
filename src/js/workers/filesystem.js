@@ -263,10 +263,10 @@ class Filesystem {
                         date: new Date().getTime()
                     }
                     if((data.type ?? json.type) === 0){
+                        base.data = data.data ?? json.data
                         const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
                         const sha1 = await hashInstance.sha1()
                         base.checksum = sha1
-                        base.data = data.data ?? json.data
                     }
                     console.debug("[ Filesystem ] Write task base:", base)
                     await localForage.setItem(id ?? json.id, JSON.stringify(base))
