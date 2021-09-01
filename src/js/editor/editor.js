@@ -11,6 +11,7 @@ export default class Editor {
         this.input = inputElement
         this.target = null
         this.maths = []
+        this.toolAttachPoint = null
         this.saveState = false
         this.mathFocus = null
     }
@@ -52,6 +53,8 @@ export default class Editor {
             })
             // Save listener
             this.input.oninput = async () => {
+                // Re-align tools
+                if(this.mathFocus !== null) this.attachTools()
                 if(this.saveState == false){
                     console.log("TODO: Save here")
                     //this.saveState = true
@@ -63,6 +66,30 @@ export default class Editor {
         catch(err){
             error("Editor", "Failed to init editor: " + err.stack != undefined ? err.stack : err)
         }
+    }
+    
+    /**
+     * Attach math tools
+     * @param {HTMLElement} element 
+     */
+    attachTools(element){
+        if(element) this.toolAttachPoint = element
+        else element = this.toolAttachPoint
+        const dims = element.getBoundingClientRect()
+        const top = dims.top + dims.height
+        const left = dims.left + dims.width
+        const tools = document.getElementById("mathTools")
+        tools.style.display = "block"
+        tools.style.top = top + "px"
+        tools.style.left = (left - tools.getBoundingClientRect().width + 5) + "px"
+    }
+
+    /**
+     * Detach math tools
+     */
+    detachTools(){
+        const tools = document.getElementById("mathTools")
+        tools.style.display = "none"
     }
 
     /**
@@ -81,6 +108,7 @@ export default class Editor {
         this.mathFocus = this.maths[id].input
         window.setLatexCommandsVisibility(true)
         this.maths[id].input.reflow()
+        this.attachTools(this.maths[id].container)
     }
 
     /**
@@ -146,6 +174,8 @@ export default class Editor {
                 // Call the close event only once
                 if(this.maths[id].closed) return
                 this.maths[id].closed = true
+                // Detach tools
+                this.detachTools()
                 // If the latex input is empty remove the element
                 if(this.maths[id].input.latex() == ""){
                     this.maths[id].image.remove()
@@ -177,6 +207,7 @@ export default class Editor {
                 // Set UI stuff
                 window.setLatexCommandsVisibility(false)
                 this.mathFocus = null
+                console.log("Math unfocused")
             }
             // Onopen event - The change to live state (from rendered)
             img.setAttribute("onclick", "window.editor.reopen(\"" + id + "\")")
@@ -193,6 +224,7 @@ export default class Editor {
             this.mathFocus = latexInput
             // Set UI stuff
             window.setLatexCommandsVisibility(true)
+            this.attachTools(container)
             console.log("Done!")
             return id
 

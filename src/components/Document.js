@@ -2,12 +2,15 @@ import React from "react"
 import { useRef, useEffect } from "react"
 
 import "../css/editor.css"
+import "../css/tooltip.css"
 import Editor from "../js/editor/editor.js"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDownload } from "@fortawesome/free-solid-svg-icons"
 
 import Dropdown from "./Dropdown"
+
+import Export from "../js/export"
 
 
 export default function Document() {
@@ -16,17 +19,18 @@ export default function Document() {
 
     const exportDropdown = [
         {
+            text: "Tallenna leikepöydälle",
+            action: () => {alert("image-clipboard")}
+        },
+        {
             text: "Tallenna PDF",
-            action: () => {alert("moi")}
+            action: () => {Export("pdf")}
         },
         {
             text: "Tallenna kuvana",
-            action: () => {alert("moi")}
-        },
-        {
-            text: "Tallenna HTML",
-            action: () => {alert("moi")}
+            action: () => {Export("image")}
         }
+        
     ]
     // Editor result content is available inside resultRef, the answerRef is just an visual editor with extra stuff
 

@@ -3,6 +3,7 @@
 import "./css/main.css"
 import Document from "./components/Document"
 import Sidebar from "./components/Sidebar"
+import MathTools from "./components/MathTools"
 import EquationSidebar from "./components/EquationSidebar"
 import logo from "./assets/icon.svg"
 import { useEffect, useState } from "react"
@@ -31,7 +32,7 @@ function App() {
             //setfsLevel(instance.index)
         }
         catch(e){
-            console.error("[ APP] Failed to initialize filesystem")
+            console.error("[ APP ] Failed to initialize filesystem")
             console.debug(e)
         }
     }, [])
@@ -54,6 +55,7 @@ function App() {
                 )}
                 
             </div>
+            <MathTools></MathTools>
         </>
     )
 }
