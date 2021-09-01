@@ -9,11 +9,24 @@ import * as uuid from "../worker-components/uuid.js"
 export default class Editor {
     constructor(inputElement){
         this.input = inputElement
+        this.hasAnchors = null
         this.target = null
         this.maths = []
         this.toolAttachPoint = null
         this.saveState = false
         this.mathFocus = null
+    }
+
+    /**
+     * Enable/disable math elements as anchors
+     * @param {*} state 
+     */
+    setAnchor(state){
+        this.hasAnchors = state
+        for(const id in this.maths){
+            const math = this.maths[id]
+            math.container.contentEditable = state
+        }
     }
 
     /**
@@ -50,6 +63,53 @@ export default class Editor {
                     window.editor.mathFocus = null
                     this.createMath("", target)
                 }
+                // Use arrow keys to move into math elements
+                if(e.which === 37){ // Left
+                    // Quite the hacky way to make the containers valid anchors
+                    this.setAnchor(true)
+                    // We need to timeout for 10 ms here. It just needs to be done.
+                    setTimeout(() => {
+                        let node = document.getSelection().anchorNode
+                        node = (node.nodeType == 3 ? node.parentNode : node)
+                        if(node !== this.input && node.nodeName === "P"){
+                            // Move into math
+                            console.log("[ EDITOR ] Jumping to math...")
+                            const id = node.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
+                            node.firstChild.click()
+                            this.maths[id].input.moveToRightEnd()
+                            e.preventDefault()
+                        }
+                        for(const id in this.maths){
+                            const math = this.maths[id]
+                            math.container.contentEditable = true
+                        }
+                        this.setAnchor(false)
+                    }, 10)
+                }
+                if(e.which === 39){ // Right
+                    // Quite the hacky way to make the containers valid anchors
+                    this.setAnchor(true)
+                    // We need to timeout for 10 ms here. It just needs to be done.
+                    setTimeout(() => {
+                        let node = document.getSelection().anchorNode
+                        node = (node.nodeType == 3 ? node.parentNode : node)
+                        if(node !== this.input && node.nodeName === "P"){
+                            // Move into math
+                            console.log("[ EDITOR ] Jumping to math")
+                            const id = node.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
+                            node.firstChild.click()
+                            this.maths[id].input.moveToLeftEnd()
+                            e.preventDefault()
+                        }
+                        for(const id in this.maths){
+                            const math = this.maths[id]
+                            math.container.contentEditable = true
+                        }
+                        this.setAnchor(false)
+                    }, 10)
+                }
+
+                //console.debug("Key", e.which)
             })
             // Save listener
             this.input.oninput = async () => {
@@ -90,6 +150,19 @@ export default class Editor {
     detachTools(){
         const tools = document.getElementById("mathTools")
         tools.style.display = "none"
+    }
+
+    /**
+     * Get selection offset until an element
+     * @param {*} element 
+     */
+    getLengthUntil(element){
+        let total = 0
+        for(const node of this.input.childNodes){
+            if(element === node) break
+            total += 1
+        }
+        return total
     }
 
     /**
@@ -136,7 +209,7 @@ export default class Editor {
      */
     async createMath(latex, here){
         try {
-            console.log("Creating math...")
+            console.log("[ EDITOR ] Creating math...")
             // Create the elements
             let img = document.createElement("img")
             img.draggable = false
@@ -158,6 +231,21 @@ export default class Editor {
                     },
                     enter: async () => {
                         // TODO: Implement add new math input thingy here
+                    },
+                    moveOutOf: async (direction) => {
+                        this.maths[id].inputElement.children[0].children[0].blur()
+                        setTimeout(() => {
+                            const range = document.createRange()
+                            const sel = window.getSelection()
+                            let pos = this.getLengthUntil(this.maths[id].container)
+                            console.log("[ EDITOR ] Jumping out of math...")
+                            if(direction > 0) pos += 1 // Handle direction
+                            range.setStart(this.input, pos)
+                            range.collapse(true)
+                            sel.removeAllRanges()
+                            sel.addRange(range)
+                            this.input.focus()
+                        }, 10)
                     }
                 }
             })
@@ -207,7 +295,7 @@ export default class Editor {
                 // Set UI stuff
                 window.setLatexCommandsVisibility(false)
                 this.mathFocus = null
-                console.log("Math unfocused")
+                console.log("[ EDITOR ] Math unfocused")
             }
             // Onopen event - The change to live state (from rendered)
             img.setAttribute("onclick", "window.editor.reopen(\"" + id + "\")")
