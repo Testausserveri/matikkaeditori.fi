@@ -4,7 +4,15 @@
     padding: 3rem;
     font: 17px "Times New Roman";   
     line-height: 1.3;
+    word-break: break-all;
 }
+
+@media only screen and (max-width: 800px) {
+    .editor {
+        padding: 1rem;
+    }
+}
+
 .editor:focus {
     outline: none;
 }
