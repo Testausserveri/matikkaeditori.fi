@@ -262,7 +262,7 @@ class Filesystem {
                         name: data.name ?? json.name,
                         date: new Date().getTime()
                     }
-                    if(data.type ?? json.type === 0){
+                    if((data.type ?? json.type) === 0){
                         const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
                         const sha1 = await hashInstance.sha1()
                         base.checksum = sha1
