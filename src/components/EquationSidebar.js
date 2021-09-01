@@ -49,7 +49,15 @@ SymbolGroup.propTypes = {
     hidden: PropTypes.any
 }
 
-export default function EquationSidebar() {
+export function MobileEquationToolbar() {
+    return (
+        <div className="mobileToolbar">
+            jjkjk
+        </div>
+    )
+}
+
+export function EquationSidebar() {
     const [latexCommandsVisible, setLatexCommandsVisible] = useState(false)
     useEffect(() => {
         window.setLatexCommandsVisibility = function (state) {

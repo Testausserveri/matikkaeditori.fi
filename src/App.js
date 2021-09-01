@@ -3,8 +3,9 @@
 import "./css/main.css"
 import Document from "./components/Document"
 import Sidebar from "./components/Sidebar"
-import EquationSidebar from "./components/EquationSidebar"
+import { EquationSidebar, MobileEquationToolbar } from "./components/EquationSidebar"
 import logo from "./assets/icon.svg"
+import PropTypes from "prop-types"
 import { useEffect, useState } from "react"
 import useWindowDimensions from "./utils/useWindowDimensions"
 
@@ -44,6 +45,51 @@ function loadFilesystem() {
         }
     })
 }
+
+function DesktopView({newDocument, level, selectedItem, openItem}) {
+    return (
+        <>
+            <Sidebar newDocument={newDocument} level={level} selectedItem={selectedItem} openItem={openItem} />
+            <Document />
+            <EquationSidebar />
+        </>
+    )
+}
+
+function MobileView({newDocument, level, selectedItem, openItem}) {
+    // 0: file tree
+    // 1: editor
+    // 2: equations
+    const [viewState] = useState(1)
+
+    switch (viewState) {
+    case 0:
+        return (
+            <>
+                <Sidebar style={{flex: "1"}} newDocument={newDocument} level={level} selectedItem={selectedItem} openItem={openItem} />
+            </>
+        )
+    case 1:
+        return (
+            <>
+                <Document />
+                <MobileEquationToolbar />
+            </>
+        )
+    }
+    
+}
+
+const viewPropTypes = {
+    newDocument: PropTypes.func,
+    level: PropTypes.object,
+    selectedItem: PropTypes.string,
+    openItem: PropTypes.func
+}
+MobileView.propTypes = viewPropTypes
+DesktopView.propTypes = viewPropTypes
+
+
 function App() {
     // Return base page
     const [fsLevel, setfsLevel] = useState({})
@@ -70,15 +116,9 @@ function App() {
             </div>
             <div className="app">
                 {(windowWidth > 800 ?
-                    <>
-                        <Sidebar newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} openItem={setSelectedItem} />
-                        <Document />
-                        <EquationSidebar />
-                    </>
+                    <DesktopView newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} openItem={setSelectedItem} />
                     :
-                    <>
-                        <Sidebar style={{flex: "1"}} newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} openItem={setSelectedItem} />
-                    </>
+                    <MobileView newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} openItem={setSelectedItem} />
                 )}
                 
             </div>
