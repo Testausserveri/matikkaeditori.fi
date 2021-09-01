@@ -123,6 +123,7 @@ class Filesystem {
     async writeToIndex(id, data){
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
+            if(id === undefined) id = true // Default is root
             console.log("[ Filesystem ] Preparing index update...")
             console.debug("[ Filesystem ] Index snapshot before update:", this.index)
             console.debug("[ Filesystem] Index entry identifier:", id, "data:", data)
@@ -131,7 +132,7 @@ class Filesystem {
                 console.debug("[ Filesystem ] Writing to index root...")
                 let replaced = false
                 for(let i = 0; i < this.index.length; i++){
-                    if(this.index[i].id === id) {
+                    if(this.index[i].id === data.id) {
                         replaced = true
                         this.index[i] = data
                     }
@@ -147,7 +148,18 @@ class Filesystem {
                             replaced = true
                             tree[i] = data
                         }else if(tree[i].t === 1){
-                            find(tree[i].d, id)
+                            if(tree[i].i === id){
+                                // Replace?
+                                for(let ii = 0; ii < tree[i].d.length; ii++){
+                                    if(tree[i].d[ii].id === data.id){
+                                        replaced = true
+                                        tree[i].d[ii] = data
+                                    }
+                                }
+                                if(!replaced) tree[i].d.push(data)
+                            }else {
+                                find(tree[i].d, id)
+                            }
                         }
                     }
                 }
@@ -161,6 +173,64 @@ class Filesystem {
             console.log("[ Filesystem ] Index update completed successfully.")
             resolve()
         })
+    }
+
+    /**
+     * Resolve a specific part of the index and return it
+     * @param {*} id 
+     */
+    async resolveFromIndex(id){
+        if(id === true) return this.index
+        const looper = tree => {
+            for(const entry of tree){
+                if(entry.i === id) return entry
+                if(entry.t === 1){
+                    const l = looper(entry.d)
+                    if(l !== null) return l
+                }
+            }
+            return null
+        }
+        return looper(this.index)
+    }
+
+    /**
+     * Remove a specific part of the index
+     * @param {*} id 
+     */
+    async removeFromIndex(id){
+        if(id === true) return this.index
+        const looper = tree => {
+            for(const entry of tree){
+                if(entry.i === id) {
+                    // Note: Do we need to edit this
+                    entry = undefined
+                    return true
+                }
+                if(entry.t === 1){
+                    const l = looper(entry.d)
+                    if(l !== null) return
+                }
+            }
+            return null
+        }
+        return looper(this.index)
+    }
+
+    /**
+     * Limit tree level for data delivery
+     * @param {*} tree 
+     * @param {*} level 
+     */
+    async limitTreeLevel(tree, level){
+        const checker = (tree, currentLevel) => {
+            if(!currentLevel) currentLevel = 1
+            for(const entry of tree){
+                if(entry.t === 1 && level >= currentLevel) checker(entry.d, ++currentLevel)
+            }
+        }
+        checker(tree)
+        return tree
     }
 
     /**
@@ -190,19 +260,58 @@ class Filesystem {
                     }
                     const base = {
                         name: data.name ?? json.name,
-                        data: data.data ?? json.data,
-                        date: new Date().getTime(),
-                        checksum: null
+                        date: new Date().getTime()
                     }
-                    const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
-                    const sha1 = await hashInstance.sha1()
-                    base.checksum = sha1
+                    if(data.type ?? json.type === 0){
+                        const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
+                        const sha1 = await hashInstance.sha1()
+                        base.checksum = sha1
+                        base.data = data.data ?? json.data
+                    }
                     console.debug("[ Filesystem ] Write task base:", base)
                     await localForage.setItem(id ?? json.id, JSON.stringify(base))
                     // Update index
-                    await this.writeToIndex(location, { t: data.type ?? json.type, i: id ?? json.id })
+                    let indexBase = { t: data.type ?? json.type, i: id ?? json.id }
+                    // TODO: This has to be redone to support moving folders and their contents
+                    if(data.type === 1) indexBase.d = [] // Note: Do not specify when editing folders
+                    const isInIndex = await this.resolveFromIndex(id ?? json.id)
+                    if(!isInIndex){
+                        await this.writeToIndex(location, indexBase)
+                    }
                     console.log("[ Filesystem ] Write task completed successfully.")
                     resolve()
+                }
+                }
+            }
+            catch(e){
+                reject("Failed to write: " + e.stack)
+            }
+        })
+    }
+
+    /**
+     * Remove answer
+     * @param {*} id 
+     */
+    async remove(id){
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async(resolve, reject) => {
+            try {
+                switch(this.type){
+                /**
+                 * -----------------------------------------------
+                 * Implement filesystem deletion for each type here
+                 * -----------------------------------------------
+                 */
+                case 0: {
+                    console.log("[ Filesystem ] Preparing delete task...")
+                    // Remove from database
+                    if(await localForage.getItem(id) !== null) await localForage.removeItem(id)
+
+                    // Remove from index
+                    const 
+
+                    break
                 }
                 }
             }
@@ -306,7 +415,13 @@ com.onMessage.addEventListener("message", async e => {
     case "index": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
         if(!instance) return com.send("error", "No such filesystem instance")
-        com.send("callback", { index: instance.index })
+        if(e.content.id && e.content.level){
+            const resolved = await instance.resolveFromIndex(e.content.id)
+            const limited = await instance.limitTreeLevel(resolved, e.content.level)
+            com.send("callback", { index: limited, id: e.id })
+        }else {
+            com.send("callback", { index: instance.index, id: e.id })
+        }   
         break
     }
     default:

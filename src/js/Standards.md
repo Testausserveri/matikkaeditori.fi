@@ -62,6 +62,7 @@ const instance = await window.internal.workers.api("Filesystem", "init", { fs_ty
 
 Write to the filesystem:
 <br>Note: "True" is the filesystem root
+
 ```js
 const write_action = await window.internal.workers.api("Filesystem", "write", { id: "<file id, UUID v4>", content: {
     ?name: "<name>",
