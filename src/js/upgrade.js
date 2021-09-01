@@ -8,5 +8,10 @@ export default {
     "beta": async function () {
         // Nothing to convert
         return true
+    },
+    "3.0.0": async function () {
+        // Convert from legacy
+        alert("You cannot yet use v3 with legacy saves.")
+        window.location.reload()
     }
 }
