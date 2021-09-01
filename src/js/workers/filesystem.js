@@ -309,8 +309,9 @@ class Filesystem {
                     if(await localForage.getItem(id) !== null) await localForage.removeItem(id)
 
                     // Remove from index
-                    const 
-
+                    if(await this.resolveFromIndex(id)) await this.removeFromIndex(id)
+                    
+                    resolve(true)
                     break
                 }
                 }
@@ -410,6 +411,13 @@ com.onMessage.addEventListener("message", async e => {
     }
     case "callback": {
         // Ignore these. (Handled by com.js)
+        break
+    }
+    case "delete": {
+        const instance = this_worker.shared.filesystem_instances[e.content.instance]
+        if(!instance) return com.send("error", "No such filesystem instance")
+        await instance.delete(e.content.id)
+        com.send("callback", { id: e.id })
         break
     }
     case "index": {
