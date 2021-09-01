@@ -201,7 +201,7 @@ class Filesystem {
     async removeFromIndex(id){
         if(id === true) return this.index
         const looper = tree => {
-            for(const entry of tree){
+            for(let entry of tree){
                 if(entry.i === id) {
                     // Note: Do we need to edit this
                     entry = undefined
