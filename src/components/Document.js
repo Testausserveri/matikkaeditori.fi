@@ -20,7 +20,7 @@ export default function Document() {
     const exportDropdown = [
         {
             text: "Tallenna leikepöydälle",
-            action: () => {alert("image-clipboard")}
+            action: () => {Export("image-clipboard")}
         },
         {
             text: "Tallenna PDF",

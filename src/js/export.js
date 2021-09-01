@@ -29,6 +29,7 @@ async function saveAs(url, filename){
  * @param {*} format 
  */
 export default async function (format){
+    // TODO: Implement watermark
     switch(format){
     case "image-clipboard": {
         const canvas = await html2canvas(document.getElementById("editor-element"), { useCORS: true })
@@ -56,7 +57,7 @@ export default async function (format){
     case "pdf": {
         html2pdf(document.getElementById("editor-element"), {
             margin: 10,
-            filename: "vastaus.pdfs",
+            filename: "vastaus.pdf",
             html2canvas:  { useCORS: true }
         })
         break
