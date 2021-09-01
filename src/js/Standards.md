@@ -19,7 +19,7 @@
 ```js
 { 
     type: "<command/task name>",
-    content: {...} | "...", // Any data to be passed to the command/task.
+    content: {...} || "...", // Any data to be passed to the command/task.
     id: "<uuid>" // UUIDv4 that will be sent back to the worker in the execution confirmation message
 }
 ```
@@ -44,6 +44,40 @@ The workers.js script will implement these commands in it's API for workers to u
     - 2: Private external
 
 ## Messaging API
+The filesystem worker implements these base messaging API features:
+<br>
+Note: Location "true" is root!
+<br>
+- "init", creates a new filesystem instance. Returns ``{ instance: "<instance id>, index: <fs index> }``. Takes ``{ type: "<fs type>"}`` as input.
+<br>
+- "read", read data from a filesystem instance. Returns ``{ read: "<fs data>" }``. Takes ``{ instance: "<fs instance id>", id: "<fs entry id>"}`` as input.
+<br>
+- "write", write data to the database. Returns nothing. Takes ``{ instance: "<fs instance id>", id: "<fs entry id>", location: "<fs location>" }`` 
+
+### Example usages
+Start the filesystem:
+```js
+const instance = await window.internal.workers.api("Filesystem", "init", { fs_type: 0 })
+```
+
+Write to the filesystem:
+<br>Note: "True" is the filesystem root
+```js
+const write_action = await window.internal.workers.api("Filesystem", "write", { id: "<file id, UUID v4>", content: {
+    ?name: "<name>",
+    ?data: "<data>",
+}, instance: "<instance ID, returned by instance creation>", location: "<id/true>" })
+```
+
+Read from the filesystem:
+```js
+const answer = await window.internal.workers.api("Filesystem", "write", { id: "<file id, UUID v4>", instance: "<instance ID, returned by instance creation>" })
+```
+
+Read the index:
+```js
+const index = await window.internal.workers.api("Filesystem", "index", { instance: "<instance ID, returned by instance creation>" })
+```
 
 ## Storage format
 Data is stored in 2 parts. In "the index" and in the "dump". The index contains the folder structure information of where files are located and the dump is a raw json tree with data fields with keys as uuids of folders/files referred by the index.
@@ -77,10 +111,14 @@ Data in the dump will also be stored in a JSON tree. No type field for the entri
     "<uuid>": {
         date: "<epoch time>",
         name: "<entry name>",
-        data: "<raw document data>"
+        data: "<raw document data>",
+        checksum: "<sha1>"
     }
 }
 ```
 
 ### Checksums and raw storage format
 All forms of data storage are required to include checksums for both the index and the dump. For data validation and safety. The reason for this is to warn the user of possible tampering with their data and notify them that the data loaded may be corrupt and cause unexpected issues. The storage for these checksums will be type specific, but it's recommended to store the in the same place as the data itself.
+
+# Upgrade standard
+Upgrading of save versions to the latest version is handled by "upgrade.js". To create an upgrade handler, define a function with the current latest version name in "upgrade.js". Then modify the version field in window.internal

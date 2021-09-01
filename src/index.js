@@ -7,9 +7,12 @@ import App from "./App"
 // Import static components
 import * as c from "./js/worker-components/compatibility.js"
 import error from "./js/error.js"
+import upgrade from "./js/upgrade.js"
 import * as Workers from "./js/workers.js"
 // eslint-disable-next-line no-unused-vars
 import * as uuid from "./js/worker-components/uuid.js" // This is used globally, not here though
+import C from "./js/console"
+import { console_config } from "./js/console"
 
 // Global handler
 function G(){
@@ -18,40 +21,26 @@ function G(){
     window.internal = {
         workers: {
             list: {},
-            components: [
-                // List of files loadable by workers in src/js/worker-components
-                "compress.js",
-                "export.js",
-                "google-drive.js",
-                "hash.js",
-                "onedrive.js",
-                "uuid.js"
-            ],
             handlers: {},
             shared: {},
             api: Workers.api
         },
-        ui: {},
-        console: {
-            list: [
-                // These values will be put behind a wrapper for log collection
-                "log",
-                "error",
-                "info",
-                "trace",
-                "warn"
-            ],
-            cache: {},
-            logs: []
-        },
+        console: console_config(),
         time_at_live: new Date().getTime(), // Time since code first started to run
-        bundle: null
+        /**
+         * --------------------------------------------------
+         * Very important version field!
+         * CHANGE TO HANDLE BREAKING CHANGES VIA "upgrade.js"
+         * --------------------------------------------------
+         */
+        version: "beta"
     }
-    // Public libs
-    window.public = {
-        uuid: uuid,
-        Workers: Workers
-    }
+
+    // Promise for UI to wait before doing anything
+    window.internal.workers.essentials = new Promise((resolve) => {
+        window.internal.workers.essentialsResolve = resolve
+    })
+
     // User ID
     let id = localStorage.getItem("id")
     if(id == null){
@@ -59,41 +48,32 @@ function G(){
     }
     localStorage.setItem("id", id)
     window.id = id // This is used to salt all filesystem verity hashes. When cloud saves are implemented, this needs to be exported in to the cloud save location.
-    // Run the console component here
-    C()
-}
 
-/**
- * Console wrapper to collect logs to an internal variable.
- * By: @Esinko (11.02.2021)
- */
-function C(){
-    //let e = console.log
-    //console["log"] = (s) => {
-    //    e(s, "e")
-    //} 
-    // Redefine all the functions
-    for(let func of window.internal.console.list){
-        window.internal.console.cache[func] = console[func]
-        console[func] = (...args) => {
-            // Apply colors
-            if(args[0] != undefined && typeof args[0].startsWith == "function" && args[0].startsWith("[") && args[0].includes("]")){
-                let args0 = args[0].split("]")[0] + "]"
-                args[0] = args[0].split("]")[1]
-                args0 = "%c" + args0
-                if(args[0] != ""){
-                    args[0] = args[0].trimLeft()
-                    args.splice(0,0,"")
-                }
-                //window.internal.console.cache[func](args, args.length)
-                window.internal.console.cache[func](args0+"%s", "color: limegreen;", ...args)
-            }else {
-                // Execute the actual function from cache
-                window.internal.console.cache[func](...args)
-            }
-            // Write the data to the cache
-            // TODO: Parse css (style) code from the args?
-            window.internal.console.logs.push("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ]", ...args)
+    // Handle version upgrades
+    const current_version = localStorage.getItem("version")
+    if(current_version !== null){
+        if(current_version !== window.internal.version){
+            upgrade[current_version]().then(() => {
+                console.log("Upgraded to " + window.internal.version)
+                // Run the console component here
+                C()
+                return
+            }).catch(e => {
+                error("Index", "Failed to upgrade: " + e.stack)
+            }) 
+        }else {
+            console.log("No upgrades to be done.")
+            C()
+            return
+        }
+    }else {
+        // Version is null
+        if(localStorage.length > 1){
+            error("Index", "Version is null!")
+        }else {
+            localStorage.setItem("version", window.internal.version)
+            C()
+            return
         }
     }
 }
@@ -107,6 +87,7 @@ window.reset = async function () {
     let cookies = document.cookie
     for (let i = 0; i < cookies.split(";").length; ++i){
         let myCookie = cookies[i]
+        if(myCookie == undefined) continue
         let pos = myCookie.indexOf("=")
         let name = pos > -1 ? myCookie.substr(0, pos) : myCookie
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT"
@@ -117,6 +98,13 @@ window.reset = async function () {
         window.location.reload()
     })
 }
+
+// Implement embedded worker api
+window.api = async (worker, type, message) => {
+    const req = await window.internal.workers.api(worker, type, message)
+    console.log("Response:", req)
+}
+
 /* eslint-enable no-unused-vars */
 
 try {

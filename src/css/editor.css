@@ -20,7 +20,65 @@
     display: inline-block;
     margin-top: 0px;
     margin-bottom: 0px;
+    margin-left: 5px;
+    margin-right: -5px;
 }
+
+.mathContainer.open {
+    box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.226);
+    border-color: #709AC0;
+    border-radius: 1px;
+    width: 100%;
+    margin: 5px;
+    padding: 8px;
+    font-size: 100%;
+    margin: 0;
+}
+
+.mathTools {
+    display: none;
+    width: calc(30px * 3 + 5px);
+    height: 32px;
+    position: absolute;
+    margin-top: 1px;
+}
+
+.mathTools ul {
+    list-style: none;
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+.mathTools ul li {
+    position: relative;
+    background-color: #edf9ff;
+    border-radius: 1px;
+    width: 30px;
+    height: 30px;
+    margin: 0px;
+    padding: 0px;
+    display: block;
+    float: left;
+    box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.226);
+    text-align: center;
+    justify-content: center;
+    line-height: 30px;
+    transition: margin-top 0.2s, z-index 0.2s;
+    z-index: 8;
+    cursor: pointer;
+}
+
+.mathTools ul li:hover {
+    margin-top: 1px;
+    z-index: 10;
+}
+
+.mathTools ul li svg {
+    color: #709AC0;
+}
+
 .mathContainer.closed img {
     display: inline-block;
     vertical-align: middle;
@@ -35,16 +93,6 @@
     border: 1px solid #d5e0e5;
     background-color: #edf9ff;
     border-radius: 1px;
-}
-
-.mathContainer.open {
-    box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.2);
-    border-color: #709AC0;
-    border-radius: 1px;
-    width: 100%;
-    padding: 8px;
-    font-size: 100%;
-    margin: 0;
 }
 
 .mathContainer.open + br {

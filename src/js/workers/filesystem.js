@@ -1,449 +1,315 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-async-promise-executor */
+/*global importScripts */
 /**
- * This is the main filesystem worker. It handles all filesystem interactions.
- * 
+ * Main filesystem worker made to handle all tasks related to answer saving.
+ * Uses LocalForage to store data in the browsers indexDB while automatically
+ * falling back to normal local storage when required.
  * By: @Esinko
  */
+
+// 3rd-party internal dependencies
+import * as Comlink from "comlink"
+
+// 3rd-party external dependencies
 importScripts(["/3rd-party/localforage.js"])
-// Worker memory
-var wo = {
-    instances: {},
-    libs: {},
-    vals: {},
-    ready: false,
-    libsNro: null,
-    confirmHandler: null,
-    readyHandlers: []
+// eslint-disable-next-line no-undef
+const localForage = localforage
+
+// Internal dependencies
+import * as uuid from "../worker-components/uuid.js"
+import hash from "../worker-components/hash.js"
+import com from "../worker-components/com.js"
+import C from "../console"
+
+// Configure console
+C()
+
+// Comlink configuration
+const this_worker = {
+    init: async function () {
+        // For now nothing needs to be here
+        this_worker.shared.ready = true
+        com.s
+        return true
+    },
+    shared: {
+        ready: false,
+        filesystem_instances: {},
+        id: null // Modified by "workers.js"
+    }
 }
+Comlink.expose(this_worker)
+
 // Main class
 /**
- * The filesystem
+ * Filesystem class
  */
 class Filesystem {
     /**
-     * Create a new instance of the filesystem
-     * @param {Number} type The filesystem type 0-2
+     * Create a new filesystem instance
+     * @param {number} type Filesystem type ID
      */
     constructor(type){
-        this.type = parseInt(type)
-        this.id = wo.libs.uuid.v4()
-        // FS
-        this.index = []
-        this.data = {}
+        this.type = parseInt(type) // Force int
+        this.id = uuid.v4()
+        // Instance memory
+        this.index = [] // Index contains the structure
+        this.data = {} // Data is one huge dump of id = <data>
+        this_worker.shared.filesystem_instances[this.id] = this
     }
 
     /**
-     * Validate save metadata, such as verity keys
-     * @param {*} metadata 
-     * @param {*} callback
+     * Validate checksum for a string
      */
-    async validate(metadata, callback){
-        try {
-            //let example = {
-            //    key: "verity_key, this is the verity key for the index",
-            //    index: [
-            //        {name: "Kansio", id: "uuid", type: 0, edited: "EPOCH time", index: [
-            //            // Recursion of basic entries
-            //        ]},
-            //        {name: "File", id: "uuid, also the entry name of the data", type: 1, edited: "EPOCH time", key: "verity_key, this is the verity key for the data"}
-            //    ] // Filesystem index
-            //}
-            // Verify input
-            if (
-                metadata.key != undefined &&
-                typeof metadata.key == "string" &&
-                metadata.index != undefined &&
-                Array.isArray(metadata.index)
-            ){
-                // Input is valid, verify the verity of the index
-                let generated = new wo.libs.hash(JSON.stringify(metadata.index) + "-" + wo.vals.id)
-                generated = await generated.sha1()
-                if(generated == metadata.key){
-                    // Metadata is valid
-                    callback(true)
-                } else {
-                    callback(false)
+    async validate(string, checksum){
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
+            try {
+                const _hash = new hash(string)
+                const sha1 = await _hash.sha1() // Is this enough?
+                console.debug("[ Filesystem ] Checksum calculation", string, checksum, sha1)
+                if(checksum === sha1){
+                    resolve(true)
+                }else {
+                    resolve(false)
                 }
-            } else {
-                callback(false)
             }
-        }
-        catch(err){
-            send("error", null, "Metadata validation failed: " + err.stack != undefined ? err.stack : err)
-        }
+            catch(e){
+                reject("Failed to validate checksum: " + e.stack)
+            }
+        })
     }
-    
+
+    /**
+     * Read data from the dump
+     * @param {*} id 
+     */
+    async read(id){
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
+            try {
+                switch(this.type){
+                /**
+                 * -----------------------------------------------
+                 * Implement filesystem reading for each type here
+                 * -----------------------------------------------
+                 */
+                case 0: {
+                    console.debug("[ Filesystem ] Preparing read task...")
+                    const json = JSON.parse(await localForage.getItem(id))
+                    console.debug("[ Filesystem ] Read raw data:", json)
+                    console.debug("[ Filesystem ] Validating checksum...") 
+                    const isValid = await this.validate(JSON.stringify({name: json.name, data: json.data, date: json.date}), json.checksum)
+                    if(isValid){
+                        console.debug("[ Filesystem ] Checksum valid, read task concluded successfully.")
+                        resolve(json)
+                    }else {
+                        // TODO: Handle this better
+                        reject("Failed to validate")
+                    }
+                }
+                }
+            }
+            catch(e){
+                reject("Failed to read: " + e.stack)
+            }
+        })
+    }
+
+    /**
+     * Write data to the index
+     * @param {*} id if true --> root
+     * @param {*} data 
+     */
+    async writeToIndex(id, data){
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
+            console.log("[ Filesystem ] Preparing index update...")
+            console.debug("[ Filesystem ] Index snapshot before update:", this.index)
+            console.debug("[ Filesystem] Index entry identifier:", id, "data:", data)
+            if(id === true){
+                // In root
+                console.debug("[ Filesystem ] Writing to index root...")
+                let replaced = false
+                for(let i = 0; i < this.index.length; i++){
+                    if(this.index[i].id === id) {
+                        replaced = true
+                        this.index[i] = data
+                    }
+                }
+                if(!replaced) this.index.push(data)
+            }else {
+                // In folder
+                console.debug("[ Filesystem ] Writing to folder...")
+                let replaced = false
+                const find = (tree, id) => {
+                    for(let i = 0; i < tree.length; i++){
+                        if(tree[i].t === 0 && tree[i].id === id) {
+                            replaced = true
+                            tree[i] = data
+                        }else if(tree[i].t === 1){
+                            find(tree[i].d, id)
+                        }
+                    }
+                }
+                find(this.index, id)
+                if(!replaced) reject("Cannot find such location")
+            }
+            const hashSession = new hash(this.index)
+            console.debug("[ Filesystem] Index after update:", this.index)
+            await localForage.setItem("matikkaeditori-checksums", JSON.stringify(await hashSession.sha1()))
+            await localForage.setItem("matikkaeditori-index", JSON.stringify(this.index))
+            console.log("[ Filesystem ] Index update completed successfully.")
+            resolve()
+        })
+    }
+
+    /**
+     * Write data to the dump
+     * @param {*} id 
+     * @param {*} data
+     * @param {*} location
+     */
+    async write(id, data, location){
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async(resolve, reject) => {
+            try {
+                switch(this.type){
+                /**
+                 * -----------------------------------------------
+                 * Implement filesystem writing for each type here
+                 * -----------------------------------------------
+                 */
+                case 0: {
+                    console.log("[ Filesystem ] Preparing write task...")
+                    let json = JSON.parse(await localForage.getItem(id))
+                    if(json === null) {
+                        console.debug("[ Filesystem ] No previous entry found.")
+                        json = {
+                            id: id ?? uuid.v4() // Generate id if new object
+                        }
+                    }
+                    const base = {
+                        name: data.name ?? json.name,
+                        data: data.data ?? json.data,
+                        date: new Date().getTime(),
+                        checksum: null
+                    }
+                    const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
+                    const sha1 = await hashInstance.sha1()
+                    base.checksum = sha1
+                    console.debug("[ Filesystem ] Write task base:", base)
+                    await localForage.setItem(id ?? json.id, JSON.stringify(base))
+                    // Update index
+                    await this.writeToIndex(location, { t: data.type ?? json.type, i: id ?? json.id })
+                    console.log("[ Filesystem ] Write task completed successfully.")
+                    resolve()
+                }
+                }
+            }
+            catch(e){
+                reject("Failed to write: " + e.stack)
+            }
+        })
+    }
+
     /**
      * Initialize the filesystem
      */
     async init(){
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
-            // Validate filesystem type
-            if(typeof this.type == "number" && (this.type == 0 || this.type <= 2)){
-                send("log", null, "Creating filesystem instance (type: " + this.type + ")")
-                switch(this.type){
-                case 0:
-                    try {
-                        let metadata = await localforage.getItem("matikkaeditori-metadata")
-                        if(metadata != null){
-                            metadata = JSON.parse(metadata)
-                            this.validate(metadata, async res => {
-                                if(res){
-                                    send("log", null, "Metadata validated!")
-                                    this.index = metadata.index
-                                    resolve()
-                                }else {
-                                    send("log", null, "Unable to verify metadata verity...")
-                                    handleConfirm("Unable to verify save verity, are you sure you want to load it?", async res => {
-                                        if(res){
-                                            this.index = res.index
-                                            resolve()
-                                        }else {
-                                            send("error", null, "Interrupted init")
-                                        }
-                                    })
-                                }
-                            })
-                        }else {
-                            // Create the save
-                            localforage.setItem("matikkaeditori-metadata", JSON.stringify({
-                                key: null,
-                                index: []
-                            }))
-                            this.index = []
-                            let uuid = await this.create([], "Tervetuloa!", 1)
-                            await this.write([], uuid, "Tervetuloa!", [
-                                {text: "Tervetuloa käyttämään matikkaeditori.fi-palvelua!"},
-                                {math: "1+1=2"}
-                            ])
-                            resolve()
-                        }
-                    }
-                    catch(err){
-                        send("error", null, "Failed to create instance: " + err.stack != undefined ? err.stack : err)
-                    }
-                    break
-                case 1:
-
-                    break
-                case 2:
-
-                    break
-                }
-            } else {
-                reject("Unknown filesystem type (" + this.type + ")")
-            }
-        })
-    }
-
-    /**
-     * Resolve a path in the fs
-     * @param {String} path UUID path
-     */
-    async resolve(path){
-        try {
-            if (!Array.isArray(path)) throw "Invalid input"
-            if (path.length == 0){
-                // This is the root
-                return this.index
-            } else {
-                let tmp = this.index
-                for(let dir of path){
-                    let ntmp = null
-                    for(let entry of tmp){
-                        if (entry.uuid == dir && entry.type == 0){ // Only folders allowed
-                            ntmp = entry
-                        }
-                    }
-                    tmp = ntmp
-                    if (tmp == null) break // No such path
-                }
-                return tmp
-            }
-        }
-        catch(err){
-            send("error", null, "Failed to resolve: " + err.stack != undefined ? err.stack : err)
-        }
-    }
-
-    /**
-     * Sync metadata to the save location
-     */
-    async syncMetadata(){
-        try {
-            switch(this.type){
-            case 0:
-                // eslint-disable-next-line no-case-declarations
-                let hash = new wo.libs.hash(JSON.stringify(this.index) + "-" + wo.vals.id)
-                hash = await hash.sha1()
-                await localforage.setItem("matikkaeditori-metadata", JSON.stringify({
-                    key: hash,
-                    index: this.index
-                }))
-                break
-            case 1:
-
-                break
-            case 2:
-
-                break
-            }
-        }
-        catch(err){
-            throw "Failed to sync metadata: " + err.stack != undefined ? err.stack : err
-        }
-    }
-
-    /**
-     * Write data to the filesystem
-     */
-    async write(path, uuid, data){
-        return new Promise(async (resolve) => {
             try {
-                let dir = await this.resolve(path)
-                if (dir != null){
-                    let e = null
-                    for(let entry of dir){
-                        if(entry.uuid == uuid){
-                            e = entry
+                switch(this.type){
+                /**
+                 * ------------------------------------------------------
+                 * Implement filesystem initialization for each type here
+                 * ------------------------------------------------------
+                 */
+                case 0: {
+                    let index = await localForage.getItem("matikkaeditori-index")
+                    let checksums = await localForage.getItem("matikkaeditori-checksums")
+
+                    if(index !== null && checksums !== null){
+                        index = JSON.parse(index)
+                        checksums = JSON.parse(checksums)
+                        const index_is_valid = await this.validate(index, checksums)
+                        if(!index_is_valid){
+                            const load = await com.send("confirm", "Someone may have tampered with index data or it may be corrupt. Would you like to load it?")
+                            if(!load) reject("Filesystem initialization aborted.")
                         }
-                    }
-                    if (e != null){
-                        switch(this.type){
-                        case 0:
-                            // eslint-disable-next-line no-case-declarations
-                            let data_ = await localforage.getItem(uuid)
-                            if (data_ != null){
-                                let key = new wo.libs.hash(JSON.stringify(data) + "-" + wo.vals.id)
-                                key = await key.sha1()
-                                await localforage.setItem(uuid, {
-                                    key: key,
-                                    data: data
-                                })
-                                e.edited = new Date().getTime()
-                                await this.syncMetadata()
-                                resolve()
-                            } else {
-                                throw "Data entry missing for " + uuid
+                        this.index = index
+                        resolve()
+                    }else {
+                        const create = await com.send("confirm", "No save data exists or it cannot be loaded. Would you like to create a new save?")
+                        if(create){
+                            // TODO: Create index & example file
+                            const exampleId = uuid.v4()
+                            const exampleFile = {
+                                name: "Welcome!",
+                                date: new Date().getTime(),
+                                data: "Welcome to Matikkaeditori.fi!",
+                                checksum: null,
+                                type: 0
                             }
-                            break
-                        case 1:
-    
-                            break
-                        case 2:
-    
-                            break
+                            const hashSession = new hash({name: exampleFile.name, data: exampleFile.data, date: exampleFile.date })
+                            exampleFile.checksum = await hashSession.sha1()
+                            await this.write(exampleId, exampleFile, true) // Root is true
+                            console.log("Example file created")
+                            resolve()
+                        }else {
+                            reject("Filesystem initialization aborted.")
                         }
-                    } else {
-                        throw "Entry does not exist"
                     }
-                } else {
-                    throw "No such directory"
+                }
                 }
             }
-            catch(err){
-                send("error", null, "Unable to write: " + err.stack != undefined ? err.stack : err)
+            catch(e){
+                reject("Failed to initialize filesystem: \n" + e.stack)
+                console.debug(e)
             }
         })
     }
-
-    /**
-     * Read data
-     * @param {*} path 
-     * @param {*} uuid
-     */
-    async read(path, uuid){
-        try {
-            let dir = await this.resolve(path)
-            if (dir != null){
-                let e = null
-                for(let entry of dir){
-                    if(entry.uuid == uuid){
-                        e = entry
-                        break
-                    }
-                }
-                if(e != null){
-                    switch(this.type){
-                    case 0:
-                        // eslint-disable-next-line no-case-declarations
-                        let data = JSON.parse(await localforage.getItem(uuid))
-                        // Check data verity
-                        // eslint-disable-next-line no-case-declarations
-                        let hash = new wo.libs.hash(JSON.stringify(data.data) + "-" + wo.vals.id)
-                        hash = await hash.sha1()
-                        if(hash == data.key){ // Check the hash
-                            return data.data
-                        }else {
-                            handleConfirm("Unable to verify entry verity, are you sure you want to load it?", async res => {
-                                if(res){
-                                    return data.data
-                                }else {
-                                    throw "Interrupted"
-                                }
-                            })
-                        }
-                        return data
-                    case 1:
-
-                        break
-                    case 2:
-
-                        break
-                    }
-                } else {
-                    throw "Entry does not exist"
-                }
-            } else {
-                throw "No such directory"
-            }
-        }
-        catch(err){
-            send("error", null, "Unable to read")
-        }
-    }
-
-    /**
-     * Create a new
-     * @param {*} path 
-     * @param {*} name 
-     */
-    async create(path, name, type){
-        try {
-            let dir = await this.resolve(path)
-            if (dir != null){
-                let metadata = {
-                    name: name,
-                    uuid: wo.libs.uuid.v4(),
-                    edited: new Date().getTime(),
-                    type: type
-                }
-                send("log", null, metadata)
-                // Create the data entry
-                switch(this.type){
-                case 0:
-                    await localforage.setItem(metadata.uuid, JSON.stringify({
-                        key: null,
-                        data: []
-                    }))
-                    break
-                case 1:
-
-                    break
-                case 2:
-
-                    break
-                }
-                dir.push(metadata)
-                await this.syncMetadata()
-                return metadata.uuid
-            } else {
-                throw "No such directory"
-            }
-        }
-        catch(err){
-            send("error", null, "Failed to create: " + err)
-        }
-    }
 }
 
-// Message handlers
-async function send(type, id, ...msg){
-    for(let i = 0; i < msg.length; i++){
-        postMessage(JSON.stringify({type:type,id:id,content:msg[i]}))
+com.onMessage.addEventListener("message", async e => {
+    console.debug("[ COM - com.js ] Worker <- Main:", e)
+    // Detail is the event data
+    e = e.detail
+    if(!this_worker.shared.ready) return
+    switch(e.type){
+    case "init": {
+        const instance = new Filesystem(e.content.type)
+        // ID must be reused later
+        this_worker.shared.filesystem_instances[e.id] = instance
+        await instance.init()
+        com.send("callback", { id: e.id, instance: instance.id, index: instance.index })
+        break
     }
-}
-onmessage = function(e) {
-    try {
-        let message = JSON.parse(e.data.toString())
-        // Api
-        switch(message.type){
-        // Worker
-        case "component":
-            message.content.as = message.content.as.replace(".js", "") // Remove .js file ending
-            // Convert the strings to code again
-            // eslint-disable-next-line no-case-declarations
-            let b = null
-            // TODO: This fails? (Unable to generate uuids)
-            send("log", null, message.content)
-            wo.libs[message.content.as] = b // Set the built value
-            send("log", null, "Loaded library " + message.content.as + " " + Object.keys(wo.libs).length + "/" + wo.libsNro)
-            if(wo.libsNro == Object.keys(wo.libs).length){
-                send("set", null, {val: "fs_ready", to: true})
-                send("log", null, "Filesystem worker ready.")
-                wo.ready = true
-                for(let func of wo.readyHandlers){
-                    func()
-                }
-            }
-            break
-        case "confirm":
-            if(wo.confirmHandler != null) wo.confirmHandler(message.content.value)
-            break
-        case "set":
-            wo.vals[message.content.name] = message.content.value
-            send("response", message.id, true)
-            break
-        case "ready":
-            // Send a message back when ready
-            wo.readyHandlers.push(async () => {
-                send("response", message.id, true)
-            })
-            break
-        // FS
-        case "init": 
-            if(!wo.ready){
-                send("error", null, "Filesystem worker called too early.")
-            }else {
-                // eslint-disable-next-line no-case-declarations
-                let f = new Filesystem(parseInt(message.content))
-                wo.instances[f.id] = f
-                f.init().then(async () => {
-                    send("log", null, "Filesystem with type of " + f.type + " was initialized as " + f.id)
-                    send("response", message.id, f.id)
-                }).catch(async err => {
-                    send("error", null, "Failed to initialize filesystem: " + err)
-                })
-            }
-            break
-        case "index":
-            if(!wo.ready){
-                send("error", null, "Filesystem worker called too early.")
-            }else {
-                //send("log", null, wo.instances[message.content])
-                send("response", message.id, wo.instances[message.content].index)
-            }
-            break
-        case "read":
-            if(!wo.ready){
-                send("error", null, "Filesystem worker called too early.")
-            }else {
-                wo.instances[message.content].read(message.content.path, message.content.uuid).then(async res => {
-                    send("log", null, res)
-                    send("response", message.id, res)
-                }).catch(async err => {
-                    send("error", null, err)
-                })
-            }
-            break
-        default:
-            send("error", null, "Unknown command:", message.type)
-            break
-        }
+    case "read": {
+        const instance = this_worker.shared.filesystem_instances[e.content.instance]
+        if(!instance) return com.send("error", "No such filesystem instance")
+        const data = await instance.read(e.content.id)
+        com.send("callback", { id: e.id, read: data })
+        break
     }
-    catch(err){
-        send("error", null, "Failed to parse message: " + err.stack != undefined ? err.stack : err)
+    case "write": {
+        const instance = this_worker.shared.filesystem_instances[e.content.instance]
+        if(!instance) return com.send("error", "No such filesystem instance")
+        await instance.write(e.content.id, e.content.write, e.content.location)
+        com.send("callback", { id: e.id })
+        break
     }
-}
-
-// Confirm handler
-async function handleConfirm(text, handler){
-    send("confirm", null, text)
-    wo.confirmHandler = handler
-}
-
-// Request components
-wo.libsNro = 2 // How many libs do we need to load before accepting api calls?
-send("component", null, "hash.js")
-send("component", null, "uuid.js")
+    case "callback": {
+        // Ignore these. (Handled by com.js)
+        break
+    }
+    case "index": {
+        const instance = this_worker.shared.filesystem_instances[e.content.instance]
+        if(!instance) return com.send("error", "No such filesystem instance")
+        com.send("callback", { index: instance.index })
+        break
+    }
+    default:
+        com.send("error", "Unexpected command")
+    }
+})
