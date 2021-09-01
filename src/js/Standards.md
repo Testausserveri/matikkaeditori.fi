@@ -66,6 +66,7 @@ Write to the filesystem:
 const write_action = await window.internal.workers.api("Filesystem", "write", { id: "<file id, UUID v4>", content: {
     ?name: "<name>",
     ?data: "<data>",
+    type: "<0/1>"
 }, instance: "<instance ID, returned by instance creation>", location: "<id/true>" })
 ```
 
