@@ -124,3 +124,10 @@ All forms of data storage are required to include checksums for both the index a
 
 # Upgrade standard
 Upgrading of save versions to the latest version is handled by "upgrade.js". To create an upgrade handler, define a function with the current latest version name in "upgrade.js". Then modify the version field in window.internal
+
+# Editor
+### Answer save format
+The answer data is to be an array, where each item is it's own line.
+<br>
+Math is to be embedded into the items as text along with normal text.
+Math will begin with \<math\> and end with \</math\>. This "element" shall contain raw latex.
