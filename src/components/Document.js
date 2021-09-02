@@ -37,14 +37,11 @@ export default function Document(props) {
     ]
     // Editor result content is available inside resultRef, the answerRef is just an visual editor with extra stuff
 
-    useEffect(async () => {
+    useEffect(() => {
         // Load answer into editor here
-        answerRef.current.contentEditable = false
         answerRef.current.innerHTML = props.selectedItem?.data
-        if(!window.internal.ui.editor){
-            window.editor = new Editor(answerRef.current)
-            await window.editor.init()
-        }
+        window.editor = new Editor(answerRef.current)
+        window.editor.init()
         answerRef.current.contentEditable = true
         answerRef.current.focus() // Focus on page load
     }, [resultRef, props.selectedItem])

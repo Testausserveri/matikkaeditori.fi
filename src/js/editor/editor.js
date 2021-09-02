@@ -331,34 +331,8 @@ export default class Editor {
             if(this.target != null){
                 await this.save()
             }
-            // Target is filesystem answer
             this.target = target
-            
-            // Parse
-            for(let line of this.target.data){
-                if(line.includes("<math>")){
-                    line = line.split("<math>")
-                    for(const mathStart of line){
-                        // This is math
-                        if(mathStart.includes("</math>")){
-                            mathStart.split("</math>")
-                            // Math part              
-                            this.createMath(mathStart[0])
-
-                            // Text part
-                            const textNode = document.createTextNode(line)
-                            this.input.appendChild(textNode)
-                        }else {
-                            // Text part
-                            const textNode = document.createTextNode(line)
-                            this.input.appendChild(textNode)
-                        }
-                    }
-                }else {
-                    const textNode = document.createTextNode(line)
-                    this.input.appendChild(textNode)
-                }
-            }
+            // TODO
         }
         catch(err){
             error("Editor", "Failed to load: " + err.stack != undefined ? err.stack : err)
@@ -371,13 +345,6 @@ export default class Editor {
     async save(){
         try {
             // Save here
-            // Format in editor:
-            // Text nodes are in the original line
-            // A new line can be marked by <br>
-            // Text nodes as are their own lines, which include math elements
-            for(const node of this.input.childNodes){
-                
-            }
         }
         catch(err){
             error("Editor", "Failed to save: " + err.stack != undefined ? err.stack : err)
