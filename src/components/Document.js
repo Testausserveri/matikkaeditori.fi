@@ -64,7 +64,17 @@ export default function Document(props) {
     return (
         <div className="document">
             <div className="head">
-                <h2 spellCheck={false} contentEditable={true} id="documentTitle" suppressContentEditableWarning={true} onKeyDown={onDocumentTitleKeyUp} ref={titleRef}>{props.selectedItem?.name}</h2>
+                <h2 
+                    spellCheck={false} 
+                    contentEditable={true} 
+                    id="documentTitle" 
+                    suppressContentEditableWarning={true} 
+                    onClick={() => {document.execCommand("selectAll",false,null)}} 
+                    onKeyDown={onDocumentTitleKeyUp} 
+                    ref={titleRef}>
+                    {props.selectedItem?.name}
+                </h2>
+                
                 <Dropdown data={exportDropdown}>
                     <button className="secondary">
                         <FontAwesomeIcon icon={faDownload} /> Vie
