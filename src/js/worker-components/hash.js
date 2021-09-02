@@ -3,14 +3,28 @@
  * 
  * By: @Esinko
  */
+import com from "./com.js"
+
 export default class hash {
     /**
      * The input for the hashing algorithm
      * @param {String} input The string to hash
      */
     constructor(input){
-        if(!window.id) throw "Unable to create hashes without salt"
-        this.input = input + "-" + window.id
+        (async () => {
+            let id = null
+            if(typeof window === "undefined"){
+                // Get window object from main
+                const salt = (await com.send("window")).window.id
+                self.id = salt.id
+                id = salt.id
+            }else if(typeof self.id !== undefined){
+                id = self.id
+            }else {
+                id = window.id
+            }
+            this.input = input + "-" + id
+        })()
     }
 
     /**

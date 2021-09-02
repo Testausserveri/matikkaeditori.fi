@@ -63,6 +63,16 @@ async function onMessage(event, name){
             if(window.internal.workers.handlers[message.id] === undefined) console.warn("[ WORKERS] Dropped callback \"" + message.id + "\"")
             window.internal.workers.handlers[message.id](message.content)
             break
+        case "window": {
+            const whitelist = ["id"] // Note: Internal cannot be moved as is! Move only specific values from it if needed.
+            let json = {}
+            for(const key in window){
+                if(whitelist.includes(key)) json[key] = window[key]
+            }
+            console.log("Sending", json)
+            sendMessage(name, {type: "callback", content: { window: json }, id: message.id})
+            break
+        }
         default:
             // Unknown message
             console.warn("[ WORKERS ] Unknown message from worker:", message)
