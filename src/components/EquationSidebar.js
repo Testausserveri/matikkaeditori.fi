@@ -52,7 +52,7 @@ SymbolGroup.propTypes = {
 export function MobileEquationToolbar() {
     return (
         <div className="mobileToolbar">
-            jjkjk
+            hello
         </div>
     )
 }
