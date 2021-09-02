@@ -20,6 +20,7 @@ export default {
                 if(!response) reject("Timeout")
             }, 30000)
             // Send message
+            if(!content) content = {}
             postMessage(JSON.stringify({ type, content, id: content.id || id }))
 
             // Listen for response

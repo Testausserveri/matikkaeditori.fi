@@ -4,9 +4,9 @@
  */
 export default function (){
     // Don't rewrite twice
-    console.debug("[ Console ] Rewriting console functions...")
+    //console.debug("[ Console ] Rewriting console functions...")
     if(console.rewritten === true) return
-    console.debug("[ Console ] Can rewrite")
+    //console.debug("[ Console ] Can rewrite")
 
     // Workers don't have window available
     // So here we create a dummy object
@@ -42,7 +42,7 @@ export default function (){
     }
 
     // Define marker for rewritten functions
-    console.debug("[ Console ] Console functions rewritten")
+    //console.debug("[ Console ] Console functions rewritten")
     console.rewritten = true
 }
 
