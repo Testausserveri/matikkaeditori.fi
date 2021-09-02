@@ -261,9 +261,9 @@ class Filesystem {
                     }
                     const base = {
                         name: data.name ?? json.name,
-                        date: new Date().getTime()
+                        date: new Date().getTime(),
                     }
-                    if((data.type ?? json.type) === 0){
+                    if(data.type === 0){
                         base.data = data.data ?? json.data
                         const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
                         const sha1 = await hashInstance.sha1()
@@ -359,7 +359,7 @@ class Filesystem {
                             const exampleFile = {
                                 name: "Welcome!",
                                 date: new Date().getTime(),
-                                data: "Welcome to Matikkaeditori.fi!",
+                                data: ["Welcome to Matikkaeditori.fi!"],
                                 checksum: null,
                                 type: 0
                             }

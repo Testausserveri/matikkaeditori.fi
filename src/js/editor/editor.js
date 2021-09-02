@@ -45,12 +45,12 @@ export default class Editor {
                 // Close math with esc
                 if(e.which == 27){
                     e.preventDefault()
-                    if(window.editor.mathFocus != null) window.editor.mathFocus.blur()
+                    if(window.internal.ui.editor.mathFocus != null) window.internal.ui.editor.mathFocus.blur()
                 }
                 // Create new math element in next line with enter
                 if(e.which == 13 && this.mathFocus != null){
                     e.preventDefault()
-                    if (window.editor.mathFocus) window.editor.mathFocus.blur()
+                    if (window.internal.ui.editor.mathFocus) window.internal.ui.editor.mathFocus.blur()
                     this.input.focus()
                     // TODO: Make this open the next line, no idea how to do that rn
                     //document.execCommand("insertText", false, "\n")
@@ -61,7 +61,8 @@ export default class Editor {
                         }
                     }
                     if(target == null) target = this.input
-                    window.editor.mathFocus = null
+                    window.internal.ui.editor.mathFocus = null
+                    console.log("Runs")
                     this.createMath("", target)
                 }
                 // Use arrow keys to move into math elements
@@ -116,16 +117,10 @@ export default class Editor {
             this.input.oninput = async () => {
                 // Re-align tools
                 if(this.mathFocus !== null) this.attachTools()
-                
-                
-                /*if(this.saveState == false){
-                    console.log("TODO: Save here")
-                    //this.saveState = true
-                }*/
-                if (this.oninput) this.oninput()
+                if(this.saveState == false){
+                    window.internal.ui.editor.save()
+                }
             }
-            // TODO: DEV DUMMY
-            this.target = "test"
         }
         catch(err){
             error("Editor", "Failed to init editor: " + err.stack != undefined ? err.stack : err)
@@ -302,7 +297,7 @@ export default class Editor {
                 console.log("[ EDITOR ] Math unfocused")
             }
             // Onopen event - The change to live state (from rendered)
-            img.setAttribute("onclick", "window.editor.reopen(\"" + id + "\")")
+            img.setAttribute("onclick", "window.internal.ui.editor.reopen(\"" + id + "\")")
             // Write possible predefined latex
             if(latex != undefined) latexInput.write(latex)
             // Append to the editor
@@ -323,6 +318,99 @@ export default class Editor {
         }
         catch(err){
             error("Editor", "Failed to add math: " + err.stack != undefined ? err.stack : err)
+        }
+    }
+
+    /**
+     * Load a filesystem target
+     * @param {*} target 
+     * @param {*} id
+     */
+    async load(target, id){
+        try {
+            if(this.target != null){
+                await this.save()
+            }
+            // Target is filesystem answer
+            this.target = target
+            this.target.id = id
+            console.log("[ Filesystem ] Load:", this.target)
+            // Parse
+            for(let line of this.target.data){
+                if(line.includes("<math>")){
+                    line = line.split("<math>")
+                    for(const mathStart of line){
+                        // This is math
+                        if(mathStart.includes("</math>")){
+                            mathStart.split("</math>")
+                            // Math part              
+                            this.createMath(mathStart[0])
+
+                            // Text part
+                            const textNode = document.createTextNode(line)
+                            this.input.appendChild(textNode)
+                        }else {
+                            // Text part
+                            const textNode = document.createTextNode(line)
+                            this.input.appendChild(textNode)
+                        }
+                    }
+                }else {
+                    const textNode = document.createTextNode(line)
+                    this.input.appendChild(textNode)
+                }
+            }
+        }
+        catch(err){
+            error("Editor", "Failed to load: " + err.stack != undefined ? err.stack : err)
+        }
+    }
+
+    /**
+     * Save data to filesystem target
+     */
+    async save(){
+        try {
+            // Save here
+            // Format in editor:
+            // Text nodes are in the original line
+            // A new line can be marked by <br>
+            // Text nodes as are their own lines, which include math elements
+            let format = [""]
+            const parse = (main) => {
+                for(const node of main.childNodes){
+                    switch (node.nodeName.toLowerCase()){
+                    case "div": {
+                        // Marks own line
+                        format.push("")
+                        parse(node)
+                        break
+                    }
+                    case "#text": {
+                        // First line
+                        format[format.length - 1] += node.wholeText
+                        break
+                    }
+                    case "p": {
+                        // Math element
+                        format[format.length - 1] += "<math>" + node.getAttribute("data") + "</math>"
+                        break
+                    }
+                    }
+                }
+            }
+            parse(this.input)
+            await window.internal.workers.api("Filesystem", "write", {
+                instance: window.internal.ui.activeFilesystemInstance,
+                write: {
+                    data: format,
+                    type: 0
+                },
+                id: this.target.id
+            })
+        }
+        catch(err){
+            error("Editor", "Failed to save: " + err.stack != undefined ? err.stack : err)
         }
     }
 }

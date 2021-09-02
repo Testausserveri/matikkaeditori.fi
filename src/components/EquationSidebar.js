@@ -11,11 +11,11 @@ import latexCommands from "../js/editor/commands.js"
 
 function writeSymbol(event, data) {
     event.preventDefault()
-    if(window.editor.mathFocus != null){
+    if(window.internal.ui.editor.mathFocus != null){
         if(data.action != undefined){
-            window.editor.mathFocus.cmd(data.action)
+            window.internal.ui.editor.mathFocus.cmd(data.action)
         }else {
-            window.editor.mathFocus.typedText(data.character)
+            window.internal.ui.editor.mathFocus.typedText(data.character)
         }
     }else {
         document.execCommand("insertText", false, data.character)
@@ -68,7 +68,7 @@ export function EquationSidebar() {
     return (
         <div className="sidebar">
             <div className="head">
-                <button className="primary" onClick={() => {window.editor.createMath()}}>
+                <button className="primary" onClick={() => {window.internal.ui.editor.createMath()}}>
                     <FontAwesomeIcon icon={faSquareRootAlt} />&nbsp;
                     Lisää kaava
                 </button>
