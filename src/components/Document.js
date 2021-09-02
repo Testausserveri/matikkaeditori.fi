@@ -46,18 +46,16 @@ export default function Document(props) {
         answerRef.current.focus() // Focus on page load
     }, [resultRef, props.selectedItem])
 
-    function onDocumentTitleKeyUp(event) {
-        if (event.key == "Enter") {
-            event.target.blur()
-            event.preventDefault()
+    function saveTitle(event) {
+        event.target.blur()
+        event.preventDefault()
 
-            let temp = props.selectedItem
-            temp.name = event.target.innerText
-            props.setSelectedItem({...temp})
+        let temp = props.selectedItem
+        temp.name = event.target.innerText
+        props.setSelectedItem({...temp})
 
-            if (event.target.innerHTML.trim() == "") {
-                event.target.innerHTML = "Nimetön vastaus"
-            }
+        if (event.target.innerHTML.trim() == "") {
+            event.target.innerHTML = "Nimetön vastaus"
         }
     }
 
@@ -70,11 +68,12 @@ export default function Document(props) {
                     id="documentTitle" 
                     suppressContentEditableWarning={true} 
                     onClick={() => {document.execCommand("selectAll",false,null)}} 
-                    onKeyDown={onDocumentTitleKeyUp} 
+                    onKeyDown={(event) => {if (event.key == "Enter") {saveTitle(event)}} } 
+                    onBlur={(event) => {saveTitle(event)}}
                     ref={titleRef}>
                     {props.selectedItem?.name}
                 </h2>
-                
+
                 <Dropdown data={exportDropdown}>
                     <button className="secondary">
                         <FontAwesomeIcon icon={faDownload} /> Vie
