@@ -280,7 +280,7 @@ class Filesystem {
                         await this.writeToIndex(location, indexBase)
                     }
                     console.log("[ Filesystem ] Write task completed successfully.")
-                    resolve({documentId: id ?? json.id})
+                    resolve(id ?? json.id)
                 }
                 }
             }
@@ -407,8 +407,8 @@ com.onMessage.addEventListener("message", async e => {
     case "write": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
         if(!instance) return console.error("No such filesystem instance")
-        await instance.write(e.content.id, e.content.write, e.content.location)
-        com.send("callback", { id: e.id })
+        const write = await instance.write(e.content.id, e.content.write, e.content.location)
+        com.send("callback", { id: e.id, write })
         break
     }
     case "callback": {

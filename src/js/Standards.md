@@ -52,7 +52,7 @@ Note: Location "true" is root!
 <br>
 - "read", read data from a filesystem instance. Returns ``{ read: "<fs data>" }``. Takes ``{ instance: "<fs instance id>", id: "<fs entry id>"}`` as input.
 <br>
-- "write", write data to the database. Returns nothing. Takes ``{ instance: "<fs instance id>", id: "<fs entry id>", location: "<fs location>" }`` 
+- "write", write data to the database. Returns ```{ write: "<id of just written entry>" }. Takes ``{ instance: "<fs instance id>", id: "<fs entry id>", location: "<fs location>" }`` 
 
 ### Example usages
 Start the filesystem:
