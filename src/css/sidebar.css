@@ -52,8 +52,15 @@
 */
 }
 
-.filesystemLevel li .fsContent { 
+.filesystemLevel li .content { 
     flex: 1;
+    width: 100%;
+}
+.filesystemLevel li .content span {
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 .filesystemLevel li .fsIcon { 
     margin-right: 0.5rem;

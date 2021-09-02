@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 import React from "react"
 import PropTypes from "prop-types"
 import "../css/sidebar.css"
@@ -8,7 +9,7 @@ import { faPlus, faFolder } from "@fortawesome/free-solid-svg-icons"
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 
 function FilesystemItem(props) {
-    if (props.data.type == "folder") {
+    if (props.data.t == 1) { // folder
         return (
             <li className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
                 <div className="fsIcon">
@@ -19,12 +20,12 @@ function FilesystemItem(props) {
                 </div>
             </li>
         )
-    } else if (props.data.type == 1) {
+    } else if (props.data.t == 0) { // file
         return (
             <li className={(props.selected ? "selected" : "")} onClick={props.onClick}>
                 <div className="content">
                     <span>{props.data.name}</span>
-                    <span className="date">{formatDate(props.data.edited).pretty}</span>
+                    <span className="date">{formatDate(props.data.date).pretty}</span>
                 </div>
             </li>
         )
@@ -39,6 +40,7 @@ FilesystemItem.propTypes = filesystemItemType
 
 export default function Sidebar(props) {
     // todo implement subtrees
+
     return (
         <div className="sidebar" style={props.style}>
             <div className="head">
@@ -51,19 +53,11 @@ export default function Sidebar(props) {
                 </button>
             </div>
             <ul className="filesystemLevel">
-                {Object.keys(props.level).map(key => {
-                    const value = props.level[key]
-                    return <FilesystemItem key={value.uuid} data={value} />
-                    /*
-                    return <FilesystemItem key={item.id} data={item} selected={(props.selectedItem == item.id)} onClick={() => {
-                        if (item.type == "answer") {
-                            props.openItem(item.id)
-                            // open answer
-                        } else if (item.type == "folder") {
-                            // open folder
-                        }
-                    }}
-                     />*/
+                {props.level.map((item) => {
+                    const selected = props.selectedItem?.i == item.i
+
+                    return <FilesystemItem key={item.i} data={selected ? props.selectedItem : item} selected={selected} onClick={() => props.setSelectedItem(item)}
+                    />
                 })}
             </ul>
         </div>
@@ -74,6 +68,6 @@ Sidebar.propTypes = {
     level: PropTypes.array,
     newDocument: PropTypes.func,
     selectedItem: PropTypes.string,
-    openItem: PropTypes.func,
+    setSelectedItem: PropTypes.func,
     style: PropTypes.any
 }
