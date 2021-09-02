@@ -84,7 +84,9 @@ function App() {
 
     // select first item - we need this usually only just in the first run
     function setInitialSelectedItem(level) {
-        const item = level.find(item => item.t == 0)
+        const l = [...level]
+        l.reverse()
+        const item = l.find(item => item.t == 0)
         setSelectedItem(item)
     }
 
