@@ -49,13 +49,42 @@ function MobileView({newDocument, level, selectedItem, setSelectedItem}) {
 function App() {
     // Return base page
     // eslint-disable-next-line no-unused-vars
-    const [fsLevel, setFsLevel] = useState([])
+    const [fsInstance, setFsInstance] = useState([])
     const [selectedItem, setSelectedItem] = useState({})
 
     const { width: windowWidth } = useWindowDimensions()
 
-    function newDocument() {
-        console.log("Placeholder")
+    async function newDocument() {
+        const name = "Uusi vastaus"
+
+        const { documentId } = (await window.internal.workers.api("Filesystem", "write", { 
+            instance: fsInstance.instance, 
+            location: true, 
+            write: { name: name, data: "", type: 0 } 
+        }))
+
+        const data = (await window.internal.workers.api("Filesystem", "read", {
+            id: documentId,
+            instance: fsInstance.instance
+        })).read
+
+        const fsItem = {
+            ...data,
+            type: 0
+        }
+        console.log("tiikeri", fsItem)
+
+        setSelectedItem(fsItem)
+        //const documentId = JSON.parse()
+        /*
+
+        let copy = {...fsInstance}
+        copy.index.push({
+            name: name,
+            data: "",
+
+        })
+        console.log()*/
     }
 
     function setInitialSelectedItem(level) {
@@ -82,7 +111,10 @@ function App() {
 
         let level = await Promise.all(promises)
         console.log("[ APP ] Done loading fs details", level)
-        setFsLevel(level)
+        
+        let copy = {...instance}
+        copy.index = level
+        setFsInstance(copy)
         
         setInitialSelectedItem(level)
     }
@@ -97,7 +129,7 @@ function App() {
             console.log("[ APP ] Created database instance:", instance)
             // quick and rough file tree, no names
             console.log("[ APP ] Instance UUID ", instance.instance)
-            setFsLevel(instance.index)
+            setFsInstance(instance)
 
             // more in detail file tree, with names, dates and data
             // loaded later by its own pace
@@ -115,9 +147,9 @@ function App() {
             </div>
             <div className="app">
                 {(windowWidth > 800 ?
-                    <DesktopView newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+                    <DesktopView newDocument={newDocument} level={fsInstance.index} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
                     :
-                    <MobileView newDocument={newDocument} level={fsLevel} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+                    <MobileView newDocument={newDocument} level={fsInstance.index} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
                 )}
                 
             </div>

@@ -64,7 +64,6 @@ class Filesystem {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
             try {
-                console.debug("[ Filesystem ] Begin checksum calculation...")
                 const _hash = new hash(string)
                 const sha1 = await _hash.sha1() // Is this enough?
                 console.debug("[ Filesystem ] Checksum calculation", string, checksum, sha1)
@@ -280,11 +279,12 @@ class Filesystem {
                         await this.writeToIndex(location, indexBase)
                     }
                     console.log("[ Filesystem ] Write task completed successfully.")
-                    resolve()
+                    resolve({documentId: id ?? json.id})
                 }
                 }
             }
             catch(e){
+                console.log(e)
                 reject("Failed to write: " + e.stack)
             }
         })
@@ -349,10 +349,9 @@ class Filesystem {
                             if(!load) reject("Filesystem initialization aborted.")
                         }
                         this.index = index
-                        console.log("Index", index)
                         resolve()
                     }else {
-                        const create = await com.send("confirm", { value: "No save data exists or it cannot be loaded. Would you like to create a new save?" })
+                        const create = await com.send("confirm", "No save data exists or it cannot be loaded. Would you like to create a new save?")
                         if(create){
                             // TODO: Create index & example file
                             const exampleId = uuid.v4()
@@ -407,8 +406,8 @@ com.onMessage.addEventListener("message", async e => {
     case "write": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
         if(!instance) return com.send("error", "No such filesystem instance")
-        await instance.write(e.content.id, e.content.write, e.content.location)
-        com.send("callback", { id: e.id })
+        const { documentId } = await instance.write(e.content.id, e.content.write, e.content.location)
+        com.send("callback", { id: e.id, documentId: documentId })
         break
     }
     case "callback": {

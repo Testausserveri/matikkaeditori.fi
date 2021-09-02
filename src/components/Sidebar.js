@@ -40,7 +40,7 @@ FilesystemItem.propTypes = filesystemItemType
 
 export default function Sidebar(props) {
     // todo implement subtrees
-
+    console.log(props.level)
     return (
         <div className="sidebar" style={props.style}>
             <div className="head">
@@ -53,12 +53,12 @@ export default function Sidebar(props) {
                 </button>
             </div>
             <ul className="filesystemLevel">
-                {props.level.map((item) => {
+                {props.level ? props.level.map((item) => {
                     const selected = props.selectedItem?.i == item.i
 
                     return <FilesystemItem key={item.i} data={selected ? props.selectedItem : item} selected={selected} onClick={() => props.setSelectedItem(item)}
                     />
-                })}
+                }) : null}
             </ul>
         </div>
     )
