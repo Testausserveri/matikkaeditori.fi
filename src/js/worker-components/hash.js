@@ -9,7 +9,8 @@ export default class hash {
      * @param {String} input The string to hash
      */
     constructor(input){
-        this.input = input
+        if(!window.id) throw "Unable to create hashes without salt"
+        this.input = input + "-" + window.id
     }
 
     /**
