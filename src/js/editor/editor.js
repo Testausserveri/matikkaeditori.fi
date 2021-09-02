@@ -15,6 +15,7 @@ export default class Editor {
         this.toolAttachPoint = null
         this.saveState = false
         this.mathFocus = null
+        this.oninput = null
     }
 
     /**
@@ -115,10 +116,13 @@ export default class Editor {
             this.input.oninput = async () => {
                 // Re-align tools
                 if(this.mathFocus !== null) this.attachTools()
-                if(this.saveState == false){
+                
+                
+                /*if(this.saveState == false){
                     console.log("TODO: Save here")
                     //this.saveState = true
-                }
+                }*/
+                if (this.oninput) this.oninput()
             }
             // TODO: DEV DUMMY
             this.target = "test"
@@ -319,35 +323,6 @@ export default class Editor {
         }
         catch(err){
             error("Editor", "Failed to add math: " + err.stack != undefined ? err.stack : err)
-        }
-    }
-
-    /**
-     * Load a filesystem target
-     * @param {*} target 
-     */
-    async load(target){
-        try {
-            if(this.target != null){
-                await this.save()
-            }
-            this.target = target
-            // TODO
-        }
-        catch(err){
-            error("Editor", "Failed to load: " + err.stack != undefined ? err.stack : err)
-        }
-    }
-
-    /**
-     * Save data to filesystem target
-     */
-    async save(){
-        try {
-            // Save here
-        }
-        catch(err){
-            error("Editor", "Failed to save: " + err.stack != undefined ? err.stack : err)
         }
     }
 }

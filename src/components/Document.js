@@ -41,6 +41,7 @@ export default function Document(props) {
         // Load answer into editor here
         answerRef.current.innerHTML = props.selectedItem?.data
         window.editor = new Editor(answerRef.current)
+        window.oninput = () => {console.log("kuukeli kaakeli")}
         window.editor.init()
         answerRef.current.contentEditable = true
         answerRef.current.focus() // Focus on page load
