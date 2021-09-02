@@ -55,36 +55,19 @@ function App() {
     const { width: windowWidth } = useWindowDimensions()
 
     async function newDocument() {
-        const name = "Uusi vastaus"
-
-        const { documentId } = (await window.internal.workers.api("Filesystem", "write", { 
-            instance: fsInstance.instance, 
-            location: true, 
-            write: { name: name, data: "", type: 0 } 
-        }))
-
-        const data = (await window.internal.workers.api("Filesystem", "read", {
-            id: documentId,
-            instance: fsInstance.instance
-        })).read
-
-        const fsItem = {
-            ...data,
-            type: 0
-        }
-        console.log("tiikeri", fsItem)
-
-        setSelectedItem(fsItem)
-        //const documentId = JSON.parse()
-        /*
-
-        let copy = {...fsInstance}
-        copy.index.push({
-            name: name,
-            data: "",
-
+        await window.internal.workers.api("Filesystem", "write", {
+            instance: window.internal.ui.activeFilesystemInstance,
+            write: {
+                type: 0,
+                name: "unset"
+            }
         })
-        console.log()*/
+        const newIndex = (await window.internal.workers.api("Filesystem", "index", {
+            id: window.internal.ui.activeLocation,
+            level: 1, // Only load current location data,
+            instance: window.internal.ui.activeFilesystemInstance
+        })).index
+        setInitialSelectedItem(newIndex)
     }
 
     function setInitialSelectedItem(level) {
@@ -126,6 +109,7 @@ function App() {
             let fs_type = localStorage.getItem("fs_type")
             if(fs_type === null) fs_type = 0
             const instance = await window.internal.workers.api("Filesystem", "init", { type: fs_type })
+            window.internal.ui.activeFilesystemInstance = instance.id
             console.log("[ APP ] Created database instance:", instance)
             // quick and rough file tree, no names
             console.log("[ APP ] Instance UUID ", instance.instance)

@@ -38,6 +38,7 @@ export default function Document(props) {
     // Editor result content is available inside resultRef, the answerRef is just an visual editor with extra stuff
 
     useEffect(() => {
+        // Load answer into editor here
         answerRef.current.innerHTML = props.selectedItem?.data
         window.editor = new Editor(answerRef.current)
         window.editor.init()

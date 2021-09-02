@@ -69,7 +69,6 @@ async function onMessage(event, name){
             for(const key in window){
                 if(whitelist.includes(key)) json[key] = window[key]
             }
-            console.log("Sending", json)
             sendMessage(name, {type: "callback", content: { window: json }, id: message.id})
             break
         }

@@ -132,11 +132,12 @@ class Filesystem {
                 console.debug("[ Filesystem ] Writing to index root...")
                 let replaced = false
                 for(let i = 0; i < this.index.length; i++){
-                    if(this.index[i].id === data.id) {
+                    if(this.index[i].i === data.id) {
                         replaced = true
                         this.index[i] = data
                     }
                 }
+                console.log("Replaced", replaced)
                 if(!replaced) this.index.push(data)
             }else {
                 // In folder
@@ -398,16 +399,16 @@ com.onMessage.addEventListener("message", async e => {
     }
     case "read": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
-        if(!instance) return com.send("error", "No such filesystem instance")
+        if(!instance) return console.error("No such filesystem instance")
         const data = await instance.read(e.content.id)
         com.send("callback", { id: e.id, read: data })
         break
     }
     case "write": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
-        if(!instance) return com.send("error", "No such filesystem instance")
-        const { documentId } = await instance.write(e.content.id, e.content.write, e.content.location)
-        com.send("callback", { id: e.id, documentId: documentId })
+        if(!instance) return console.error("No such filesystem instance")
+        await instance.write(e.content.id, e.content.write, e.content.location)
+        com.send("callback", { id: e.id })
         break
     }
     case "callback": {
@@ -416,14 +417,14 @@ com.onMessage.addEventListener("message", async e => {
     }
     case "delete": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
-        if(!instance) return com.send("error", "No such filesystem instance")
+        if(!instance) return console.error("No such filesystem instance")
         await instance.delete(e.content.id)
         com.send("callback", { id: e.id })
         break
     }
     case "index": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
-        if(!instance) return com.send("error", "No such filesystem instance")
+        if(!instance) return console.error("No such filesystem instance")
         if(e.content.id && e.content.level){
             const resolved = await instance.resolveFromIndex(e.content.id)
             const limited = await instance.limitTreeLevel(resolved, e.content.level)
