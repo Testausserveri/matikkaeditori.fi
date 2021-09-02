@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 /* eslint-disable react/react-in-jsx-scope */
 // Main app function
@@ -55,21 +56,33 @@ function App() {
     const { width: windowWidth } = useWindowDimensions()
 
     async function newDocument() {
-        await window.internal.workers.api("Filesystem", "write", {
+        const documentId = (await window.internal.workers.api("Filesystem", "write", {
             instance: window.internal.ui.activeFilesystemInstance,
             write: {
                 type: 0,
-                name: "unset"
+                name: "New answer",
+                data: ""
             }
-        })
-        const newIndex = (await window.internal.workers.api("Filesystem", "index", {
-            id: window.internal.ui.activeLocation,
-            level: 1, // Only load current location data,
-            instance: window.internal.ui.activeFilesystemInstance
-        })).index
-        setInitialSelectedItem(newIndex)
+        })).write
+
+        const data = (await window.internal.workers.api("Filesystem", "read", {
+            id: documentId,
+            instance: fsInstance.instance
+        })).read
+
+        const fsItem = {
+            ...data,
+            type: 0,
+            t: 0,
+            i: documentId
+        }
+
+        let copy = {...fsInstance}
+        copy.index.push(fsItem)
+        setSelectedItem(fsItem)
     }
 
+    // select first item - we need this usually only just in the first run
     function setInitialSelectedItem(level) {
         const item = level.find(item => item.t == 0)
         setSelectedItem(item)
