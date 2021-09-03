@@ -332,6 +332,7 @@ export default class Editor {
                 await this.save()
             }
             // Target is filesystem answer
+            this.input.innerHTML = ""
             this.target = target
             this.target.id = id
             console.log("[ Filesystem ] Load:", this.target)
