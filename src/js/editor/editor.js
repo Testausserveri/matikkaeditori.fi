@@ -48,7 +48,8 @@ export default class Editor {
                     if(window.internal.ui.editor.mathFocus != null) window.internal.ui.editor.mathFocus.blur()
                 }
                 // Create new math element in next line with enter
-                if(e.which == 13 && this.mathFocus != null){
+                // Move out of the formula with shift
+                if(e.which == 13 && this.mathFocus != null && !e.shiftKey){
                     e.preventDefault()
                     if (window.internal.ui.editor.mathFocus) window.internal.ui.editor.mathFocus.blur()
                     this.input.focus()
@@ -312,7 +313,6 @@ export default class Editor {
             // Set UI stuff
             window.setLatexCommandsVisibility(true)
             this.attachTools(container)
-            console.log("Done!")
             return id
 
         }
@@ -336,28 +336,48 @@ export default class Editor {
             this.target = target
             this.target.id = id
             console.log("[ Filesystem ] Load:", this.target)
+            let targetLine = this.input
             // Parse
             for(let line of this.target.data){
                 if(line.includes("<math>")){
                     line = line.split("<math>")
-                    for(const mathStart of line){
+                    
+                    // Create line
+                    const textNode = document.createElement("div")
+                    // NOT EMPTY!
+                    if(line === "") line = "‎" // There must be a space here
+                    targetLine = textNode
+                    this.input.appendChild(textNode)
+
+                    for(let mathStart of line){
                         // This is math
                         if(mathStart.includes("</math>")){
-                            mathStart.split("</math>")
+                            console.debug("As math & text:", mathStart)
+                            mathStart = mathStart.split("</math>")
                             // Math part              
-                            this.createMath(mathStart[0])
+                            await this.createMath(mathStart[0], targetLine)
 
                             // Text part
-                            const textNode = document.createTextNode(line)
-                            this.input.appendChild(textNode)
+                            if(mathStart[1]){
+                                console.debug("After math:", mathStart[1])
+                                // There can only be one element here!
+                                const textNode = document.createTextNode(mathStart[1])
+                                targetLine.appendChild(textNode)
+                            }
                         }else {
+                            console.debug("As text:", mathStart)
                             // Text part
-                            const textNode = document.createTextNode(line)
-                            this.input.appendChild(textNode)
+                            const textNode = document.createTextNode(mathStart)
+                            targetLine.appendChild(textNode)
                         }
                     }
                 }else {
-                    const textNode = document.createTextNode(line)
+                    console.debug("As raw text:", line)
+                    const textNode = document.createElement("div")
+                    // NOT EMPTY!
+                    if(line === "") line = "‎" // There must be a space here
+                    textNode.innerText = line
+                    targetLine = textNode
                     this.input.appendChild(textNode)
                 }
             }
@@ -380,6 +400,7 @@ export default class Editor {
             let format = [""]
             const parse = (main) => {
                 for(const node of main.childNodes){
+                    console.debug("Elem:", node.nodeName)
                     switch (node.nodeName.toLowerCase()){
                     case "div": {
                         // Marks own line
@@ -397,10 +418,16 @@ export default class Editor {
                         format[format.length - 1] += "<math>" + node.getAttribute("data") + "</math>"
                         break
                     }
+                    case "br": {
+                        // Line break in text nodes
+                        format.push("")
+                    }
                     }
                 }
             }
             parse(this.input)
+            if(format[0] === "") format.splice(0, 1)
+            console.log("[ EDITOR ] Saved:", format)
             await window.internal.workers.api("Filesystem", "write", {
                 instance: window.internal.ui.activeFilesystemInstance,
                 write: {
