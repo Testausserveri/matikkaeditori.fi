@@ -49,22 +49,37 @@ export default class Editor {
                 }
                 // Create new math element in next line with enter
                 // Move out of the formula with shift
-                if(e.which == 13 && this.mathFocus != null && !e.shiftKey){
+                if(e.which == 13 && this.mathFocus != null){
                     e.preventDefault()
-                    if (window.internal.ui.editor.mathFocus) window.internal.ui.editor.mathFocus.blur()
-                    this.input.focus()
-                    // TODO: Make this open the next line, no idea how to do that rn
-                    //document.execCommand("insertText", false, "\n")
-                    let target = null
-                    for(let child of this.input.children){
-                        if(child.tagName.toLowerCase() == "div"){
-                            target = child
+                    if(e.shiftKey){
+                        this.input.focus()
+                        const newLine = document.createElement("div")
+                        // NOT EMPTY!
+                        newLine.innerText = "‎"
+                        this.input.appendChild(newLine)
+                        // Move caret
+                        const range = document.createRange()
+                        const sel = window.getSelection()
+                        range.setStart(this.input, this.input.childNodes.length)
+                        range.collapse(true)
+                        sel.removeAllRanges()
+                        sel.addRange(range)
+                    }else {
+                        if (window.internal.ui.editor.mathFocus) window.internal.ui.editor.mathFocus.blur()
+                        this.input.focus()
+                        // TODO: Make this open the next line, no idea how to do that rn
+                        //document.execCommand("insertText", false, "\n")
+                        let target = null
+                        for(let child of this.input.children){
+                            if(child.tagName.toLowerCase() == "div"){
+                                target = child
+                            }
                         }
+                        if(target == null) target = this.input
+                        window.internal.ui.editor.mathFocus = null
+                        console.log("Runs")
+                        this.createMath("", target)
                     }
-                    if(target == null) target = this.input
-                    window.internal.ui.editor.mathFocus = null
-                    console.log("Runs")
-                    this.createMath("", target)
                 }
                 // Use arrow keys to move into math elements
                 if(e.which === 37){ // Left
