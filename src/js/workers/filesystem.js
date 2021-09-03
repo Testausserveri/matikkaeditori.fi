@@ -168,9 +168,19 @@ class Filesystem {
                 if(!replaced) reject("Cannot find such location")
             }
             const hashSession = new hash(this.index)
-            console.debug("[ Filesystem] Index after update:", this.index)
-            await localForage.setItem("matikkaeditori-checksums", JSON.stringify(await hashSession.sha1()))
-            await localForage.setItem("matikkaeditori-index", JSON.stringify(this.index))
+            const hash = await hashSession.sha1()
+            console.debug("[ Filesystem ] Index after update:", this.index)
+            switch(this.type){
+            /**
+            * -----------------------------------------------
+            * Implement filesystem index update for each type here
+            * -----------------------------------------------
+            */
+            case 0: {
+                await localForage.setItem("matikkaeditori-checksums", JSON.stringify(hash))
+                await localForage.setItem("matikkaeditori-index", JSON.stringify(this.index))    
+            }
+            }
             console.log("[ Filesystem ] Index update completed successfully.")
             resolve()
         })
