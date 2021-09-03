@@ -443,6 +443,8 @@ export default class Editor {
                 }
             }
             parse(this.input)
+            // NOT EMPTY
+            if(format[0].startsWith("<math>")) format = "‎" + format
             if(format[0] === "") format.splice(0, 1)
             console.log("[ EDITOR ] Saved:", format)
             await window.internal.workers.api("Filesystem", "write", {
