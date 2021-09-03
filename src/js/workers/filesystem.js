@@ -168,7 +168,7 @@ class Filesystem {
                 if(!replaced) reject("Cannot find such location")
             }
             const hashSession = new hash(this.index)
-            const hash = await hashSession.sha1()
+            const _hash = await hashSession.sha1()
             console.debug("[ Filesystem ] Index after update:", this.index)
             switch(this.type){
             /**
@@ -177,7 +177,7 @@ class Filesystem {
             * -----------------------------------------------
             */
             case 0: {
-                await localForage.setItem("matikkaeditori-checksums", JSON.stringify(hash))
+                await localForage.setItem("matikkaeditori-checksums", JSON.stringify(_hash))
                 await localForage.setItem("matikkaeditori-index", JSON.stringify(this.index))    
             }
             }
