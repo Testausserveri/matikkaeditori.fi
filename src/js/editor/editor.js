@@ -16,6 +16,7 @@ export default class Editor {
         this.saveState = false
         this.mathFocus = null
         this.oninput = null
+        this.events = new EventTarget()
     }
 
     /**
@@ -49,6 +50,7 @@ export default class Editor {
                 }
                 // Create new math element in next line with enter
                 // Move out of the formula with shift
+                console.log("New line:", e.which, this.mathFocus)
                 if(e.which == 13 && this.mathFocus != null){
                     e.preventDefault()
                     if(e.shiftKey){
@@ -65,20 +67,25 @@ export default class Editor {
                         sel.removeAllRanges()
                         sel.addRange(range)
                     }else {
-                        if (window.internal.ui.editor.mathFocus) window.internal.ui.editor.mathFocus.blur()
-                        this.input.focus()
-                        // TODO: Make this open the next line, no idea how to do that rn
-                        //document.execCommand("insertText", false, "\n")
-                        let target = null
-                        for(let child of this.input.children){
-                            if(child.tagName.toLowerCase() == "div"){
-                                target = child
+                        // Blur math
+                        let self = this
+                        this.events.addEventListener("mathBlur", async function () {
+                            // Remove this listener
+                            self.events.removeEventListener("mathBlur", this)
+                            // TODO: Make this open the next line, no idea how to do that rn
+                            //document.execCommand("insertText", false, "\n")
+                            let target = null
+                            for(let child of self.input.children){
+                                if(child.tagName.toLowerCase() == "div"){
+                                    target = child
+                                }
                             }
-                        }
-                        if(target == null) target = this.input
-                        window.internal.ui.editor.mathFocus = null
-                        console.log("Runs")
-                        this.createMath("", target)
+                            if(target == null) target = self.input
+                            window.internal.ui.editor.mathFocus = null
+                            console.log("Runs")
+                            self.createMath("", target)
+                        })
+                        this.input.focus()
                     }
                 }
                 // Use arrow keys to move into math elements
@@ -309,7 +316,9 @@ export default class Editor {
                 this.maths[id].input.keystroke("Backspace")
                 // Set UI stuff
                 window.setLatexCommandsVisibility(false)
+                console.log("FOCUS NULL")
                 this.mathFocus = null
+                this.events.dispatchEvent(new CustomEvent("mathBlur"))
                 console.log("[ EDITOR ] Math unfocused")
             }
             // Onopen event - The change to live state (from rendered)
@@ -325,6 +334,7 @@ export default class Editor {
             // Focus the input
             latexInput.focus()
             this.mathFocus = latexInput
+            this.events.dispatchEvent(new CustomEvent("mathFocus"))
             // Set UI stuff
             window.setLatexCommandsVisibility(true)
             this.attachTools(container)
