@@ -49,7 +49,7 @@ export default function Document(props) {
         answerRef.current.focus() // Focus on page load
     }, [resultRef, props.selectedItem])
 
-    function saveTitle(event) {
+    async function saveTitle(event) {
         event.target.blur()
         event.preventDefault()
 
@@ -60,6 +60,14 @@ export default function Document(props) {
         if (event.target.innerHTML.trim() == "") {
             event.target.innerHTML = "Nimetön vastaus"
         }
+        console.log("[ EDITOR ] Updating document title...")
+        await window.internal.workers.api("Filesystem", "write", {
+            instance: window.internal.ui.activeFilesystemInstance,
+            id: window.internal.ui.editor.target.i,
+            write: {
+                name: event.target.innerText
+            }
+        })
     }
 
     return (
