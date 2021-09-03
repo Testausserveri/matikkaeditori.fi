@@ -50,7 +50,6 @@ export default class Editor {
                 }
                 // Create new math element in next line with enter
                 // Move out of the formula with shift
-                console.log("New line:", e.which, this.mathFocus)
                 if(e.which == 13 && this.mathFocus != null){
                     e.preventDefault()
                     if(e.shiftKey){
@@ -82,7 +81,6 @@ export default class Editor {
                             }
                             if(target == null) target = self.input
                             window.internal.ui.editor.mathFocus = null
-                            console.log("Runs")
                             self.createMath("", target)
                         })
                         this.input.focus()
@@ -316,7 +314,6 @@ export default class Editor {
                 this.maths[id].input.keystroke("Backspace")
                 // Set UI stuff
                 window.setLatexCommandsVisibility(false)
-                console.log("FOCUS NULL")
                 this.mathFocus = null
                 this.events.dispatchEvent(new CustomEvent("mathBlur"))
                 console.log("[ EDITOR ] Math unfocused")
@@ -377,27 +374,23 @@ export default class Editor {
                     for(let mathStart of line){
                         // This is math
                         if(mathStart.includes("</math>")){
-                            console.debug("As math & text:", mathStart)
                             mathStart = mathStart.split("</math>")
                             // Math part              
                             await this.createMath(mathStart[0], targetLine)
 
                             // Text part
                             if(mathStart[1]){
-                                console.debug("After math:", mathStart[1])
                                 // There can only be one element here!
                                 const textNode = document.createTextNode(mathStart[1])
                                 targetLine.appendChild(textNode)
                             }
                         }else {
-                            console.debug("As text:", mathStart)
                             // Text part
                             const textNode = document.createTextNode(mathStart)
                             targetLine.appendChild(textNode)
                         }
                     }
                 }else {
-                    console.debug("As raw text:", line)
                     const textNode = document.createElement("div")
                     // NOT EMPTY!
                     if(line === "") line = "‎" // There must be a space here
@@ -425,7 +418,6 @@ export default class Editor {
             let format = [""]
             const parse = (main) => {
                 for(const node of main.childNodes){
-                    console.debug("Elem:", node.nodeName)
                     switch (node.nodeName.toLowerCase()){
                     case "div": {
                         // Marks own line
