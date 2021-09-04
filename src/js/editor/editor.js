@@ -149,7 +149,6 @@ export default class Editor {
                 // Update active line
                 const selection = window.getSelection().anchorNode?.parentElement
                 if(this.mathFocus == null && !jumped){
-                    console.log("SETTING", selection)
                     if(this.activeLine !== selection) this.activeLine = selection
                     if(selection === null || selection == undefined) this.activeLine = this.input
                 }
@@ -301,8 +300,6 @@ export default class Editor {
                             console.log("[ EDITOR ] Jumping out of math...")
                             let pos = this.getLengthUntil(this.maths[id].container)
                             if(direction > 0) pos += 1 // Handle direction
-                            //pos -= 1
-                            console.log("ACTIVE", active)
                             range.setStart(active, pos)
                             range.collapse(true)
                             sel.removeAllRanges()
@@ -356,7 +353,6 @@ export default class Editor {
                 const myIndex = Array.from(container.parentElement.childNodes).indexOf(container)
                 // Check before
                 let textNode
-                console.log("AB", container.parentElement.childNodes[myIndex - 1], container.parentElement.childNodes[myIndex + 1])
                 if(typeof container.parentElement.childNodes[myIndex - 1] === "undefined" || container.parentElement.childNodes[myIndex - 1].nodeName.toLowerCase() !== "#text"){
                     textNode = document.createTextNode("‎")
                     container.before(textNode)
