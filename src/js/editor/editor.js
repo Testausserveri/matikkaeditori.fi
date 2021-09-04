@@ -45,6 +45,16 @@ export default class Editor {
         })
     }
 
+    updateActiveLine(jumped){
+        const selection = window.getSelection().anchorNode?.parentElement
+        if(this.mathFocus == null && !jumped){
+            if(this.activeLine !== selection) this.activeLine = selection
+            if(selection === null || selection == undefined) this.activeLine = this.input
+        }
+
+        this.movedOutOfLastKeydown = false
+    }
+
     /**
      * Initialize the editor
      */
@@ -147,13 +157,7 @@ export default class Editor {
                 }
 
                 // Update active line
-                const selection = window.getSelection().anchorNode?.parentElement
-                if(this.mathFocus == null && !jumped){
-                    if(this.activeLine !== selection) this.activeLine = selection
-                    if(selection === null || selection == undefined) this.activeLine = this.input
-                }
-
-                this.movedOutOfLastKeydown = false
+                this.updateActiveLine(jumped)
 
                 //console.debug("Key", e.which)
             })
@@ -449,6 +453,8 @@ export default class Editor {
                     this.input.appendChild(textNode)
                 }
             }
+            // Set active line on first load
+            this.activeLine = this.input.childNodes[0]
         }
         catch(err){
             error("Editor", "Failed to load: " + err.stack != undefined ? err.stack : err)
