@@ -118,13 +118,13 @@ export default class Editor {
                     await this.setAnchor(true)
                     let node = document.getSelection().anchorNode
                     node = (node.nodeType == 3 ? node.parentNode : node)
-                    if(node !== this.input && node.nodeName === "P"){
+                    if(node !== this.input && node.nodeName === "P" && this.mathFocus === null){
                         // Move into math
                         console.log("[ EDITOR ] Jumping to math...")
                         jumped = true
                         const id = node.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
                         node.firstChild.click()
-                        this.maths[id].input.moveToRightEnd()
+                        await this.maths[id].input.moveToRightEnd()
                         e.preventDefault()
                         return
                     }
@@ -139,13 +139,13 @@ export default class Editor {
                     await this.setAnchor(true)
                     let node = document.getSelection().anchorNode
                     node = (node.nodeType == 3 ? node.parentNode : node)
-                    if(node !== this.input && node.nodeName === "P"){
+                    if(node !== this.input && node.nodeName === "P" && this.mathFocus === null){
                         // Move into math
                         console.log("[ EDITOR ] Jumping to math...")
                         jumped = true
                         const id = node.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
                         node.firstChild.click()
-                        this.maths[id].input.moveToLeftEnd()
+                        await this.maths[id].input.moveToLeftEnd()
                         e.preventDefault()
                         return
                     }
