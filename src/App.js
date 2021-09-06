@@ -14,16 +14,16 @@ import useWindowDimensions from "./utils/useWindowDimensions"
 function DesktopView(props) {
     return (
         <>
-            <Sidebar newDocument={props.newDocument} level={props.level} selectedItem={props.selectedItem} setSelectedItem={props.setSelectedItem} />
+            <Sidebar newDocument={props.newDocument} level={props.level} setLevel={props.setLevel} activeItem={props.activeItem} setActiveItem={props.setActiveItem} />
 
-            <Document selectedItem={props.selectedItem} setSelectedItem={props.setSelectedItem} />
+            <Document activeItem={props.activeItem} level={props.level} setActiveItem={props.setActiveItem} setLevel={props.setLevel} />
 
             <EquationSidebar />
         </>
     )
 }
 
-function MobileView({newDocument, level, selectedItem, setSelectedItem}) {
+function MobileView({newDocument, level, activeItem, setActiveItem, setLevel}) {
     // 0: file tree
     // 1: editor
     // 2: equations
@@ -33,13 +33,13 @@ function MobileView({newDocument, level, selectedItem, setSelectedItem}) {
     case 0:
         return (
             <>
-                <Sidebar style={{flex: "1"}} newDocument={newDocument} level={level} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+                <Sidebar style={{flex: "1"}} newDocument={newDocument} setLevel={setLevel} level={level} activeItem={activeItem} setActiveItem={setActiveItem} />
             </>
         )
     case 1:
         return (
             <>
-                <Document selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+                <Document activeItem={activeItem} setActiveItem={setActiveItem} />
                 <MobileEquationToolbar />
             </>
         )
@@ -50,10 +50,16 @@ function MobileView({newDocument, level, selectedItem, setSelectedItem}) {
 function App() {
     // Return base page
     // eslint-disable-next-line no-unused-vars
-    const [fsInstance, setFsInstance] = useState([])
-    const [selectedItem, setSelectedItem] = useState({})
+    const [fsInstance, setFsInstance] = useState({})
+    const [activeItem, setActiveItem] = useState("")
 
     const { width: windowWidth } = useWindowDimensions()
+
+    function setLevel(newLevel) {
+        let copy = {...fsInstance}
+        copy.level = newLevel
+        setFsInstance(copy)
+    }
 
     async function newDocument() {
         const documentId = (await window.internal.workers.api("Filesystem", "write", {
@@ -79,15 +85,15 @@ function App() {
 
         let copy = {...fsInstance}
         copy.index.push(fsItem)
-        setSelectedItem(fsItem)
+        setActiveItem(fsItem.i)
     }
 
     // select first item - we need this usually only just in the first run
-    function setInitialSelectedItem(level) {
+    function setInitialActiveItem(level) {
         const l = [...level]
         l.reverse()
         const item = l.find(item => item.t == 0)
-        setSelectedItem(item)
+        setActiveItem(item.i)
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -114,7 +120,7 @@ function App() {
         copy.index = level
         setFsInstance(copy)
         
-        setInitialSelectedItem(level)
+        setInitialActiveItem(level)
     }
     
     useEffect(async () => {
@@ -146,9 +152,9 @@ function App() {
             </div>
             <div className="app">
                 {(windowWidth > 800 ?
-                    <DesktopView newDocument={newDocument} level={fsInstance.index} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+                    <DesktopView newDocument={newDocument} level={fsInstance.index} activeItem={activeItem} setActiveItem={setActiveItem} setLevel={setLevel} />
                     :
-                    <MobileView newDocument={newDocument} level={fsInstance.index} selectedItem={selectedItem} setSelectedItem={setSelectedItem} />
+                    <MobileView newDocument={newDocument} level={fsInstance.index} activeItem={activeItem} setActiveItem={setActiveItem} setLevel={setLevel} />
                 )}
                 
             </div>

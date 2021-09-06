@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* global MathQuill, MathJax */
 /**
  * Math editor
@@ -138,9 +139,7 @@ export default class Editor {
             this.input.oninput = async () => {
                 // Re-align tools
                 if(this.mathFocus !== null) this.attachTools()
-                if(this.saveState == false){
-                    window.internal.ui.editor.save()
-                }
+                if (this.oninput) this.oninput()
             }
         }
         catch(err){
@@ -306,8 +305,8 @@ export default class Editor {
                 await container.insertBefore(img, this.maths[id].inputElement)
                 // Modify container size
                 let dims = img.getBoundingClientRect()
-                this.maths[id].container.style.width = Math.ceil(dims.width - 1 + 10) + "px"
-                this.maths[id].container.style.height = Math.ceil(dims.height - 5 + 10) + "px"
+                //this.maths[id].container.style.width = Math.ceil(dims.width - 1 + 10) + "px"
+                //this.maths[id].container.style.height = Math.ceil(dims.height - 5 + 10) + "px"
                 // Finalize
                 this.maths[id].inputElement.style.display = "none" // Hide the math element
                 this.maths[id].input.select()
@@ -350,9 +349,6 @@ export default class Editor {
      */
     async load(target, id){
         try {
-            if(this.target != null){
-                await this.save()
-            }
             // Target is filesystem answer
             this.input.innerHTML = ""
             this.target = target
@@ -406,9 +402,9 @@ export default class Editor {
     }
 
     /**
-     * Save data to filesystem target
+     * Format the data for saving purposes
      */
-    async save(){
+    async format(){
         try {
             // Save here
             // Format in editor:
@@ -446,6 +442,9 @@ export default class Editor {
             // NOT EMPTY
             if(format[0].startsWith("<math>")) format = "‎" + format
             if(format[0] === "") format.splice(0, 1)
+
+            return format
+            /*
             console.log("[ EDITOR ] Saved:", format)
             await window.internal.workers.api("Filesystem", "write", {
                 instance: window.internal.ui.activeFilesystemInstance,
@@ -454,10 +453,10 @@ export default class Editor {
                     type: 0
                 },
                 id: this.target.id
-            })
+            })*/
         }
         catch(err){
-            error("Editor", "Failed to save: " + err.stack != undefined ? err.stack : err)
+            error("Editor", "Failed to format: " + err.stack != undefined ? err.stack : err)
         }
     }
 }

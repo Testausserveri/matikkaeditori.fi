@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-unreachable */
 import React from "react"
 import PropTypes from "prop-types"
@@ -7,8 +8,10 @@ import formatDate from "../utils/date"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlus, faFolder } from "@fortawesome/free-solid-svg-icons"
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
+import useActiveItem from "../utils/useActiveItem"
 
 function FilesystemItem(props) {
+    if (!props.data) return null
     if (props.data.t == 1) { // folder
         return (
             <li className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
@@ -41,7 +44,15 @@ FilesystemItem.propTypes = filesystemItemType
 export default function Sidebar(props) {
     // todo implement subtrees
     const level = (props.level ? [...props.level] : null)
+    const [activeItemData] = useActiveItem(props.activeItem, level, props.setLevel)
+
     if (level) level.reverse()
+
+
+    const open = (item) => {
+        // to-do: save document before unload.
+        props.setActiveItem(item.i)
+    }
 
     return (
         <div className="sidebar" style={props.style}>
@@ -56,20 +67,12 @@ export default function Sidebar(props) {
             </div>
             <ul className="filesystemLevel">
                 {level ? level.map((item) => {
-                    const selected = props.selectedItem?.i == item.i
+                    const selected = activeItemData.i == item.i
 
-                    return <FilesystemItem key={item.i} data={selected ? props.selectedItem : item} selected={selected} onClick={() => props.setSelectedItem(item)}
+                    return <FilesystemItem key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
                     />
                 }) : null}
             </ul>
         </div>
     )
-}
-
-Sidebar.propTypes = {
-    level: PropTypes.array,
-    newDocument: PropTypes.func,
-    selectedItem: PropTypes.string,
-    setSelectedItem: PropTypes.func,
-    style: PropTypes.any
 }

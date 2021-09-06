@@ -64,7 +64,7 @@ Write to the filesystem:
 <br>Note: "True" is the filesystem root
 
 ```js
-const write_action = await window.internal.workers.api("Filesystem", "write", { id: "<file id, UUID v4>", content: {
+const write_action = await window.internal.workers.api("Filesystem", "write", { id: "<file id, UUID v4>", write: {
     ?name: "<name>",
     ?data: "<data>",
     type: "<0/1>"
