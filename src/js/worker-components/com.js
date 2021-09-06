@@ -13,12 +13,8 @@ self.addEventListener("message", e => {
 export default {
     send: async function (type, content){
         // eslint-disable-next-line no-async-promise-executor
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve) => {
             const id = uuid.v4()
-            let response = false
-            const timeout = setTimeout(async () => {
-                if(!response) reject("Timeout")
-            }, 30000)
             // Send message
             if(!content) content = {}
             postMessage(JSON.stringify({ type, content, id: content.id || id }))
@@ -27,8 +23,6 @@ export default {
             message_target.addEventListener("message", async function (e){
                 if(e.detail.id !== null && e.detail.id === id){
                     message_target.removeEventListener("message", e)
-                    response = true
-                    clearTimeout(timeout)
                     resolve(e.detail.content)
                 }
             })
