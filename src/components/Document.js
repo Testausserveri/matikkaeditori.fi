@@ -58,7 +58,7 @@ export default function Document({activeItem, level, setLevel}) {
         
         if(activeItemData.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
         answerRef.current.focus() // Focus on page load
-    }, [resultRef, activeItemData])
+    }, [resultRef, activeItemData.i])
 
     const save = async () => {
         console.log("[ SAVE ] Hey bitches we're saving")
@@ -123,7 +123,7 @@ export default function Document({activeItem, level, setLevel}) {
                 </Dropdown>
             </div>
             <div className="page" spellCheck={false}>
-                <div ref={answerRef} className="editor" id="editor-element" contentEditable="true"></div>
+                <div autoFocus="true" ref={answerRef} className="editor" id="editor-element" contentEditable="true"></div>
             </div>
         </div>
     )
