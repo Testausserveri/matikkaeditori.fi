@@ -428,7 +428,7 @@ com.onMessage.addEventListener("message", async e => {
     case "delete": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
         if(!instance) return console.error("No such filesystem instance")
-        await instance.delete(e.content.id)
+        await instance.remove(e.content.id)
         com.send("callback", { id: e.id })
         break
     }

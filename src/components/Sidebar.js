@@ -6,12 +6,36 @@ import "../css/sidebar.css"
 import formatDate from "../utils/date"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlus, faFolder } from "@fortawesome/free-solid-svg-icons"
+import { faPlus, faFolder, faEllipsisH } from "@fortawesome/free-solid-svg-icons"
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 import useActiveItem from "../utils/useActiveItem"
+import Dropdown from "./Dropdown"
 
 function FilesystemItem(props) {
     if (!props.data) return null
+
+    const dropdownData = [
+        {
+            text: "Uudelleennimeä",
+            action: () => {
+                document.getElementById("documentTitle").focus()
+                document.execCommand("selectAll",false,null)
+            }
+        },
+        {
+            text: "Monista",
+            action: () => {}
+        },
+        {
+            text: "Poista",
+            action: () => {}
+        },
+        {
+            text: "Eliminoi", // tähä sellane hauska jekku et se tekee saman ku poista mut antaa full screen räjähdyksen äänen kaa
+            action: () => {}
+        }
+    ]
+
     if (props.data.t == 1) { // folder
         return (
             <li className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
@@ -21,6 +45,7 @@ function FilesystemItem(props) {
                 <div className="fsContent">
                     <span>{props.data.name}</span>
                 </div>
+                
             </li>
         )
     } else if (props.data.t == 0) { // file
@@ -29,6 +54,14 @@ function FilesystemItem(props) {
                 <div className="content">
                     <span>{props.data.name}</span>
                     <span className="date">{formatDate(props.data.date).pretty}</span>
+                    
+                </div>
+                <div className="action">
+                    <Dropdown data={dropdownData} origin="left">
+                        <button className="ellipsis">
+                            <FontAwesomeIcon icon={faEllipsisH} />
+                        </button>
+                    </Dropdown>
                 </div>
             </li>
         )

@@ -15,6 +15,11 @@
     transform-origin: top right;
     right: 0;
 }
+.dropdown.leftOrigin {
+    transform-origin: top left;
+    right: auto;
+    left: 0;
+}
 .dropdown ul {
     list-style-type: none;
     margin: 0; padding: 0;
