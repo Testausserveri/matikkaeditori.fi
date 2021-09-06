@@ -49,7 +49,6 @@ export default function Document({activeItem, level, setLevel}) {
             window.internal.ui.editor = new Editor(answerRef.current)
             await window.internal.ui.editor.init()
         }
-        window.internal.ui.editor.oninput = debounce(save, 2000)
         answerRef.current.contentEditable = true
 
         console.log(activeItemData)
@@ -59,6 +58,10 @@ export default function Document({activeItem, level, setLevel}) {
         if(activeItemData.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
         answerRef.current.focus() // Focus on page load
     }, [resultRef, activeItemData.i])
+
+    useEffect(() => {
+        window.internal.ui.editor.oninput = debounce(save, 2000)
+    }, [activeItemData])
 
     const save = async () => {
         console.log("[ SAVE ] Hey bitches we're saving")
@@ -76,6 +79,7 @@ export default function Document({activeItem, level, setLevel}) {
 
         let copy = {...activeItemData}
         copy.data = format
+        console.log(copy)
         setActiveItemData(copy)
     }
 
