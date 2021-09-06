@@ -1,5 +1,6 @@
 /* eslint-disable no-unreachable */
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
+import { debounce } from "lodash"
 
 export default function useActiveItem(activeItem, level, setLevel) {
     const [data, setData] = useState({})
@@ -10,11 +11,24 @@ export default function useActiveItem(activeItem, level, setLevel) {
         setData(item)
     }, [activeItem, level])
 
-    const modify = (newData) => {
+    const fsSave = useCallback(debounce((newData, targetId) => {
+        if (!newData) return
+        window.internal.workers.api("Filesystem", "write", {
+            instance: window.internal.ui.activeFilesystemInstance,
+            id: targetId,
+            write: {
+                data: newData.data,
+                type: 0
+            }
+        })
+    }, 3000), [activeItem])
+
+    const modify = async (newData) => {
         let copy = [...level]
         let i = copy.findIndex(item => item.i === activeItem)
         copy[i] = newData
-        setLevel(copy)
+        setLevel(copy)  // save client-side
+        fsSave(newData, window.internal.ui.editor.target.i) // save fs (debounced, see above)
     }
 
     return [data, modify]

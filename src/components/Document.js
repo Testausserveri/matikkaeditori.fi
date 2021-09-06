@@ -2,7 +2,6 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from "react"
 import { useRef, useEffect, useCallback } from "react"
-import { debounce } from "lodash"
 
 import "../css/editor.css"
 import "../css/tooltip.css"
@@ -22,7 +21,7 @@ export default function Document({activeItem, level, setLevel}) {
     const answerRef = useRef()
     const resultRef = useRef()
     const titleRef = useRef()
-    const [activeItemData, setActiveItemData] = useActiveItem(activeItem, level, setLevel)
+    const [activeItemData, saveActiveItemData] = useActiveItem(activeItem, level, setLevel)
 
     const exportDropdown = [
         {
@@ -60,27 +59,18 @@ export default function Document({activeItem, level, setLevel}) {
     }, [resultRef, activeItemData.i])
 
     useEffect(() => {
-        window.internal.ui.editor.oninput = debounce(save, 2000)
+        window.internal.ui.editor.oninput = save
     }, [activeItemData])
 
     const save = async () => {
         console.log("[ SAVE ] Hey bitches we're saving")
         const format = await window.internal.ui.editor.format()
         console.log(titleRef.current.innerText, format)
-        
-        await window.internal.workers.api("Filesystem", "write", {
-            instance: window.internal.ui.activeFilesystemInstance,
-            id: window.internal.ui.editor.target.i,
-            write: {
-                data: format,
-                type: 0
-            }
-        })
 
         let copy = {...activeItemData}
         copy.data = format
         console.log(copy)
-        setActiveItemData(copy)
+        saveActiveItemData(copy)
     }
 
     async function saveTitle(event) {
@@ -89,7 +79,7 @@ export default function Document({activeItem, level, setLevel}) {
 
         let copy = activeItemData
         copy.name = event.target.innerText
-        setActiveItemData({...copy})
+        saveActiveItemData({...copy})
 
         if (event.target.innerHTML.trim() == "") {
             event.target.innerHTML = "Nimetön vastaus"
