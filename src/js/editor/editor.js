@@ -200,7 +200,7 @@ export default class Editor {
         const top = dims.top + dims.height
         const left = dims.left + dims.width
         const tools = document.getElementById("mathTools")
-        tools.style.display = "block"
+        tools.style.display = "none" // set this to block here to unhide this
         tools.style.top = top + "px"
         tools.style.left = (left - tools.getBoundingClientRect().width + 5) + "px"
     }
