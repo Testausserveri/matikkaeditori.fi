@@ -1,6 +1,7 @@
 .sidebar {
     padding: 0 1.5rem;
     width: 18%;
+    flex-shrink: 0;
     /*
     height: 100vh;
     overflow-y: auto;
