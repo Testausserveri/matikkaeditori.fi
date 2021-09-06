@@ -12,7 +12,8 @@
     top: 100%;
     margin-top: 0.5em;
     transition: transform 0.2s, opacity 0.2s;
-    transform-origin: top left;
+    transform-origin: top right;
+    right: 0;
 }
 .dropdown ul {
     list-style-type: none;
