@@ -44,7 +44,9 @@ FilesystemItem.propTypes = filesystemItemType
 export default function Sidebar(props) {
     // todo implement subtrees
     const level = (props.level ? [...props.level] : null)
-    const [activeItemData] = useActiveItem(props.activeItem, level, props.setLevel)
+
+    
+    const [activeItemData] = useActiveItem(props.activeItem, props.level, props.setLevel)
 
     if (level) level.reverse()
 

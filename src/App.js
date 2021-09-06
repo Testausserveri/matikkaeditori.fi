@@ -11,12 +11,14 @@ import logo from "./assets/icon.svg"
 import { useEffect, useState } from "react"
 import useWindowDimensions from "./utils/useWindowDimensions"
 
-function DesktopView(props) {
+function DesktopView({newDocument, level, setLevel, setActiveItem, activeItem}) {
     return (
         <>
-            <Sidebar newDocument={props.newDocument} level={props.level} setLevel={props.setLevel} activeItem={props.activeItem} setActiveItem={props.setActiveItem} />
-
-            <Document activeItem={props.activeItem} level={props.level} setActiveItem={props.setActiveItem} setLevel={props.setLevel} />
+            <Sidebar newDocument={newDocument} level={level} setLevel={setLevel} activeItem={activeItem} setActiveItem={setActiveItem} />
+            {level && activeItem.length > 0 ? 
+                <Document activeItem={activeItem} level={level} setActiveItem={setActiveItem} setLevel={setLevel} />
+                : null}
+            
 
             <EquationSidebar />
         </>
@@ -50,16 +52,10 @@ function MobileView({newDocument, level, activeItem, setActiveItem, setLevel}) {
 function App() {
     // Return base page
     // eslint-disable-next-line no-unused-vars
-    const [fsInstance, setFsInstance] = useState({})
+    const [fsLevel, setFsLevel] = useState([])
     const [activeItem, setActiveItem] = useState("")
 
     const { width: windowWidth } = useWindowDimensions()
-
-    function setLevel(newLevel) {
-        let copy = {...fsInstance}
-        copy.level = newLevel
-        setFsInstance(copy)
-    }
 
     async function newDocument() {
         const documentId = (await window.internal.workers.api("Filesystem", "write", {
@@ -73,7 +69,7 @@ function App() {
 
         const data = (await window.internal.workers.api("Filesystem", "read", {
             id: documentId,
-            instance: fsInstance.instance
+            instance: window.internal.ui.activeFilesystemInstance
         })).read
 
         const fsItem = {
@@ -83,8 +79,10 @@ function App() {
             i: documentId
         }
 
-        let copy = {...fsInstance}
-        copy.index.push(fsItem)
+        let copy = [...fsLevel]
+        copy.push(fsItem)
+        setFsLevel(copy)
+
         setActiveItem(fsItem.i)
     }
 
@@ -116,9 +114,7 @@ function App() {
         let level = await Promise.all(promises)
         console.log("[ APP ] Done loading fs details", level)
         
-        let copy = {...instance}
-        copy.index = level
-        setFsInstance(copy)
+        setFsLevel(level)
         
         setInitialActiveItem(level)
     }
@@ -134,7 +130,7 @@ function App() {
             console.log("[ APP ] Created database instance:", instance)
             // quick and rough file tree, no names
             console.log("[ APP ] Instance UUID ", instance.instance)
-            setFsInstance(instance)
+            setFsLevel(instance.index)
 
             // more in detail file tree, with names, dates and data
             // loaded later by its own pace
@@ -152,9 +148,9 @@ function App() {
             </div>
             <div className="app">
                 {(windowWidth > 800 ?
-                    <DesktopView newDocument={newDocument} level={fsInstance.index} activeItem={activeItem} setActiveItem={setActiveItem} setLevel={setLevel} />
+                    <DesktopView newDocument={newDocument} level={fsLevel} activeItem={activeItem} setActiveItem={setActiveItem} setLevel={setFsLevel} />
                     :
-                    <MobileView newDocument={newDocument} level={fsInstance.index} activeItem={activeItem} setActiveItem={setActiveItem} setLevel={setLevel} />
+                    <MobileView newDocument={newDocument} level={fsLevel} activeItem={activeItem} setActiveItem={setActiveItem} setLevel={setFsLevel} />
                 )}
                 
             </div>

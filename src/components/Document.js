@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import React from "react"
+import React, { useState } from "react"
 import { useRef, useEffect, useCallback } from "react"
 import { debounce } from "lodash"
 
@@ -18,11 +18,11 @@ import useActiveItem from "../utils/useActiveItem"
 
 
 // eslint-disable-next-line react/prop-types
-export default function Document(props) {
+export default function Document({activeItem, level, setLevel}) {
     const answerRef = useRef()
     const resultRef = useRef()
     const titleRef = useRef()
-    const [activeItemData, setActiveItemData] = useActiveItem(props.activeItem, props.level, props.setLevel)
+    const [activeItemData, setActiveItemData] = useActiveItem(activeItem, level, setLevel)
 
     const exportDropdown = [
         {
@@ -40,7 +40,27 @@ export default function Document(props) {
         
     ]
 
-    const save = async (item) => {
+    useEffect(async () => {
+        // Load answer into editor here
+        answerRef.current.contentEditable = false
+
+        if(!window.internal.ui.editor){
+            // Initialize editor
+            window.internal.ui.editor = new Editor(answerRef.current)
+            await window.internal.ui.editor.init()
+        }
+        window.internal.ui.editor.oninput = debounce(save, 2000)
+        answerRef.current.contentEditable = true
+
+        console.log(activeItemData)
+
+        // Load active item
+        
+        if(activeItemData.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
+        answerRef.current.focus() // Focus on page load
+    }, [resultRef, activeItemData])
+
+    const save = async () => {
         console.log("[ SAVE ] Hey bitches we're saving")
         const format = await window.internal.ui.editor.format()
         console.log(titleRef.current.innerText, format)
@@ -53,43 +73,19 @@ export default function Document(props) {
                 type: 0
             }
         })
-        //window.internal.ui.editor.events.dispathEvent(new CustomEvent("saved"))
+
+        let copy = {...activeItemData}
+        copy.data = format
+        setActiveItemData(copy)
     }
-
-    const debouncedSave = useCallback(debounce(save, 2000), [])
-
-    /*
-window.internal.ui.editor.save()
-    */
-    // Editor result content is available inside resultRef, the answerRef is just an visual editor with extra stuff
-
-    useEffect(async () => {
-        // Load answer into editor here
-        answerRef.current.contentEditable = false
-        if(!window.internal.ui.editor){
-            window.internal.ui.editor = new Editor(answerRef.current)
-            //window.internal.ui.editor.oninput = debouncedSave
-            window.internal.ui.editor.oninput = () => {
-                //window.internal.ui.editor.events.dispathEvent(new CustomEvent("modified"))
-                debouncedSave()
-            }
-            await window.internal.ui.editor.init()
-        }
-        answerRef.current.contentEditable = true
-
-        console.log(activeItemData)
-        if(activeItemData.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
-        answerRef.current.focus() // Focus on page load
-    }, [resultRef, activeItemData])
 
     async function saveTitle(event) {
         event.target.blur()
         event.preventDefault()
 
-        let temp = activeItemData
-        temp.name = event.target.innerText
-        //props.setSelectedItem({...temp})
-        setActiveItemData({...temp})
+        let copy = activeItemData
+        copy.name = event.target.innerText
+        setActiveItemData({...copy})
 
         if (event.target.innerHTML.trim() == "") {
             event.target.innerHTML = "Nimetön vastaus"

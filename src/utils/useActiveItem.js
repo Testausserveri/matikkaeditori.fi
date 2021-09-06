@@ -10,9 +10,9 @@ export default function useActiveItem(activeItem, level, setLevel) {
         setData(item)
     }, [activeItem, level])
 
-    function modify(newData) {
-        let i = level.findIndex(item => item.i === activeItem)
+    const modify = (newData) => {
         let copy = [...level]
+        let i = copy.findIndex(item => item.i === activeItem)
         copy[i] = newData
         setLevel(copy)
     }
