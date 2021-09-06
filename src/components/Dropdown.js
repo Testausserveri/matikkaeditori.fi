@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect } from "react"
-import { useRef } from "react/cjs/react.development"
+import React, { useState, useEffect, useRef } from "react"
 import "../css/dropdown.css"
 
 export default function Dropdown(props) {
