@@ -15,9 +15,7 @@ function DesktopView({newDocument, level, setLevel, setActiveItem, activeItem}) 
     return (
         <>
             <Sidebar newDocument={newDocument} level={level} setLevel={setLevel} activeItem={activeItem} setActiveItem={setActiveItem} />
-            {level && activeItem.length > 0 ? 
-                <Document activeItem={activeItem} level={level} setActiveItem={setActiveItem} setLevel={setLevel} />
-                : null}
+            <Document activeItem={activeItem} level={level} setActiveItem={setActiveItem} setLevel={setLevel} />
             
 
             <EquationSidebar />
