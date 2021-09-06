@@ -95,6 +95,20 @@ body {
     background-color: white;
     padding: 1rem 2rem;
     box-shadow: var(--small-shadow);
+    display: flex;
+    justify-content: space-between;
+}
+.navigation div {
+    display: flex;
+    justify-content: center;
+}
+.navigation div a.iconLink {
+    margin-left: 0.6rem;
+    color: #2FA3CF;
+    transition: filter 0.1s;
+}
+.navigation div a.iconLink:hover {
+    filter: brightness(0.75);
 }
 .navigation img {
     height: 1rem;

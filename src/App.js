@@ -10,6 +10,9 @@ import MathTools from "./components/MathTools"
 import logo from "./assets/icon.svg"
 import { useEffect, useState } from "react"
 import useWindowDimensions from "./utils/useWindowDimensions"
+import testausserveriLogo from "./assets/testausserveri.svg"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faDiscord } from "@fortawesome/free-brands-svg-icons"
 
 function DesktopView({newDocument, level, setLevel, setActiveItem, activeItem}) {
     return (
@@ -142,7 +145,17 @@ function App() {
     return (
         <>
             <div className="navigation">
-                <img src={logo} alt="Matikkaeditori.fi" />
+                <div>
+                    <img src={logo} alt="Matikkaeditori.fi" />
+                </div>
+                <div>
+                    <a href="https://discord.gg/testaus" target="_blank" rel="noreferrer" className="iconLink">
+                        <FontAwesomeIcon icon={faDiscord} />
+                    </a>
+                    <a href="https://testausserveri.fi" target="_blank" rel="noreferrer" className="iconLink">
+                        <img src={testausserveriLogo} />
+                    </a>
+                </div>
             </div>
             <div className="app">
                 {(windowWidth > 800 ?
