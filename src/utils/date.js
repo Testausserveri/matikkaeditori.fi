@@ -7,12 +7,20 @@ Date.prototype.getWeek = function () {
 
 export default function formatDate(date) {
     date = new Date(date)
+    let today = new Date()
     let pretty
-    if (new Date().getWeek() == date.getWeek()) {
-        pretty = ["Sunnuntaina", "Maanantaina", "Tiistaina", "Keskiviikkona", "Torstaina", "Perjantaina", "Lauantaina"][date.getDay()]
-        pretty += ` ${date.getHours()}:${date.getMinutes().toString().padEnd(1, "0")}`
+    if (today.getDate() == date.getDate() && today.getMonth() == date.getMonth() && today.getFullYear() == date.getFullYear()) {
+        pretty = "Tänään"
+    } else if (today.getDate() + 1 == date.getDate() && today.getMonth() == date.getMonth() && today.getFullYear() == date.getFullYear()) { // This will not work when month changes, but that's minor stuff
+        pretty = "Eilen"
+    } else if (today.getWeek() == date.getWeek() && today.getFullYear() == date.getFullYear()) {
+        pretty = ["Sunnuntai", "Maanantai", "Tiistai", "Keskiviikko", "Torstai", "Perjantai", "Lauantai"][date.getDay()]
+    } else {
+        pretty = `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
     }
+    // to-do: check if the following makes sense
+    pretty += ` ${date.getHours().toString().padEnd(1, "0")}:${date.getMinutes().toString().padEnd(1, "0")}`
     return {
-        pretty: pretty
+        pretty: pretty.trim()
     }
 }
