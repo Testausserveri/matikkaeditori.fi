@@ -27,7 +27,7 @@ export default function Dropdown(props) {
                     {props.data.map(option => (
                         <li key={option.text} onClick={() => {
                             setDropdownOpened(false)
-                            option.action()
+                            option.action(props.context)
                         }}>{option.text}</li>
                     ))}
                 </ul>

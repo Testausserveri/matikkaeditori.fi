@@ -366,7 +366,7 @@ export default class Editor {
                     container.after(textNode)
                 }
                 // Set UI stuff
-                window.setLatexCommandsVisibility(false)
+                if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
                 this.mathFocus = null
                 this.events.dispatchEvent(new CustomEvent("mathBlur"))
                 console.log("[ EDITOR ] Math unfocused")

@@ -113,3 +113,16 @@ body {
 .navigation img {
     height: 1rem;
 }
+
+.head .mobileBack {
+    margin-right: 1rem;
+    background-color: transparent;
+    color: #2FA3CF;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.head .mobileBack:hover {
+    background-color: transparent;
+    color: #2FA3CF;
+}

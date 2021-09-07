@@ -31,13 +31,8 @@ function FilesystemItem(props) {
             action: () => {
                 // Note: Should there be a dialog to ask if you are sure?
                 console.log("IN", props.data)
-                if(confirm("Are you sure you want to remove \"" + props.data.name + "\"?")){
-                    window.internal.workers.api("Filesystem", "remove", {
-                        instance: window.internal.ui.activeFilesystemInstance,
-                        id: props.data.i
-                    }).then(() => {
-                        alert("Removed.")
-                    })
+                if(confirm("Haluatko varmasti poistaa \"" + props.data.name + "\"?")){
+                    props.deleteDocument(props.data.i)
                 }
             }
         },
@@ -113,9 +108,9 @@ export default function Sidebar(props) {
             </div>
             <ul className="filesystemLevel">
                 {level ? level.map((item) => {
-                    const selected = activeItemData.i == item.i
+                    const selected = activeItemData?.i == item.i
 
-                    return <FilesystemItem key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
+                    return <FilesystemItem deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
                     />
                 }) : null}
             </ul>

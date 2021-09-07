@@ -8,7 +8,7 @@ import "../css/tooltip.css"
 import Editor from "../js/editor/editor.js"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faDownload } from "@fortawesome/free-solid-svg-icons"
+import { faChevronLeft, faDownload } from "@fortawesome/free-solid-svg-icons"
 
 import Dropdown from "./Dropdown"
 
@@ -17,7 +17,7 @@ import useActiveItem from "../utils/useActiveItem"
 
 
 // eslint-disable-next-line react/prop-types
-export default function Document({activeItem, level, setLevel}) {
+export default function Document({setActiveItem, activeItem, level, setLevel, setMobileViewState, isMobile}) {
     const answerRef = useRef()
     const resultRef = useRef()
     const titleRef = useRef()
@@ -54,9 +54,9 @@ export default function Document({activeItem, level, setLevel}) {
 
         // Load active item
         
-        if(activeItemData.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
+        if(activeItemData?.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
         answerRef.current.focus() // Focus on page load
-    }, [resultRef, activeItemData.i])
+    }, [resultRef, activeItemData?.i])
 
     useEffect(() => {
         window.internal.ui.editor.oninput = save
@@ -98,17 +98,29 @@ export default function Document({activeItem, level, setLevel}) {
     return (
         <div className="document">
             <div className="head">
-                <h2 
-                    spellCheck={false} 
-                    contentEditable={true} 
-                    id="documentTitle" 
-                    suppressContentEditableWarning={true} 
-                    onClick={() => {document.execCommand("selectAll",false,null)}} 
-                    onKeyDown={(event) => {if (event.key == "Enter") {saveTitle(event)}} } 
-                    onBlur={(event) => {saveTitle(event)}}
-                    ref={titleRef}>
-                    {activeItemData?.name}
-                </h2>
+                <div style={{display: "flex"}}>
+                    {isMobile ? 
+                        <button className="mobileBack" onClick={() => {
+                            setMobileViewState(0)
+                        }}>
+                            <FontAwesomeIcon icon={faChevronLeft} />
+                        </button>
+                        : null}
+                    <h2 
+                        spellCheck={false} 
+                        contentEditable={true} 
+                        id="documentTitle" 
+                        suppressContentEditableWarning={true} 
+                        onClick={() => {document.execCommand("selectAll",false,null)}} 
+                        onKeyDown={(event) => {if (event.key == "Enter") {saveTitle(event)}} } 
+                        onBlur={(event) => {saveTitle(event)}}
+                        ref={titleRef}>
+                        {activeItemData?.name}
+                    </h2>
+
+                </div>
+
+                
 
                 <Dropdown data={exportDropdown}>
                     <button className="secondary">

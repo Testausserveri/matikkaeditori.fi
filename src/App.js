@@ -14,42 +14,6 @@ import testausserveriLogo from "./assets/testausserveri.svg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDiscord } from "@fortawesome/free-brands-svg-icons"
 
-function DesktopView({newDocument, level, setLevel, setActiveItem, activeItem}) {
-    return (
-        <>
-            <Sidebar newDocument={newDocument} level={level} setLevel={setLevel} activeItem={activeItem} setActiveItem={setActiveItem} />
-            <Document activeItem={activeItem} level={level} setActiveItem={setActiveItem} setLevel={setLevel} />
-            
-
-            <EquationSidebar />
-        </>
-    )
-}
-
-function MobileView({newDocument, level, activeItem, setActiveItem, setLevel}) {
-    // 0: file tree
-    // 1: editor
-    // 2: equations
-    const [viewState] = useState(1)
-
-    switch (viewState) {
-    case 0:
-        return (
-            <>
-                <Sidebar style={{flex: "1"}} newDocument={newDocument} setLevel={setLevel} level={level} activeItem={activeItem} setActiveItem={setActiveItem} />
-            </>
-        )
-    case 1:
-        return (
-            <>
-                <Document activeItem={activeItem} setActiveItem={setActiveItem} />
-                <MobileEquationToolbar />
-            </>
-        )
-    }
-    
-}
-
 function App() {
     // Return base page
     // eslint-disable-next-line no-unused-vars
@@ -58,7 +22,7 @@ function App() {
 
     const { width: windowWidth } = useWindowDimensions()
 
-    async function newDocument() {
+    async function newDocument(event, newLevel) {
         const documentId = (await window.internal.workers.api("Filesystem", "write", {
             instance: window.internal.ui.activeFilesystemInstance,
             write: {
@@ -80,15 +44,37 @@ function App() {
             i: documentId
         }
 
-        let copy = [...fsLevel]
+        let l = newLevel || fsLevel
+        let copy = [...l]
         copy.push(fsItem)
         setFsLevel(copy)
 
         setActiveItem(fsItem.i)
     }
 
+    async function deleteDocument(documentId) {
+        await window.internal.workers.api("Filesystem", "remove", {
+            instance: window.internal.ui.activeFilesystemInstance,
+            id: documentId
+        })
+
+        let copy = [...fsLevel]
+        let i = copy.findIndex(item => item.i === documentId)
+        copy = copy.filter(item => item.i !== documentId)
+        setInitialActiveItem(copy)
+        setFsLevel(copy)
+    }
+
+    useEffect(() => {
+        setMobileViewState(1)
+    }, [activeItem])
+
     // select first item - we need this usually only just in the first run
-    function setInitialActiveItem(level) {
+    async function setInitialActiveItem(level) {
+        if (level.length === 0) {
+            await newDocument(null, level)
+            return
+        }
         const l = [...level]
         l.reverse()
         const item = l.find(item => item.t == 0)
@@ -118,6 +104,7 @@ function App() {
         setFsLevel(level)
         
         setInitialActiveItem(level)
+        setMobileViewState(1)
     }
     
     useEffect(async () => {
@@ -142,6 +129,13 @@ function App() {
             console.debug(e)
         }
     }, [])
+
+    const isMobile = windowWidth < 800
+    // 0: file tree
+    // 1: editor
+    // 2: equations
+    const [mobileViewState, setMobileViewState] = useState(0)
+
     return (
         <>
             <div className="navigation">
@@ -158,13 +152,26 @@ function App() {
                 </div>
             </div>
             <div className="app">
-                {(windowWidth > 800 ?
-                    <DesktopView newDocument={newDocument} level={fsLevel} activeItem={activeItem} setActiveItem={setActiveItem} setLevel={setFsLevel} />
-                    :
-                    <MobileView newDocument={newDocument} level={fsLevel} activeItem={activeItem} setActiveItem={setActiveItem} setLevel={setFsLevel} />
-                )}
+                { (isMobile && mobileViewState === 0) || !isMobile ?
+                    <Sidebar style={(isMobile ? {flex: "1"} : {})} newDocument={newDocument} deleteDocument={deleteDocument} level={fsLevel} setLevel={setFsLevel} activeItem={activeItem} setActiveItem={setActiveItem} />
+                    : null }
                 
+                { (isMobile && mobileViewState === 1) || !isMobile ?
+                    <>
+                        <Document isMobile={isMobile} setMobileViewState={setMobileViewState} activeItem={activeItem} level={fsLevel} setActiveItem={setActiveItem} setLevel={setFsLevel} />
+                        {!isMobile ? 
+                            <EquationSidebar />
+                            : 
+                            <MobileEquationToolbar /> }
+                    </>
+                    
+                    : null }
+                
+                { (isMobile && mobileViewState === 2) ?
+                    <div>Something</div>
+                    : null}
             </div>
+
             <MathTools></MathTools>
         </>
     )
