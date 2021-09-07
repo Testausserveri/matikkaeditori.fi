@@ -28,7 +28,18 @@ function FilesystemItem(props) {
         },
         {
             text: "Poista",
-            action: () => {}
+            action: () => {
+                // Note: Should there be a dialog to ask if you are sure?
+                console.log("IN", props.data)
+                if(confirm("Are you sure you want to remove \"" + props.data.name + "\"?")){
+                    window.internal.workers.api("Filesystem", "remove", {
+                        instance: window.internal.ui.activeFilesystemInstance,
+                        id: props.data.i
+                    }).then(() => {
+                        alert("Removed.")
+                    })
+                }
+            }
         },
         {
             text: "Eliminoi", // tähä sellane hauska jekku et se tekee saman ku poista mut antaa full screen räjähdyksen äänen kaa

@@ -119,53 +119,58 @@ class Filesystem {
      * Write data to the index
      * @param {*} id if true --> root
      * @param {*} data 
+     * @param {*} onlyUpdate Do not edit
      */
-    async writeToIndex(id, data){
+    async writeToIndex(id, data, onlyUpdate){
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve, reject) => {
             if(id === undefined) id = true // Default is root
             console.log("[ Filesystem ] Preparing index update...")
             console.debug("[ Filesystem ] Index snapshot before update:", this.index)
             console.debug("[ Filesystem] Index entry identifier:", id, "data:", data)
-            if(id === true){
-                // In root
-                console.debug("[ Filesystem ] Writing to index root...")
-                let replaced = false
-                for(let i = 0; i < this.index.length; i++){
-                    if(this.index[i].i === data.id) {
-                        replaced = true
-                        this.index[i] = data
-                    }
-                }
-                console.log("Replaced", replaced)
-                if(!replaced) this.index.push(data)
-            }else {
-                // In folder
-                console.debug("[ Filesystem ] Writing to folder...")
-                let replaced = false
-                const find = (tree, id) => {
-                    for(let i = 0; i < tree.length; i++){
-                        if(tree[i].t === 0 && tree[i].id === id) {
+
+            // Do the things
+            if(!onlyUpdate){
+                if(id === true){
+                    // In root
+                    console.debug("[ Filesystem ] Writing to index root...")
+                    let replaced = false
+                    for(let i = 0; i < this.index.length; i++){
+                        if(this.index[i].i === data.id) {
                             replaced = true
-                            tree[i] = data
-                        }else if(tree[i].t === 1){
-                            if(tree[i].i === id){
-                                // Replace?
-                                for(let ii = 0; ii < tree[i].d.length; ii++){
-                                    if(tree[i].d[ii].id === data.id){
-                                        replaced = true
-                                        tree[i].d[ii] = data
+                            this.index[i] = data
+                        }
+                    }
+                    console.log("Replaced", replaced)
+                    if(!replaced) this.index.push(data)
+                }else {
+                    // In folder
+                    console.debug("[ Filesystem ] Writing to folder...")
+                    let replaced = false
+                    const find = (tree, id) => {
+                        for(let i = 0; i < tree.length; i++){
+                            if(tree[i].t === 0 && tree[i].id === id) {
+                                replaced = true
+                                tree[i] = data
+                            }else if(tree[i].t === 1){
+                                if(tree[i].i === id){
+                                    // Replace?
+                                    for(let ii = 0; ii < tree[i].d.length; ii++){
+                                        if(tree[i].d[ii].id === data.id){
+                                            replaced = true
+                                            tree[i].d[ii] = data
+                                        }
                                     }
+                                    if(!replaced) tree[i].d.push(data)
+                                }else {
+                                    find(tree[i].d, id)
                                 }
-                                if(!replaced) tree[i].d.push(data)
-                            }else {
-                                find(tree[i].d, id)
                             }
                         }
                     }
+                    find(this.index, id)
+                    if(!replaced) reject("Cannot find such location")
                 }
-                find(this.index, id)
-                if(!replaced) reject("Cannot find such location")
             }
             const hashSession = new hash(this.index)
             const _hash = await hashSession.sha1()
@@ -215,12 +220,14 @@ class Filesystem {
             for(let entry of tree){
                 if(entry.i === id) {
                     // Note: Do we need to edit this
-                    entry = undefined
-                    return true
+                    tree.splice(tree.indexOf(entry), 1)
+                    this.writeToIndex(null, null, true).then(() => {
+                        return true
+                    })
                 }
                 if(entry.t === 1){
                     const l = looper(entry.d)
-                    if(l !== null) return
+                    if(l !== null) return l
                 }
             }
             return null
@@ -316,13 +323,20 @@ class Filesystem {
                  * -----------------------------------------------
                  */
                 case 0: {
-                    console.log("[ Filesystem ] Preparing delete task...")
+                    console.log("[ Filesystem ] Preparing remove task...")
                     // Remove from database
-                    if(await localForage.getItem(id) !== null) await localForage.removeItem(id)
+                    if(await localForage.getItem(id) !== null) {
+                        console.log("[ Filesystem ] Target", id, "exists")
+                        await localForage.removeItem(id)
+                    }else {
+                        console.log("[ Filesystem ] Target not found")
+                    }
 
                     // Remove from index
-                    if(await this.resolveFromIndex(id)) await this.removeFromIndex(id)
+                    if(await this.resolveFromIndex(id) !== null) await this.removeFromIndex(id)
                     
+
+                    console.log("[ Filesystem ] Remove task concluded")
                     resolve(true)
                     break
                 }
@@ -425,11 +439,28 @@ com.onMessage.addEventListener("message", async e => {
         // Ignore these. (Handled by com.js)
         break
     }
-    case "delete": {
+    case "remove": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
         if(!instance) return console.error("No such filesystem instance")
+        console.log("RAW", e.content)
         await instance.remove(e.content.id)
         com.send("callback", { id: e.id })
+        break
+    }
+    case "move": {
+        const instance = this_worker.shared.filesystem_instances[e.content.instance]
+        if(!instance) return console.error("No such filesystem instance")
+        const currentLocation = e.content.from
+        const newLocation = e.content.to
+        // TODO: read from index & remove & write
+        const oldData = await instance.resolveFromIndex(currentLocation)
+        if(!oldData) return console.error("No such location (read)")
+        await instance.removeFromIndex(e.content.id)
+        if(newLocation !== true) {
+            const newLocationExists = await instance.resolveFromIndex(newLocation)
+            if(!newLocationExists) return console.error("No such location (write)")
+        }
+        await instance.writeToIndex(newLocation, oldData)
         break
     }
     case "index": {
