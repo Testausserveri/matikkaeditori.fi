@@ -11,7 +11,7 @@ export default function formatDate(date) {
     let pretty
     if (today.getDate() == date.getDate() && today.getMonth() == date.getMonth() && today.getFullYear() == date.getFullYear()) {
         pretty = "Tänään"
-    } else if (today.getDate() + 1 == date.getDate() && today.getMonth() == date.getMonth() && today.getFullYear() == date.getFullYear()) { // This will not work when month changes, but that's minor stuff
+    } else if (today.getDate() - 1 == date.getDate() && today.getMonth() == date.getMonth() && today.getFullYear() == date.getFullYear()) { // This will not work when month changes, but that's minor stuff
         pretty = "Eilen"
     } else if (today.getWeek() == date.getWeek() && today.getFullYear() == date.getFullYear()) {
         pretty = ["Sunnuntai", "Maanantai", "Tiistai", "Keskiviikko", "Torstai", "Perjantai", "Lauantai"][date.getDay()]
@@ -19,7 +19,7 @@ export default function formatDate(date) {
         pretty = `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
     }
     // to-do: check if the following makes sense
-    pretty += ` ${date.getHours().toString().padEnd(1, "0")}:${date.getMinutes().toString().padEnd(1, "0")}`
+    pretty += ` ${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`
     return {
         pretty: pretty.trim()
     }
