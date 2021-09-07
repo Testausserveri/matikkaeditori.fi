@@ -27,7 +27,7 @@ function App() {
             instance: window.internal.ui.activeFilesystemInstance,
             write: {
                 type: 0,
-                name: "New answer",
+                name: "Uusi vastaus",
                 data: ""
             }
         })).write
