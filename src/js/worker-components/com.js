@@ -35,7 +35,7 @@ export default {
             // Send message
             if(!content) content = {}
             if(content.id !== undefined) content.callback = true
-            if(!target) return reject("Target must be specified")
+            if(!target && content.id === undefined) return reject("Target must be specified")
             postMessage(JSON.stringify({ type: "relay", target, content, id: content.id || id }))
 
             // Listen for response
