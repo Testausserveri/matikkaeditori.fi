@@ -44,11 +44,13 @@ async function onMessage(event, name){
             }
             break
         case "error":
+            console.warn("[ WORKERS ] The log \"error\" will soon be removed!")
             // The worker wants to report an error
             error("Worker - " + name, message.content)
             //console.error("[ WORKER - " + name + " ]", message.content)
             break
         case "log":
+            console.warn("[ WORKERS ] The log \"command\" will soon be removed!")
             // The worker wants to log a message to the browser console
             console.log("[ WORKER - " + name + " ]", message.content)
             break
