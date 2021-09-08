@@ -60,9 +60,32 @@ async function onMessage(event, name){
             }
             break
         case "callback": 
-            if(window.internal.workers.handlers[message.id] === undefined) console.warn("[ WORKERS] Dropped callback \"" + message.id + "\"")
+            if(window.internal.workers.handlers[message.id] === undefined) console.warn("[ WORKERS ] Dropped callback \"" + message.id + "\"")
             window.internal.workers.handlers[message.id](message.content)
             break
+        case "relay": {
+            // Relay messages to other workers
+            if(message.callback !== true){
+                if(window.internal.workers.list[message.target] === undefined) {
+                    console.error("[ WORKER ] No such relay target as \"" + message.target + "\"")
+                }else {
+                    const id = uuid.v4()
+                    window.internal.workers.handlers[id] = async (response) => {
+                        // This will be called when the worker responds
+                        sendMessage(name, response.content)
+                    }
+                    sendMessage(message.target, message.content)
+                }
+            }else {
+                // This is a callback
+                if(window.internal.workers.handlers[message.callback]){
+                    window.internal.workers.handlers[message.callback]()
+                }else {
+                    console.error("[ WORKERS ] Dropped callback \"" + message.callback + "\"")
+                }
+            }
+            break
+        }
         case "window": {
             const whitelist = ["id"] // Note: Internal cannot be moved as is! Move only specific values from it if needed.
             let json = {}
