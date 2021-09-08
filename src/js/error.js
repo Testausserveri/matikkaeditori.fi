@@ -2,6 +2,7 @@
  * Error logging utility
  * 
  * By: @Esinko
+ * @deprecated Use console.error or console.warn
  * @param {*} source 
  * @param {*} message 
  */
