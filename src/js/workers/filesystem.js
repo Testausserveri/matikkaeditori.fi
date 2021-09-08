@@ -98,7 +98,9 @@ class Filesystem {
                     const json = JSON.parse(await localForage.getItem(id))
                     console.debug("[ Filesystem ] Read raw data:", json)
                     console.debug("[ Filesystem ] Validating checksum...") 
-                    const isValid = await this.validate(JSON.stringify({name: json.name, data: json.data, date: json.date}), json.checksum)
+                    let jsonData = {name: json.name, date: json.date}
+                    if(json.data) jsonData.data = json.data // Add data to checksum calculation if available
+                    const isValid = await this.validate(JSON.stringify(jsonData), json.checksum)
                     if(isValid){
                         console.debug("[ Filesystem ] Checksum valid, read task concluded successfully.")
                         resolve(json)
@@ -283,6 +285,11 @@ class Filesystem {
                     if(data.type === 0){
                         base.data = data.data ?? json.data
                         const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
+                        const sha1 = await hashInstance.sha1()
+                        base.checksum = sha1
+                    }else {
+                        // Folders have no data
+                        const hashInstance = new hash(JSON.stringify({name: base.name, date: base.date}))
                         const sha1 = await hashInstance.sha1()
                         base.checksum = sha1
                     }
