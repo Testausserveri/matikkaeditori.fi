@@ -34,7 +34,7 @@ The workers.js script will implement these commands in it's API for workers to u
 - "error", Logs an error to the console as the main thread
 - "log", Logs a message to the console as the main thread
 - "confirm", Send a confirm dialog to the user
-- "relay", This function will relay the message with this input `{ type: "relay", target: "<worker name>", content: "<data to be relayed>"}`. An ID will also be specified and to be sent back as "callback" with the same message type and structure (without the target specified)
+- "relay", This function will relay the message with this input `{ type: "relay", target: "<worker name>", content: "<data to be relayed>"}`. An ID will also be specified and to be sent back as "id" with the same message type and structure (without the target specified). The ID is what connects the whole handshake together like in normal callbacks. When callback is sent to the relay, the value "callback" must be set to true
 
 # Filesystem standard
 - Filesystem ID table:

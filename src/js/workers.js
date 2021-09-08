@@ -78,10 +78,10 @@ async function onMessage(event, name){
                 }
             }else {
                 // This is a callback
-                if(window.internal.workers.handlers[message.callback]){
-                    window.internal.workers.handlers[message.callback]()
+                if(window.internal.workers.handlers[message.id]){
+                    window.internal.workers.handlers[message.id]()
                 }else {
-                    console.error("[ WORKERS ] Dropped callback \"" + message.callback + "\"")
+                    console.error("[ WORKERS ] Dropped callback \"" + message.id + "\"")
                 }
             }
             break

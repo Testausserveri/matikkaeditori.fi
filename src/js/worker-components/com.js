@@ -28,5 +28,24 @@ export default {
             })
         })
     },
+    sendToWorker: async function (target, content){
+        // eslint-disable-next-line no-async-promise-executor
+        return new Promise(async (resolve, reject) => {
+            const id = uuid.v4()
+            // Send message
+            if(!content) content = {}
+            if(content.id !== undefined) content.callback = true
+            if(!target) return reject("Target must be specified")
+            postMessage(JSON.stringify({ type: "relay", target, content, id: content.id || id }))
+
+            // Listen for response
+            message_target.addEventListener("message", async function (e){
+                if(e.detail.id !== null && e.detail.id === id){
+                    message_target.removeEventListener("message", e)
+                    resolve(e.detail.content)
+                }
+            })
+        })
+    },
     onMessage: message_target
 }
