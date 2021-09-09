@@ -248,7 +248,7 @@ class Filesystem {
             for(const entry of tree){
                 if(entry.t === 1){
                     if(level >= currentLevel){
-                        checker(entry.d, ++currentLevel)
+                        return checker(entry.d, ++currentLevel)
                     }else {
                         entry.d = null
                     }
