@@ -246,7 +246,13 @@ class Filesystem {
         const checker = (tree, currentLevel) => {
             if(!currentLevel) currentLevel = 1
             for(const entry of tree){
-                if(entry.t === 1 && level >= currentLevel) checker(entry.d, ++currentLevel)
+                if(entry.t === 1){
+                    if(level >= currentLevel){
+                        checker(entry.d, ++currentLevel)
+                    }else {
+                        entry.d = null
+                    }
+                }
             }
         }
         checker(tree)
