@@ -289,6 +289,7 @@ class Filesystem {
                         date: new Date().getTime(),
                     }
                     if(data.type === 0){
+                        // Files have data
                         base.data = data.data ?? json.data
                         const hashInstance = new hash(JSON.stringify({name: base.name, data: base.data, date: base.date}))
                         const sha1 = await hashInstance.sha1()
@@ -304,9 +305,11 @@ class Filesystem {
                     // Update index
                     let indexBase = { t: data.type ?? json.type, i: id ?? json.id }
                     // TODO: This has to be redone to support moving folders and their contents
-                    if(data.type === 1) indexBase.d = [] // Note: Do not specify when editing folders
                     const isInIndex = await this.resolveFromIndex(id ?? json.id)
                     if(!isInIndex){
+                        if(data.type === 1) {
+                            indexBase.d = []
+                        }
                         await this.writeToIndex(location, indexBase)
                     }
                     console.log("[ Filesystem ] Write task completed successfully.")
@@ -481,7 +484,7 @@ com.onMessage.addEventListener("message", async e => {
         if(!instance) return console.error("No such filesystem instance")
         if(e.content.id && e.content.level){
             const resolved = await instance.resolveFromIndex(e.content.id)
-            const limited = await instance.limitTreeLevel(resolved, e.content.level)
+            const limited = await instance.limitTreeLevel(resolved.d, e.content.level)
             com.send("callback", { index: limited, id: e.id })
         }else {
             com.send("callback", { index: instance.index, id: e.id })
