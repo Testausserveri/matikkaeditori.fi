@@ -18,18 +18,20 @@ function App() {
     // Return base page
     // eslint-disable-next-line no-unused-vars
     const [fsLevel, setFsLevel] = useState([])
+    const [fsPath, setFsPath] = useState([true])
     const [activeItem, setActiveItem] = useState("")
 
     const { width: windowWidth } = useWindowDimensions()
 
-    async function newDocument(event, newLevel) {
+    async function newFsItem(type, newLevel, location) {
         const documentId = (await window.internal.workers.api("Filesystem", "write", {
             instance: window.internal.ui.activeFilesystemInstance,
             write: {
-                type: 0,
-                name: "Uusi vastaus",
+                type: type,
+                name: (type === 0 ? "Uusi vastaus" : "Uusi kansio"),
                 data: ""
-            }
+            },
+            location: location || fsPath[fsPath.length - 1]
         })).write
 
         const data = (await window.internal.workers.api("Filesystem", "read", {
@@ -39,8 +41,8 @@ function App() {
 
         const fsItem = {
             ...data,
-            type: 0,
-            t: 0,
+            type: type,
+            t: type,
             i: documentId
         }
 
@@ -49,7 +51,7 @@ function App() {
         copy.push(fsItem)
         setFsLevel(copy)
 
-        setActiveItem(fsItem.i)
+        if (type === 0) setActiveItem(fsItem.i)
     }
 
     async function deleteDocument(documentId) {
@@ -72,7 +74,7 @@ function App() {
     // select first item - we need this usually only just in the first run
     async function setInitialActiveItem(level) {
         if (level.length === 0) {
-            await newDocument(null, level)
+            await newFsItem(0, level)
             return
         }
         const l = [...level]
@@ -82,13 +84,13 @@ function App() {
     }
 
     // eslint-disable-next-line no-unused-vars
-    async function loadFsDetails(instance) {
+    async function loadFsDetails(index) {
         console.log("[ APP ] Loading fs details")
         
-        let promises = instance.index.map(async (item) => {
+        let promises = index.map(async (item) => {
             const data = (await window.internal.workers.api("Filesystem", "read", {
                 id: item.i,
-                instance: instance.instance
+                instance: window.internal.ui.activeFilesystemInstance
             })).read
 
             // concatenate index data with more detailed data
@@ -106,6 +108,23 @@ function App() {
         setInitialActiveItem(level)
         setMobileViewState(1)
     }
+
+    async function openFolder(id) {
+        const { index } = await window.internal.workers.api("Filesystem", "index", {
+            instance: window.internal.ui.activeFilesystemInstance,
+            id: id,
+            level: 1
+        })
+        let copy = [...fsPath]
+        copy.push(id)
+        setFsPath(copy)
+        if (index.length === 0) {
+            newFsItem(0, index, id)
+        } else {
+            setFsLevel(index)
+            loadFsDetails(index)
+        }
+    }
     
     useEffect(async () => {
         // eslint-disable-next-line no-async-promise-executor
@@ -122,7 +141,7 @@ function App() {
 
             // more in detail file tree, with names, dates and data
             // loaded later by its own pace
-            loadFsDetails(instance)
+            loadFsDetails(instance.index)
         }
         catch(e){
             console.error("[ APP ] Failed to initialize filesystem")
@@ -153,7 +172,7 @@ function App() {
             </div>
             <div className="app">
                 { (isMobile && mobileViewState === 0) || !isMobile ?
-                    <Sidebar style={(isMobile ? {flex: "1"} : {})} newDocument={newDocument} deleteDocument={deleteDocument} level={fsLevel} setLevel={setFsLevel} activeItem={activeItem} setActiveItem={setActiveItem} />
+                    <Sidebar style={(isMobile ? {flex: "1"} : {})} newFsItem={newFsItem} deleteDocument={deleteDocument} level={fsLevel} fsPath={fsPath} setLevel={setFsLevel} activeItem={activeItem} setActiveItem={setActiveItem} openFolder={openFolder} />
                     : null }
                 
                 { (isMobile && mobileViewState === 1) || !isMobile ?

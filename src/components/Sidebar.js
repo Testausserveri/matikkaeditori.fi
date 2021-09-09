@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unreachable */
 import React from "react"
@@ -39,19 +40,29 @@ function FilesystemItem(props) {
         {
             text: "Eliminoi", // tähä sellane hauska jekku et se tekee saman ku poista mut antaa full screen räjähdyksen äänen kaa
             action: () => {}
+        },
+        {
+            text: "Näytä ID",
+            action: () => {alert(props.data.i)}
         }
     ]
 
     if (props.data.t == 1) { // folder
         return (
             <li className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
-                <div className="fsIcon">
+                {/*<div className="fsIcon">
                     <FontAwesomeIcon icon={faOutlineFolder} />
-                </div>
-                <div className="fsContent">
+                </div>*/}
+                <div className="content">
                     <span>{props.data.name}</span>
                 </div>
-                
+                <div className="action">
+                    <Dropdown data={dropdownData} origin="left">
+                        <button className="ellipsis">
+                            <FontAwesomeIcon icon={faEllipsisH} />
+                        </button>
+                    </Dropdown>
+                </div>
             </li>
         )
     } else if (props.data.t == 0) { // file
@@ -59,7 +70,7 @@ function FilesystemItem(props) {
             <li className={(props.selected ? "selected" : "")} onClick={props.onClick}>
                 <div className="content">
                     <span>{props.data.name}</span>
-                    <span className="date">{formatDate(props.data.date).pretty}</span>
+                    <span className="date">{props.data.date ? formatDate(props.data.date).pretty : ""}</span>
                     
                 </div>
                 <div className="action">
@@ -90,19 +101,23 @@ export default function Sidebar(props) {
     if (level) level.reverse()
 
 
-    const open = (item) => {
+    const open = async (item) => {
         // to-do: save document before unload.
-        props.setActiveItem(item.i)
+        if (item.t == 0) {
+            props.setActiveItem(item.i)
+        } else if (item.t == 1) {
+            props.openFolder(item.i)
+        }
     }
 
     return (
         <div className="sidebar" style={props.style}>
             <div className="head">
-                <button className="primary" onClick={props.newDocument}>
+                <button className="primary" onClick={() => {props.newFsItem(0)}}>
                     <FontAwesomeIcon icon={faPlus} />&nbsp;
                     Uusi vastaus
                 </button>
-                <button className="folderSmall">
+                <button className="folderSmall" onClick={() => {props.newFsItem(1)}}>
                     <FontAwesomeIcon icon={faFolder} />
                 </button>
             </div>
