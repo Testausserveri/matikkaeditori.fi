@@ -18,7 +18,10 @@ function App() {
     // Return base page
     // eslint-disable-next-line no-unused-vars
     const [fsLevel, setFsLevel] = useState([])
-    const [fsPath, setFsPath] = useState([true])
+    const [fsPath, setFsPath] = useState([{
+        id: true,
+        name: "Juuri"
+    }])
     const [activeItem, setActiveItem] = useState("")
 
     const { width: windowWidth } = useWindowDimensions()
@@ -31,7 +34,7 @@ function App() {
                 name: (type === 0 ? "Uusi vastaus" : "Uusi kansio"),
                 data: ""
             },
-            location: location || fsPath[fsPath.length - 1]
+            location: location || fsPath[fsPath.length - 1].id
         })).write
 
         const data = (await window.internal.workers.api("Filesystem", "read", {
@@ -109,15 +112,27 @@ function App() {
         setMobileViewState(1)
     }
 
-    async function openFolder(id) {
+    async function openFolder(id, name) {
         const { index } = await window.internal.workers.api("Filesystem", "index", {
             instance: window.internal.ui.activeFilesystemInstance,
             id: id,
             level: 1
         })
+
         let copy = [...fsPath]
-        copy.push(id)
+        
+        const itemIndex = fsPath.findIndex(item => item.id === id)
+        
+        if (itemIndex >= 0) { // found in file tree, we need to go higher
+            copy = copy.splice(0,itemIndex + 1)
+        } else { // not found in file tree, we go lower
+            copy.push({
+                id: id,
+                name: name
+            })
+        }
         setFsPath(copy)
+
         if (index.length === 0) {
             newFsItem(0, index, id)
         } else {
@@ -177,7 +192,7 @@ function App() {
                 
                 { (isMobile && mobileViewState === 1) || !isMobile ?
                     <>
-                        <Document isMobile={isMobile} setMobileViewState={setMobileViewState} activeItem={activeItem} level={fsLevel} setActiveItem={setActiveItem} setLevel={setFsLevel} />
+                        <Document isMobile={isMobile} setMobileViewState={setMobileViewState} activeItem={activeItem} level={fsLevel} setActiveItem={setActiveItem} setLevel={setFsLevel} openFolder={openFolder} fsPath={fsPath} /> 
                         {!isMobile ? 
                             <EquationSidebar />
                             : 

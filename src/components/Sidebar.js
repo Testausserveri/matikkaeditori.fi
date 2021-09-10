@@ -106,7 +106,7 @@ export default function Sidebar(props) {
         if (item.t == 0) {
             props.setActiveItem(item.i)
         } else if (item.t == 1) {
-            props.openFolder(item.i)
+            props.openFolder(item.i, item.name)
         }
     }
 

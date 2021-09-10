@@ -17,7 +17,7 @@ import useActiveItem from "../utils/useActiveItem"
 
 
 // eslint-disable-next-line react/prop-types
-export default function Document({setActiveItem, activeItem, level, setLevel, setMobileViewState, isMobile}) {
+export default function Document({setActiveItem, activeItem, level, setLevel, setMobileViewState, isMobile, fsPath, openFolder}) {
     const answerRef = useRef()
     const resultRef = useRef()
     const titleRef = useRef()
@@ -98,17 +98,26 @@ export default function Document({setActiveItem, activeItem, level, setLevel, se
     return (
         <div className="document">
             <div className="head">
-                <div style={{display: "flex"}}>
-                    {isMobile ? 
+                <div className="headMain">
+                    {/*isMobile ? 
                         <button className="mobileBack" onClick={() => {
                             setMobileViewState(0)
                         }}>
                             <FontAwesomeIcon icon={faChevronLeft} />
                         </button>
-                        : null}
+                    : null*/}
+                    {fsPath.length > 1 ?
+                        <span className="documentPath">{fsPath.map(item => (
+                            <>
+                                <span className="documentPathItem" onClick={() => openFolder(item.id)}>{item.name}</span>
+                                &nbsp;›&nbsp;
+                            </>
+                        ))}</span>
+                        : null }
                     <h2 
                         spellCheck={false} 
                         contentEditable={true} 
+                        className={fsPath.length > 1 ? "slimmer" : ""}
                         id="documentTitle" 
                         suppressContentEditableWarning={true} 
                         onClick={() => {document.execCommand("selectAll",false,null)}} 

@@ -18,7 +18,7 @@ body {
 
 .document .head {
     width: calc(var(--document-width) - 3rem - 3rem);
-    margin: 1.5rem auto 0 auto;
+    margin: 1.5rem auto 1.5rem auto;
     display: flex;
     justify-content: space-between;
 }
@@ -36,6 +36,10 @@ body {
     position: relative;
     display: inline-block;
     line-height: 3rem;
+}
+
+.document .head h2.slimmer {
+    line-height: 2rem;
 }
 .document .head h2:focus {
     outline: none;
@@ -124,5 +128,24 @@ body {
 
 .head .mobileBack:hover {
     background-color: transparent;
+    color: #2FA3CF;
+}
+
+.head .headMain {
+    display: flex;
+    flex-direction: column;
+}
+
+.headMain .documentPath {
+    font-size: 0.9rem;
+    line-height: 1rem;
+    color: rgba(0,0,0,0.7);
+}
+
+.documentPathItem {
+    cursor: pointer;
+}
+
+.documentPathItem:hover {
     color: #2FA3CF;
 }
