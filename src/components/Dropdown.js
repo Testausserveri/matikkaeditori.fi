@@ -5,7 +5,8 @@ import "../css/dropdown.css"
 export default function Dropdown(props) {
     const [dropdownOpened, setDropdownOpened] = useState(false)
     const dropdownRef = useRef()
-    function toggleDropdown() {
+    function toggleDropdown(event) {
+        event.stopPropagation()
         setDropdownOpened(!dropdownOpened)
     }
     useEffect(() => {
@@ -25,7 +26,8 @@ export default function Dropdown(props) {
             <div className={"dropdown" + (props.origin === "left" ? " leftOrigin" : "")} style={dropdownOpened ? {transform: "scale(1)", opacity: "1"} : {transform: "scale(0)", opacity: "0"}}>
                 <ul>
                     {props.data.map(option => (
-                        <li key={option.text} onClick={() => {
+                        <li key={option.text} onClick={(event) => {
+                            event.stopPropagation()
                             setDropdownOpened(false)
                             option.action(props.context)
                         }}>{option.text}</li>

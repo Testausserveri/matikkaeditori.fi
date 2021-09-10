@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unreachable */
-import React from "react"
+import React, { useRef } from "react"
 import PropTypes from "prop-types"
 import "../css/sidebar.css"
 import formatDate from "../utils/date"
@@ -15,12 +15,42 @@ import Dropdown from "./Dropdown"
 function FilesystemItem(props) {
     if (!props.data) return null
 
+    const folderTitleRef = useRef()
+    async function saveFolderTitle(event) {
+        event.target.blur()
+        event.preventDefault()
+
+        console.log("[ SIDEBAR ] Updating folder title...")
+
+        if (event.target.innerText.trim() == "") {
+            event.target.innerText = "Nimetön kansio"
+        }
+
+        let copy = [...props.level]
+        let i = copy.findIndex(item => item.i === props.data.i)
+        copy[i].name = event.target.innerText
+        props.setLevel(copy)  // save client-side
+
+        await window.internal.workers.api("Filesystem", "write", {
+            instance: window.internal.ui.activeFilesystemInstance,
+            id: props.data.i,
+            write: {
+                name: event.target.innerText,
+                type: 1
+            }
+        })
+    }
     const dropdownData = [
         {
             text: "Uudelleennimeä",
             action: () => {
-                document.getElementById("documentTitle").focus()
-                document.execCommand("selectAll",false,null)
+                if (props.data.t == 0) {
+                    document.getElementById("documentTitle").focus()
+                    document.execCommand("selectAll",false,null)
+                } else {
+                    folderTitleRef.current.focus()
+                    document.execCommand("selectAll",false,null)
+                }
             }
         },
         {
@@ -54,7 +84,14 @@ function FilesystemItem(props) {
                     <FontAwesomeIcon icon={faOutlineFolder} />
                 </div>*/}
                 <div className="content">
-                    <span>{props.data.name}</span>
+                    <span
+                        spellCheck={false} 
+                        contentEditable={true} 
+                        suppressContentEditableWarning={true} 
+                        ref={folderTitleRef}
+                        onKeyDown={(event) => {if (event.key == "Enter") {saveFolderTitle(event)}} } 
+                        onBlur={(event) => {saveFolderTitle(event)}}
+                    >{props.data.name}</span>
                 </div>
                 <div className="action">
                     <Dropdown data={dropdownData} origin="left">
@@ -125,7 +162,7 @@ export default function Sidebar(props) {
                 {level ? level.map((item) => {
                     const selected = activeItemData?.i == item.i
 
-                    return <FilesystemItem deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
+                    return <FilesystemItem level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
                     />
                 }) : null}
             </ul>
