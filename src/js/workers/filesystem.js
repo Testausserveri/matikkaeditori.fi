@@ -144,12 +144,12 @@ class Filesystem {
                             break
                         }
                     }
-                    console.log("Replaced", replaced)
                     if(!replaced) this.index.push(data)
                 }else {
                     // In folder
                     console.debug("[ Filesystem ] Writing to folder...")
                     let replaced = false
+                    let pushed = false
                     const find = (tree, id) => {
                         for(let i = 0; i < tree.length; i++){
                             if(tree[i].t === 0 && tree[i].id === id) {
@@ -164,7 +164,10 @@ class Filesystem {
                                             tree[i].d[ii] = data
                                         }
                                     }
-                                    if(!replaced) tree[i].d.push(data)
+                                    if(!replaced) {
+                                        tree[i].d.push(data)
+                                        pushed = true
+                                    }
                                     break
                                 }else {
                                     find(tree[i].d, id)
@@ -173,7 +176,7 @@ class Filesystem {
                         }
                     }
                     find(this.index, id)
-                    if(!replaced) reject("Cannot find such location")
+                    if(!replaced && !pushed) reject("Cannot find such location")
                 }
             }
             const hashSession = new hash(this.index)
@@ -320,7 +323,7 @@ class Filesystem {
                 }
             }
             catch(e){
-                console.log(e)
+                console.debug(e)
                 reject("Failed to write: " + e.stack)
             }
         })
@@ -408,7 +411,7 @@ class Filesystem {
                             const hashSession = new hash({name: exampleFile.name, data: exampleFile.data, date: exampleFile.date })
                             exampleFile.checksum = await hashSession.sha1()
                             await this.write(exampleId, exampleFile, true) // Root is true
-                            console.log("Example file created")
+                            console.log("[ Filesystem ] Example file created")
                             resolve()
                         }else {
                             reject("Filesystem initialization aborted.")
@@ -460,7 +463,6 @@ com.onMessage.addEventListener("message", async e => {
     case "remove": {
         const instance = this_worker.shared.filesystem_instances[e.content.instance]
         if(!instance) return console.error("No such filesystem instance")
-        console.log("RAW", e.content)
         await instance.remove(e.content.id)
         com.send("callback", { id: e.id })
         break
