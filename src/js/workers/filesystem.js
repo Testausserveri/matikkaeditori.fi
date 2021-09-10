@@ -141,6 +141,7 @@ class Filesystem {
                         if(this.index[i].i === data.id) {
                             replaced = true
                             this.index[i] = data
+                            break
                         }
                     }
                     console.log("Replaced", replaced)
@@ -158,12 +159,13 @@ class Filesystem {
                                 if(tree[i].i === id){
                                     // Replace?
                                     for(let ii = 0; ii < tree[i].d.length; ii++){
-                                        if(tree[i].d[ii].id === data.id){
+                                        if(tree[i].d[ii].i === data.i){
                                             replaced = true
                                             tree[i].d[ii] = data
                                         }
                                     }
                                     if(!replaced) tree[i].d.push(data)
+                                    break
                                 }else {
                                     find(tree[i].d, id)
                                 }
@@ -247,7 +249,7 @@ class Filesystem {
             if(!currentLevel) currentLevel = 1
             for(const entry of tree){
                 if(entry.t === 1){
-                    if(level >= currentLevel){
+                    if(level > currentLevel){
                         return checker(entry.d, ++currentLevel)
                     }else {
                         entry.d = null
