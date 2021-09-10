@@ -484,7 +484,7 @@ com.onMessage.addEventListener("message", async e => {
         if(!instance) return console.error("No such filesystem instance")
         if(e.content.id && e.content.level){
             const resolved = await instance.resolveFromIndex(e.content.id)
-            const limited = await instance.limitTreeLevel(resolved.d, e.content.level)
+            const limited = await instance.limitTreeLevel(e.content.id === true ? resolved : resolved.d, e.content.level)
             com.send("callback", { index: limited, id: e.id })
         }else {
             com.send("callback", { index: instance.index, id: e.id })
