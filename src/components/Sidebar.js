@@ -146,6 +146,14 @@ export default function Sidebar(props) {
 
     if (level) level.reverse()
 
+    const treeRef = useRef()
+    const currentLevelId = props.fsPath[props.fsPath.length - 1].id
+    useEffect(() => {
+        treeRef.current.classList.add("fadeInDown")
+        setTimeout(() => {
+            treeRef.current.classList.remove("fadeInDown")
+        }, 300)
+    }, [currentLevelId])
 
     const open = async (item) => {
         // to-do: save document before unload.
@@ -168,22 +176,24 @@ export default function Sidebar(props) {
                     <FontAwesomeIcon icon={faFolder} />
                 </button>
             </div>
-            {props.fsPath.length > 1 ?
-                <button className="folderUpButton" onClick={() => {
-                    props.openFolder(props.fsPath[props.fsPath.length - 2].id)
-                }}>
-                    <FontAwesomeIcon icon={faLevelUpAlt} />&nbsp;&nbsp;
-                    {props.fsPath[props.fsPath.length - 2].name}
-                </button>
-                : null}
-            <ul className="filesystemLevel">
-                {level ? level.map((item) => {
-                    const selected = activeItemData?.i == item.i
+            <div ref={treeRef}>
+                {props.fsPath.length > 1 ?
+                    <button className="folderUpButton" onClick={() => {
+                        props.openFolder(props.fsPath[props.fsPath.length - 2].id)
+                    }}>
+                        <FontAwesomeIcon icon={faLevelUpAlt} />&nbsp;&nbsp;
+                        {props.fsPath[props.fsPath.length - 2].name}
+                    </button>
+                    : null}
+                <ul className="filesystemLevel">
+                    {level ? level.map((item) => {
+                        const selected = activeItemData?.i == item.i
 
-                    return <FilesystemItem createdItem={props.createdItem} level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
-                    />
-                }) : null}
-            </ul>
+                        return <FilesystemItem createdItem={props.createdItem} level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
+                        />
+                    }) : null}
+                </ul>
+            </div>
         </div>
     )
 }

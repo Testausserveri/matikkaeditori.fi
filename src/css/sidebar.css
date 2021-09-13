@@ -27,6 +27,41 @@
     margin: 0;
     list-style-type: none;
 }
+
+@-webkit-keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    60% {
+         transform: translateY(0);
+    }
+    100% {
+        opacity: 1;
+    }
+ }
+ 
+ @keyframes fadeInDown {
+    0% {
+       opacity: 0;
+       transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(0);
+    }
+    100% {
+       opacity: 1;
+    }
+}
+ .fadeInDown {
+    -webkit-animation-name: fadeInDown;
+    animation-name: fadeInDown;
+    -webkit-animation-duration: 0.3s;
+    animation-duration: 0.3s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+ }
+
 .filesystemLevel li:not(.dropdown li) {
     margin-bottom: 0.7rem;
     width: calc(100% - 0.7rem - 0.7rem);
