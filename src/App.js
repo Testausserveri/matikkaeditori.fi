@@ -22,7 +22,12 @@ function App() {
         id: true,
         name: "Juuri"
     }])
+
+    // id of active item e.g. open in the editor
     const [activeItem, setActiveItem] = useState("")
+    
+    // id of lastly created item
+    const [createdItem, setCreatedItem] = useState("")
 
     const { width: windowWidth } = useWindowDimensions()
 
@@ -54,6 +59,7 @@ function App() {
         copy.push(fsItem)
         setFsLevel(copy)
 
+        setCreatedItem(fsItem.i)
         if (type === 0) setActiveItem(fsItem.i)
     }
 
@@ -187,7 +193,7 @@ function App() {
             </div>
             <div className="app">
                 { (isMobile && mobileViewState === 0) || !isMobile ?
-                    <Sidebar style={(isMobile ? {flex: "1"} : {})} newFsItem={newFsItem} deleteDocument={deleteDocument} level={fsLevel} fsPath={fsPath} setLevel={setFsLevel} activeItem={activeItem} setActiveItem={setActiveItem} openFolder={openFolder} />
+                    <Sidebar createdItem={createdItem} style={(isMobile ? {flex: "1"} : {})} newFsItem={newFsItem} deleteDocument={deleteDocument} level={fsLevel} fsPath={fsPath} setLevel={setFsLevel} activeItem={activeItem} setActiveItem={setActiveItem} openFolder={openFolder} />
                     : null }
                 
                 { (isMobile && mobileViewState === 1) || !isMobile ?

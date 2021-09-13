@@ -11,13 +11,25 @@ import { faPlus, faFolder, faEllipsisH } from "@fortawesome/free-solid-svg-icons
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 import useActiveItem from "../utils/useActiveItem"
 import Dropdown from "./Dropdown"
+import { useEffect } from "react/cjs/react.development"
 
 function FilesystemItem(props) {
     if (!props.data) return null
 
+    
+    useEffect(() => {
+        if (props.createdItem == props.data.i && props.data.t == 1) {
+            console.log("KHINKALYA", props.createdItem)
+
+            folderTitleRef.current.focus()
+            document.execCommand("selectAll",false,null)
+        }
+    }, [props.createdItem])
+    
     const folderTitleRef = useRef()
     async function saveFolderTitle(event) {
         event.target.blur()
+        document.getElementById("editor-element").focus()
         event.preventDefault()
 
         console.log("[ SIDEBAR ] Updating folder title...")
@@ -85,6 +97,7 @@ function FilesystemItem(props) {
                 </div>*/}
                 <div className="content">
                     <span
+                        className="editableName"
                         spellCheck={false} 
                         contentEditable={true} 
                         suppressContentEditableWarning={true} 
@@ -131,7 +144,6 @@ FilesystemItem.propTypes = filesystemItemType
 export default function Sidebar(props) {
     // todo implement subtrees
     const level = (props.level ? [...props.level] : null)
-
     
     const [activeItemData] = useActiveItem(props.activeItem, props.level, props.setLevel)
 
@@ -162,7 +174,7 @@ export default function Sidebar(props) {
                 {level ? level.map((item) => {
                     const selected = activeItemData?.i == item.i
 
-                    return <FilesystemItem level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
+                    return <FilesystemItem createdItem={props.createdItem} level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
                     />
                 }) : null}
             </ul>

@@ -147,3 +147,7 @@
 .head button:focus {
     outline: none;
 }
+
+.editableName:focus {
+    outline: none;
+}
