@@ -193,12 +193,12 @@ function App() {
             </div>
             <div className="app">
                 { (isMobile && mobileViewState === 0) || !isMobile ?
-                    <Sidebar createdItem={createdItem} style={(isMobile ? {flex: "1"} : {})} newFsItem={newFsItem} deleteDocument={deleteDocument} level={fsLevel} fsPath={fsPath} setLevel={setFsLevel} activeItem={activeItem} setActiveItem={setActiveItem} openFolder={openFolder} />
+                    <Sidebar setCreatedItem={setCreatedItem} createdItem={createdItem} style={(isMobile ? {flex: "1"} : {})} newFsItem={newFsItem} deleteDocument={deleteDocument} level={fsLevel} fsPath={fsPath} setLevel={setFsLevel} activeItem={activeItem} setActiveItem={setActiveItem} openFolder={openFolder} />
                     : null }
                 
                 { (isMobile && mobileViewState === 1) || !isMobile ?
                     <>
-                        <Document isMobile={isMobile} setMobileViewState={setMobileViewState} activeItem={activeItem} level={fsLevel} setActiveItem={setActiveItem} setLevel={setFsLevel} openFolder={openFolder} fsPath={fsPath} /> 
+                        <Document createdItem={createdItem} isMobile={isMobile} setMobileViewState={setMobileViewState} activeItem={activeItem} level={fsLevel} setActiveItem={setActiveItem} setLevel={setFsLevel} openFolder={openFolder} fsPath={fsPath} /> 
                         {!isMobile ? 
                             <EquationSidebar />
                             : 

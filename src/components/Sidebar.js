@@ -15,12 +15,9 @@ import { useEffect } from "react/cjs/react.development"
 
 function FilesystemItem(props) {
     if (!props.data) return null
-
     
     useEffect(() => {
         if (props.createdItem == props.data.i && props.data.t == 1) {
-            console.log("KHINKALYA", props.createdItem)
-
             folderTitleRef.current.focus()
             document.execCommand("selectAll",false,null)
         }
@@ -153,6 +150,7 @@ export default function Sidebar(props) {
     const open = async (item) => {
         // to-do: save document before unload.
         if (item.t == 0) {
+            props.setCreatedItem("")
             props.setActiveItem(item.i)
         } else if (item.t == 1) {
             props.openFolder(item.i, item.name)

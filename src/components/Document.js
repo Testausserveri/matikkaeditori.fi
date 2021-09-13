@@ -17,7 +17,7 @@ import useActiveItem from "../utils/useActiveItem"
 
 
 // eslint-disable-next-line react/prop-types
-export default function Document({setActiveItem, activeItem, level, setLevel, setMobileViewState, isMobile, fsPath, openFolder}) {
+export default function Document({createdItem, setActiveItem, activeItem, level, setLevel, setMobileViewState, isMobile, fsPath, openFolder}) {
     const answerRef = useRef()
     const resultRef = useRef()
     const titleRef = useRef()
@@ -52,10 +52,10 @@ export default function Document({setActiveItem, activeItem, level, setLevel, se
 
         console.log(activeItemData)
 
-        // Load active item
-        
-        if(activeItemData?.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
         answerRef.current.focus() // Focus on page load
+        // Load active item
+        if(activeItemData?.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
+        
     }, [resultRef, activeItemData?.i])
 
     useEffect(() => {
@@ -75,6 +75,7 @@ export default function Document({setActiveItem, activeItem, level, setLevel, se
 
     async function saveTitle(event) {
         event.target.blur()
+        answerRef.current.focus()
         event.preventDefault()
 
         let copy = activeItemData
@@ -94,6 +95,13 @@ export default function Document({setActiveItem, activeItem, level, setLevel, se
             }
         })
     }
+
+    useEffect(() => {
+        if (createdItem == activeItem && activeItemData?.t == 0) {
+            titleRef.current.focus()
+            document.execCommand("selectAll",false,null)
+        }
+    }, [createdItem, activeItemData?.i])
 
     return (
         <div className="document">
