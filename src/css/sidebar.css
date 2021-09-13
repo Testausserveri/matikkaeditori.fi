@@ -116,12 +116,12 @@
     border: 1px solid #2FA3CF;
     color: #2FA3CF;
 }
-.head button.folderSmall:hover, .head .secondary:hover {
+.head button.folderSmall:hover, .head .secondary:hover, .folderUpButton:hover {
     background-color: #2a92ba;
     border-color: #2a92ba;
     color: #edf9ff;
 }
-.head button {
+.head button, .folderUpButton {
     height: 100%;
     font-size: 1rem;
     cursor: pointer;
@@ -133,13 +133,23 @@
     color: #edf9ff;
     transition: background-color 0.1s ease-out, color 0.1s ease-out;
 }
-.head .secondary {
+
+.head .secondary, .folderUpButton  {
     background-color: transparent;
     border: 1px solid #2FA3CF;
     color: #2FA3CF;
     height: 3rem;
     padding: 0 1rem;
 }
+
+.folderUpButton {
+    height: auto;
+    width: 100%;
+    text-align: left;
+    padding: 0.7rem;
+    margin-bottom: 0.7rem;
+}
+
 .head button:hover {
     background-color: #2a92ba;
 }

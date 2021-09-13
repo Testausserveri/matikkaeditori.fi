@@ -7,7 +7,7 @@ import "../css/sidebar.css"
 import formatDate from "../utils/date"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlus, faFolder, faEllipsisH } from "@fortawesome/free-solid-svg-icons"
+import { faPlus, faFolder, faEllipsisH, faLevelUpAlt } from "@fortawesome/free-solid-svg-icons"
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 import useActiveItem from "../utils/useActiveItem"
 import Dropdown from "./Dropdown"
@@ -168,6 +168,14 @@ export default function Sidebar(props) {
                     <FontAwesomeIcon icon={faFolder} />
                 </button>
             </div>
+            {props.fsPath.length > 1 ?
+                <button className="folderUpButton" onClick={() => {
+                    props.openFolder(props.fsPath[props.fsPath.length - 2].id)
+                }}>
+                    <FontAwesomeIcon icon={faLevelUpAlt} />&nbsp;&nbsp;
+                    {props.fsPath[props.fsPath.length - 2].name}
+                </button>
+                : null}
             <ul className="filesystemLevel">
                 {level ? level.map((item) => {
                     const selected = activeItemData?.i == item.i
