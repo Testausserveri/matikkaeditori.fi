@@ -24,7 +24,7 @@ function writeSymbol(event, data) {
 
 function SymbolGroup({symbols, hidden}) {
     return (
-        <div className="symbolGroup" style={{maxHeight: hidden ? "0" : "500px"}}>
+        <div className="symbolGroup" style={{maxHeight: hidden ? "0" : "500px", marginBottom: hidden ? "0" : "1rem"}}>
             <h3>{symbols.label}</h3>
             <div className="symbols">
                 {symbols.characters.map((character) => {
