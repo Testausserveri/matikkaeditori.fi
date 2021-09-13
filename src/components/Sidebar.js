@@ -16,10 +16,20 @@ import { useEffect } from "react/cjs/react.development"
 function FilesystemItem(props) {
     if (!props.data) return null
     
+    const itemRef = useRef()
+
     useEffect(() => {
-        if (props.createdItem == props.data.i && props.data.t == 1) {
-            folderTitleRef.current.focus()
-            document.execCommand("selectAll",false,null)
+        if (props.createdItem == props.data.i) {
+            itemRef.current.dataset.animation = "fadeInDown"
+            setTimeout(() => {
+                itemRef.current.dataset.animation = ""
+            }, 300)
+
+            if (props.data.t == 1) {
+                folderTitleRef.current.focus()
+                document.execCommand("selectAll",false,null)
+            }
+            
         }
     }, [props.createdItem])
     
@@ -88,7 +98,7 @@ function FilesystemItem(props) {
 
     if (props.data.t == 1) { // folder
         return (
-            <li className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
+            <li ref={itemRef} className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
                 {/*<div className="fsIcon">
                     <FontAwesomeIcon icon={faOutlineFolder} />
                 </div>*/}
@@ -114,7 +124,7 @@ function FilesystemItem(props) {
         )
     } else if (props.data.t == 0) { // file
         return (
-            <li className={(props.selected ? "selected" : "")} onClick={props.onClick}>
+            <li ref={itemRef} className={(props.selected ? "selected" : "")} onClick={props.onClick}>
                 <div className="content">
                     <span>{props.data.name}</span>
                     <span className="date">{props.data.date ? formatDate(props.data.date).pretty : ""}</span>

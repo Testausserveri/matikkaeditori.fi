@@ -31,33 +31,33 @@
 @-webkit-keyframes fadeInDown {
     0% {
         opacity: 0;
-        transform: translateY(-10px);
+        margin-top: -10px;
     }
     60% {
          transform: translateY(0);
     }
     100% {
-        opacity: 1;
+        margin-top: 0;
     }
  }
  
  @keyframes fadeInDown {
     0% {
        opacity: 0;
-       transform: translateY(-10px);
+       margin-top: -10px;
     }
     60% {
         transform: translateY(0);
     }
     100% {
-       opacity: 1;
+       margin-top: 0;
     }
 }
- .fadeInDown {
+ .fadeInDown, .filesystemLevel li[data-animation=fadeInDown] {
     -webkit-animation-name: fadeInDown;
     animation-name: fadeInDown;
-    -webkit-animation-duration: 0.3s;
-    animation-duration: 0.3s;
+    -webkit-animation-duration: 0.15s;
+    animation-duration: 0.15s;
     -webkit-animation-fill-mode: both;
     animation-fill-mode: both;
  }
