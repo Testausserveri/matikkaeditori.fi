@@ -36,6 +36,7 @@ body {
     position: relative;
     display: inline-block;
     line-height: 3rem;
+    transition: line-height 0.15s;
 }
 
 .document .head h2.slimmer {
@@ -140,6 +141,13 @@ body {
     font-size: 0.9rem;
     line-height: 1rem;
     color: rgba(0,0,0,0.7);
+    height: 0;
+    overflow: hidden;
+    transition: height 0.15s;
+}
+
+.headMain .documentPath.expanded {
+    height: 1rem;
 }
 
 .documentPathItem {

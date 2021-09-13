@@ -114,14 +114,14 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
                             <FontAwesomeIcon icon={faChevronLeft} />
                         </button>
                     : null*/}
-                    {fsPath.length > 1 ?
-                        <span className="documentPath">{fsPath.map(item => (
-                            <>
-                                <span className="documentPathItem" onClick={() => openFolder(item.id)}>{item.name}</span>
-                                &nbsp;›&nbsp;
-                            </>
-                        ))}</span>
-                        : null }
+                    
+                    <span className={"documentPath" + (fsPath.length > 1 ? " expanded" : "")}>{fsPath.map(item => (
+                        <>
+                            <span className="documentPathItem" onClick={() => openFolder(item.id)}>{item.name}</span>
+                            &nbsp;›&nbsp;
+                        </>
+                    ))}</span>
+                
                     <h2 
                         spellCheck={false} 
                         contentEditable={true} 
