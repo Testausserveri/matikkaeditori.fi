@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unreachable */
-import React, { useRef } from "react"
+import React, { useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import "../css/sidebar.css"
 import formatDate from "../utils/date"
@@ -11,7 +11,6 @@ import { faPlus, faFolder, faEllipsisH, faLevelUpAlt } from "@fortawesome/free-s
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 import useActiveItem from "../utils/useActiveItem"
 import Dropdown from "./Dropdown"
-import { useEffect } from "react/cjs/react.development"
 
 function FilesystemItem(props) {
     if (!props.data) return null
