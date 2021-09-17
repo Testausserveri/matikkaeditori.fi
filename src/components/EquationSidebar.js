@@ -68,13 +68,14 @@ export function EquationSidebar() {
     return (
         <div className="sidebar">
             <div className="head">
-                <button className="primary" onClick={() => {
+                <button className="primary" onClick={async () => {
                     window.internal.ui.editor.hook.focus() // Force focus
                     const Math = window.internal.ui.editor.local.Math
-                    const Utils = window.internal.ui.editor.local.Utils
-                    const mathElement = Math.create()
-                    Utils.insertNodeAt(Utils.getCaretPosition(), mathElement)
-
+                    const mathElement = await Math.create()
+                    let target = window.internal.ui.editor.activeLine
+                    if(target === null) target = window.internal.ui.editor.hook
+                    target.appendChild(mathElement.container)
+                    Math.open(mathElement.id)
                 }}>
                     <FontAwesomeIcon icon={faSquareRootAlt} />&nbsp;
                     Lisää kaava
