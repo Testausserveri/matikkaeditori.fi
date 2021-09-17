@@ -64,7 +64,7 @@ function G(){
                 C()
                 return
             }).catch(e => {
-                error("Index", "Failed to upgrade: " + e.stack)
+                console.error("[ Index ] Failed to upgrade: " + e.stack)
             }) 
         }else {
             console.log("No upgrades to be done.")
@@ -74,7 +74,7 @@ function G(){
     }else {
         // Version is null
         if(localStorage.length > 1){
-            error("Index", "Version is null!")
+            console.error("[ Index ] Version is null!")
         }else {
             localStorage.setItem("version", window.internal.version)
             C()

@@ -508,6 +508,6 @@ com.onMessage.addEventListener("message", async e => {
         break
     }
     default:
-        com.send("error", "Unexpected command")
+        console.error("[ Filesystem ] Unknown command", e)
     }
 })
