@@ -444,7 +444,7 @@ const Math = new (class _Math {
         mathObject.isOpen = true
         mathObject.input.focus()
         mathObject.input.reflow()
-        window.setLatexCommandsVisibility(true)
+        if(window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(true)
         this.events.dispatchEvent(new CustomEvent("focus", { detail: mathObject }))
     }
 
