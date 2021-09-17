@@ -558,6 +558,8 @@ class Editor {
 
         const fill = async (element) => {
             let htmlElement = null
+            // eslint-disable-next-line no-undef
+            if(element.data) element.data = atob(element.data)
             switch(element.name){
 
             case "meta": {
@@ -627,13 +629,15 @@ class Editor {
                 switch(element.nodeName.toLowerCase()){
                 case "#text": {
                     // This is plain text
-                    format[format.length-1] += "<text>" + element.wholeText + "</text>"
+                    // eslint-disable-next-line no-undef
+                    format[format.length-1] += "<text>" + btoa(element.wholeText) + "</text>"
                     break
                 }
 
                 // Chrome math container
                 case "p": {
-                    format[format.length-1] += "<math>" + element.getAttribute("data") + "</math>"
+                    // eslint-disable-next-line no-undef
+                    format[format.length-1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
                     break
                 }
 
@@ -647,7 +651,8 @@ class Editor {
                         }
                     }
                     if(imgElement === null) console.error("[ EDITOR ] Failed to read Firefox math container latex", element)
-                    format[format.length-1] += "<math>" + imgElement.getAttribute("data") + "</math>"
+                    // eslint-disable-next-line no-undef
+                    format[format.length-1] += "<math>" + btoa(imgElement.getAttribute("data")) + "</math>"
                     break
                 }
 
@@ -659,9 +664,11 @@ class Editor {
 
                 case "img": {
                     // This is a math render
-                    format[format.length-1] += "<math>" + element.getAttribute("data") + "</math>"
+                    // eslint-disable-next-line no-undef
+                    format[format.length-1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
                     break
                 }
+                
                 default: {
                     console.warn("UNKNOWN ELEMENT IN EDITOR", element)
                 }
@@ -769,7 +776,7 @@ class Editor {
                             // This is a special case, where we twice press the arrow key
                             // and the index does not change, but we jump over the math element
                             // we can detect this by checking the last selection's offset and check if
-                            // the current selections offset is the max length of the selected note
+                            // the current selection's offset is the max length of the selected node
                             // and that the last selection was 0
                             // Though we need to be careful, as while in the end or beginning of a line
                             // this will also trigger as the offset will not change
