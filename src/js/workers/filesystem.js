@@ -406,7 +406,7 @@ class Filesystem {
                             const exampleFile = {
                                 name: "Welcome!",
                                 date: new Date().getTime(),
-                                data: ["Welcome to Matikkaeditori.fi!"],
+                                data: ["<text>Welcome to Matikkaeditori.fi!</text>"],
                                 checksum: null,
                                 type: 0
                             }
