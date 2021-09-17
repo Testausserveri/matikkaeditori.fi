@@ -1,518 +1,798 @@
-/* eslint-disable no-unused-vars */
-/* global MathQuill, MathJax */
+/*globals MathQuill, MathJax */
 /**
- * Math editor
+ * ------------------------------------------
+ * Matikkaeditori.fi's Math editor component
  * 
- * By: @Esinko
+ * By: @Esinko 08.09.2021
+ * ------------------------------------------
  */
-import error from "../error.js"
+
+// Type definitions 
+
+/**
+ * @typedef MathElement Matikkaeditori math element
+ * @property {HTMLElement} container The main element (container) of the math element
+ * @property {*} input Latex input interface (MathQuill)
+ * @property {HTMLElement} inputElement The math input element
+ * @property {*} image Image element of rendered latex
+ * @property {boolean} isOpen Is the math element open?
+ * @property {string} id Math element's id
+ */
+
+/**
+ * @typedef EditorElement Matikkaeditori editor's embedded element
+ * @property {string} name Element name
+ * @property {[]} attributes Element attributes
+ * @property {string} data Element raw data
+ * @property {[...EditorElement]} tree Parsed element data
+ */
+
+// Imports
 import * as uuid from "../worker-components/uuid.js"
-export default class Editor {
-    constructor(inputElement){
-        this.input = inputElement
-        this.hasAnchors = null
-        this.target = null
-        this.maths = []
-        this.toolAttachPoint = null
-        this.saveState = false
-        this.movedOutOfLastKeydown = false
-        this.mathFocus = null
-        this.activeLine = null
-        this.oninput = null
-        this.events = new EventTarget()
-        this.domObserver = null
-        this.domObserverCallback = null
+
+// Utils
+const Utils = new (class _Utils {
+    /**
+     * Get node index in tree
+     * @param {HTMLElement} list Parent element
+     * @param {HTMLAnchorElement} node Node to get the index of
+     */
+    getNodeIndex(list, node){
+        let index = 0
+        for(const childNode of list.childNodes){
+            if(childNode === node) break
+            index += 1
+        }
+        return index
     }
 
     /**
-     * Enable/disable math elements as anchors
-     * @param {*} state 
+     * Get a node by it's index from the DOM
+     * @param {HTMLElement} list 
+     * @param {number} index 
      */
-    async setAnchor(state){
-        return new Promise((resolve) => {
-            this.hasAnchors = state
-            const keys = Object.keys(this.maths)
-            for(let i = 0; i < keys.length; i++){
-                const id = keys[i]
-                const math = this.maths[id]
-                math.container.contentEditable = state
-                if(i+1 === keys.length){
-                    // TODO: Handle the element changes with a promise?
+    getNodeByIndex(list, index){
+        if(list.childNodes.length - 1 < index) return console.error("[ EDITOR ] Selection out of range! (byIndex)")
+        return list.childNodes[index]
+    }
+    
+    /**
+     * Read value of object's objects and return them as an array
+     * @param {{}} obj 
+     * @param {string} property 
+     */
+    getObjectPropertyArray(obj, property){
+        const keys = Object.keys(obj)
+        const list = []
+        for(const key of keys){
+            if(obj[key][property]) list.push(obj[key][property])
+        }
+        return list
+    }
+
+    /**
+     * Enable/Disable anchors for a set of nodes/elements
+     * @param {HTMLElement[]} list List of elements
+     * @param {boolean} mode True/false to set mode state
+     */
+    async toggleAnchorMode(list, mode){
+        // This is a very hacky way to do this
+        // and it WILL NOT scale well
+        return new Promise(resolve => {
+            for(const item of list){
+                item.contentEditable = mode
+            }
+            // Request frames
+            // Two frames make it so at least one frame is always painted
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
                     setTimeout(() => {
                         resolve()
-                    }, 10)
-                }
-            }
+                    }, 50)
+                })
+            })
         })
     }
 
-    updateActiveLine(jumped){
-        const selection = window.getSelection().anchorNode?.parentElement
-        if(this.mathFocus == null && !jumped){
-            if(this.activeLine !== selection) this.activeLine = selection
-            if(selection === null || selection == undefined) this.activeLine = this.input
+    /**
+     * Get current selection as a node
+     * @returns {Node}
+     */
+    getSelectedNode(){
+        const node = document.getSelection().focusNode
+        return (node.nodeType == 3 ? node.parentNode : node)
+    }
+
+    /**
+     * Insert a node in a certain range
+     * @param {Range} range Position
+     * @param {HTMLAnchorElement} node Node on insert
+     */
+    insertNodeAt(range, node){
+        range.insertNode(node)
+    }
+
+    /**
+     * Wait for an event from a certain event target
+     * @param {EventTarget} from 
+     * @param {string} event 
+     */
+    waitForEvent(from, event){
+        return new Promise((resolve) => {
+            from.addEventListener(event, async () => {
+                resolve()
+            })
+        })
+    }
+
+    /**
+     * Select something
+     * @param {HTMLElement} element 
+     * @param {number} index 
+     */
+    select(element, index){
+        const range = document.createRange()
+        const selection = window.getSelection()
+        range.setStart(element, index)
+        range.collapse(true)
+        selection.removeAllRanges()
+        selection.addRange(range)
+    }
+
+    /**
+     * Select an element by it's index in the DOM (contents)
+     * @param {number} index 
+     * @param {HTMLElement} element 
+     */
+    selectByIndex(index, element, collapse){
+        if(element.childNodes.length - 1 < index) return console.error("[ EDITOR ] Selection out of range!")
+        const range = document.createRange()
+        const sel = document.getSelection()
+        range.selectNodeContents(element.childNodes[index])
+        range.collapse(collapse ?? true)
+        sel.removeAllRanges()
+        sel.addRange(range)
+    }
+
+    /**
+     * Get current caret position
+     * @returns {Range}
+     */
+    getCaretPosition(){
+        const selection = window.getSelection()
+        let range
+        if(selection){
+            range = selection.getRangeAt(0)
+            range.deleteContents()
+        }else {
+            range = document.selection.createRange()
+        }
+        return range
+    }
+
+    /**
+     * Find next instance of a string in an array
+     * @param {string} string 
+     * @param {[]} array 
+     * @param {number} index 
+     * @returns {number}
+     */
+    findNextOf(string, array, index){
+        if(index) array = array.slice(index)
+        return array.indexOf(string) // -1 is already also false
+    }
+
+    /**
+     * Read data between two array indexes
+     * @param {[]} array 
+     * @param {number} start 
+     * @param {number} end 
+     * @returns {[]}
+     */
+    readBetweenIndexes(array, start, end){
+        let arrayClone = JSON.parse(JSON.stringify(array))
+        return arrayClone.splice(start, end - start)
+    }
+
+    /**
+     * Get new clone of an array with a start index
+     * @param {*} array 
+     * @param {*} index 
+     * @returns {[]}
+     */
+    getCloneFromIndex(array, index){
+        let arrayClone = JSON.parse(JSON.stringify(array))
+        return arrayClone.slice(index)
+    }
+
+    /**
+     * Remove double quotes from the start & end of the string while maintaining \""
+     * @param {string} string 
+     * @returns {string}
+     */
+    removeDoubleQuotes(string){
+        return string.replace(/\\"/g, "\\'").replace(/"/g, "").replace(/\\'/g, "\"")
+    }
+
+    /**
+     * Read embedded element data from the official save format
+     * @param {string} data 
+     * @returns {[...EditorElement]}
+     */
+    parseEmbedded(data){
+        data = data.split("")
+        let elements = []
+        let rawText = []
+        let i = 0
+        // Char read function
+        const read = () => {
+            let char = data[i]
+            // Find opening tag
+            if(char === "<"){
+                // Dump text
+                if(rawText.length !== 0) {
+                    console.debug("[ EDITOR ] Parser dumped raw text", rawText.join(""))
+                    elements.push({
+                        name: "text",
+                        attributes: [],
+                        tree: [],
+                        data: rawText.join("")
+                    })
+                    rawText = []
+                }
+
+                console.debug("[ EDITOR ] Parser detected an element at", i)
+
+                // Plot forward until attributes closing tag
+                let nextTagIndex = i + this.findNextOf(">", this.getCloneFromIndex(data, 0), i)
+                
+                console.debug("[ EDITOR ] Parser found closing attribute tag at", i, "for new the element")
+
+                // Get attribute tag data
+                let tagData = this.readBetweenIndexes(data, i + 1, nextTagIndex).join("")
+                
+                console.debug("[ EDITOR ] Parser read this raw first tag data", tagData)
+
+                // Read tag name
+                let tagName = tagData.split(" ")[0]
+
+                console.debug("[ EDITOR ] New element's tag name is", tagName)
+
+                // Parse attribute data
+                let attributeData = tagData.replace(tagName, "")
+
+                console.debug("[ EDITOR ] Parser read this raw attribute data", attributeData)
+
+                let attributes = {}
+
+                // Make sure there is data to read
+                if(attributeData !== ""){
+                    // Remove possible leading space
+                    if(attributeData.startsWith(" ")) attributeData = attributeData.replace(" ", "")
+                    attributeData = attributeData.split(" ")
+                    for(let val of attributeData){
+                        let parts = val.split("=")
+                        attributes[this.removeDoubleQuotes(parts[0])] = this.removeDoubleQuotes(parts[1]) 
+                    }
+                    console.debug("[ EDITOR ] Built attributes construct", attributes)
+                }else {
+                    console.debug("[ EDITOR ] No attribute data to read")
+                }
+
+                // Find the closing tag and read the data
+                let splitByTag = this.getCloneFromIndex(data, nextTagIndex + 1).join("").split("</" + tagName + ">")
+                let rawData = splitByTag[0]
+
+                // Forward the index by this elements size
+                i += ("<" + tagData + ">" + rawData + "</" + tagName + ">").length-1
+                console.debug("[ EDITOR ] Parser jumping forward to ", i, "/", data.length)
+
+                let element = {
+                    name: tagName,
+                    attributes,
+                    data: rawData,
+                    tree: []
+                }
+
+                // Element tree will not be parsed, as an element with this feature is yet to be implemented
+                //if(rawData !== "" && ) this.parseEmbedded(rawData)
+
+                console.debug("[ EDITOR ] Element parsed", element)
+                elements.push(element)
+            }else {
+                rawText.push(char)
+            }
+            return i
+        }
+        // Reader loop
+        const reader = () => {
+            console.log("[ EDITOR ] Parsing line data of", data.length)
+            let readToIndex = read()
+            console.log("[ EDITOR ] Reading...", readToIndex, "/", data.length)
+            if(readToIndex < data.length){
+                ++i
+                reader()
+            }else {
+                console.log("[ EDITOR ] Done ", i, "/", data.length)
+                return true
+            }
+        }
+        reader()
+        return elements
+    }
+})
+
+// Math utilities (wrapper for MathQuill)
+const Math = new (class _Math {
+    constructor(){
+        this.events = new EventTarget()
+        this.cache = document.createElement("interfaceCache")
+        this.cache.style.display = "none"
+        document.body.appendChild(this.cache)
+        this.collection = {}
+    }
+    /**
+     * Create a new math element
+     * @returns {MathElement}
+     */
+    async create(){
+        console.debug("[ EDITOR ] Creating math...")
+        let mathObject = {
+            container: null,
+            input: null,
+            inputElement: null,
+            image: null,
+            isOpen: null,
+            id: uuid.v4()
+        }
+        this.collection[mathObject.id] = mathObject
+
+        // Create the elements
+        mathObject.container = document.createElement("p")
+        mathObject.container.contentEditable = false
+        mathObject.container.className = "mathContainer closed"
+        mathObject.inputElement = document.createElement("span")
+        mathObject.container.appendChild(mathObject.inputElement)
+        mathObject.image = document.createElement("img")
+        mathObject.image.draggable = false
+        mathObject.image.className = "mathImage"
+
+        // Initialize MathQuill
+        const mqInterface = MathQuill.getInterface(2)
+        mathObject.input = mqInterface.MathField(mathObject.inputElement, {
+            spaceBehavesLikeTab: false,
+            handlers: {
+                // MathQuill event handler
+                edit: async () => {
+                    if(mathObject.isOpen) {
+                        const latex = mathObject.input.latex()
+                        mathObject.container.setAttribute("data", latex)
+                        mathObject.image.setAttribute("data", latex)
+                    }
+                },
+                enter: async () => {
+                    // Handler for enter-key, not used for now
+                },
+                moveOutOf: async direction => {
+                    this.close(mathObject.id)
+                    const line = mathObject.container.parentNode
+                    await Utils.waitForEvent(this.events, "blur")
+                    const range = document.createRange()
+                    const sel = window.getSelection()
+                    console.debug("[ EDITOR ] Jumping out of math...")
+                    let index = Utils.getNodeIndex(mathObject.container)
+                    if(direction > 0) index += 1
+                    range.setStart(line, index)
+                    range.collapse(true)
+                    sel.removeAllRanges()
+                    sel.addRange(range)
+                    const newSelection = document.getSelection()
+                    this.events.dispatchEvent(new CustomEvent("moveOut"))
+                    Utils.selectByIndex(direction === -1 ? newSelection.anchorOffset - 1 : newSelection.anchorOffset, newSelection.anchorNode, direction !== -1)
+                }
+            }
+        })
+
+        // Handle close event
+        mathObject.inputElement.children[0].children[0].onblur = async () => {
+            this.close(mathObject.id)
         }
 
-        this.movedOutOfLastKeydown = false
+        // Handle reopen event
+        mathObject.image.setAttribute("onclick", "window.internal.ui.editor.local.Math.open(\"" + mathObject.id + "\")")
+
+        // Finalize
+        mathObject.container.setAttribute("data", "")
+        return mathObject
+    }
+
+    /**
+     * Open math element
+     * @param {*} id 
+     */
+    async open(id){
+        console.debug("[ EDITOR ] Opening math...")
+        const mathObject = this.collection[id]
+        const latexData = mathObject.container.getAttribute("data")
+        mathObject.input.write(latexData)
+        if(mathObject.inputElement.parentElement !== mathObject.container){
+            // Append container back
+            mathObject.container.appendChild(mathObject.inputElement)
+            // Hide image inside cache
+            this.cache.appendChild(mathObject.image)
+        }
+        mathObject.image.style.display = "none"
+        mathObject.inputElement.style.display = "" // Unset it
+        mathObject.container.style.width = "" // Unset it
+        mathObject.container.style.height = "" // Unset it
+        mathObject.container.className = "mathContainer open"
+        mathObject.isOpen = true
+        mathObject.input.focus()
+        mathObject.input.reflow()
+        window.setLatexCommandsVisibility(true)
+        this.events.dispatchEvent(new CustomEvent("focus", { detail: mathObject }))
+    }
+
+    /**
+     * Close math element
+     * @param {*} id 
+     */
+    async close(id){
+        console.debug("[ EDITOR ] Closing math...")
+        const mathObject = this.collection[id]
+
+        // Make sure we don't close twice
+        if(!mathObject.isOpen) return
+
+        // Re-configure the element to closed state
+        mathObject.isOpen = false
+        mathObject.container.className = "mathContainer closed"
+
+        // Remove math if it's empty
+        if(mathObject.input.latex() === ""){
+            mathObject.image.remove()
+            mathObject.container.remove()
+            delete this.collection[id]
+            return
+        }
+
+        // Render math to svg
+        const render = await MathJax.tex2svg(mathObject.input.latex(), {em: 10, ex: 5, display: true})
+        const svg = render.getElementsByTagName("svg")[0].outerHTML
+
+        // Configure the image element
+        mathObject.image.src = "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(svg)))
+        mathObject.image.style.display = "inline"
+        mathObject.container.appendChild(mathObject.image)
+        this.cache.appendChild(mathObject.inputElement)
+
+        // Set element width and height attributes manually
+        // Include 8px padding & 3px margin on sides
+        // TODO
+
+        // Compatibility things
+        mathObject.input.select()
+        mathObject.input.keystroke("Backspace")
+        this.events.dispatchEvent(new CustomEvent("blur", { detail: mathObject }))
+    }
+})
+
+// Main class
+/**
+ * Dynamic math editor component
+ */
+class Editor {
+    
+    /**
+     * Create new instance of the editor
+     * @param {HTMLElement} hook Element to hook the editor to
+     */
+    constructor(hook) {
+        this.hook = hook
+        this.local = {
+            Math,
+            Utils
+        }
+
+        // Constant variables
+        this.events = new EventTarget()
+        this.activator = "‎" // Activator element to fool the browser to enable caret control (special unicode char)
+
+        // Dynamic variables
+        this.activeMathElement = null
+        this.activeLine = null // Active line element (div)
+        this.watchDocument = true // Enable flow logic
+        this.moveOutOfThisEvent = false // Math wrapper called moveOut event last keydown
+    }
+
+    /**
+     * Set editor contents
+     * @param {string} data Data in matikkaeditori.fi's save data format
+     */
+    async setContent(data, id){
+        // UI compatibility
+        this.target = {
+            i: id
+        }
+        this.hook.innerHTML = ""
+
+        // Create construct
+        let construct = []
+        for(let i = 0; i < data.length; i++){
+            // Find tags
+            const line = data[i]
+            console.log("[ EDITOR ] Processing line", i)
+            let parsedLine = Utils.parseEmbedded(line)
+            construct.push(parsedLine)
+        }
+        console.log("[ EDITOR ] Parser output:", construct)
+
+        const fill = async (element) => {
+            let htmlElement = null
+            switch(element.name){
+
+            case "meta": {
+                // Don't do anything element related for this
+                break
+            }
+
+            case "text": {
+                // Basic text
+                if(element.data === "") element.data = this.activator
+                htmlElement = document.createTextNode(element.data)
+                break
+            }
+
+            case "math": {
+                // Create math element
+                const mathElement = await Math.create()
+                mathElement.input.write(element.data)
+                htmlElement = mathElement.container
+                break
+            }
+
+            default: {
+                console.error("Unsupported element type:", element.name, element)
+            }
+            }
+
+            if(element.tree.length !== 0) {
+                for(let childElement of element.tree){
+                    htmlElement.appendChild(await fill(childElement))
+                }
+            }
+            return htmlElement
+        }
+
+        // Write the elements to the editor
+        for(let line of construct){
+            let lineElement = document.createElement("div")
+            for(let element of line){
+                if(element.name === "meta"){
+                    // This is a meta tag
+                    console.log("[ EDITOR ] Parser output META:", element.attributes)
+                }
+                let fillResult = await fill(element)
+                if(fillResult !== null) lineElement.appendChild(fillResult)
+            }
+            this.hook.appendChild(lineElement)
+        }
+
+        // Toggle all math
+        for(let id in Math.collection){
+            Math.open(id)
+            Math.close(id)
+        }
+    }
+
+    /**
+     * Get editor contents
+     */
+    async getContent(){
+        let format = ["<meta \"version\"=\"" + localStorage.getItem("version") + "\"></meta>"]
+        for(let line of this.hook.children){
+            // We expect each line to be a container itself!
+            // Newline after each line!
+            format.push("")
+            for(let element of line.childNodes){
+                switch(element.nodeName.toLowerCase()){
+                case "#text": {
+                    // This is plain text
+                    format[format.length-1] += "<text>" + element.wholeText + "</text>"
+                    break
+                }
+
+                case "p": {
+                    // This is a math container
+                    format[format.length-1] += "<math>" + element.getAttribute("data") + "</math>"
+                    break
+                }
+
+                case "br": {
+                    // This is a manual line-break
+                    format.push("")
+                    break
+                }
+
+                case "img": {
+                    // This is a math render
+                    format[format.length-1] += "<math>" + element.getAttribute("data") + "</math>"
+                    break
+                }
+                default: {
+                    console.warn("UNKNOWN ELEMENT IN EDITOR")
+                }
+                
+                }
+            }
+        }
+        return format
     }
 
     /**
      * Initialize the editor
      */
     async init(){
-        try {
-            // Register keyboard listener
-            window.$(window).keydown(async e => {
-                // Add new math element
-                if(e.ctrlKey && e.key == "e"){
-                    e.preventDefault()
-                    if(this.target != null) this.createMath()
-                }
-                // Close math with esc
-                if(e.which == 27){
-                    e.preventDefault()
-                    if(window.internal.ui.editor.mathFocus != null) window.internal.ui.editor.mathFocus.blur()
-                }
-                // Create new math element in next line with enter
-                // Move out of the formula with shift
-                if(e.which == 13 && this.mathFocus != null){
-                    e.preventDefault()
-                    if(e.shiftKey){
-                        this.input.focus()
-                        const newLine = document.createElement("div")
-                        // NOT EMPTY!
-                        newLine.innerText = "‎"
-                        this.input.appendChild(newLine)
-                        // Move caret
-                        const range = document.createRange()
-                        const sel = window.getSelection()
-                        range.setStart(this.input, this.input.childNodes.length)
-                        range.collapse(true)
-                        sel.removeAllRanges()
-                        sel.addRange(range)
-                    }else {
-                        // Blur math
-                        let self = this
-                        this.events.addEventListener("mathBlur", async function () {
-                            // Remove this listener
-                            self.events.removeEventListener("mathBlur", this)
-                            // TODO: Make this open the next line, no idea how to do that rn
-                            //document.execCommand("insertText", false, "\n")
-                            let target = null
-                            for(let child of self.input.children){
-                                if(child.tagName.toLowerCase() == "div"){
-                                    target = child
+        return new Promise((resolve, reject) => {
+            try {
+                // Global keyboard listener
+                let arrowKeyDoubleTap = false
+                let lastSelection = null
+                document.addEventListener("keydown", async event => {
+                    // --- Math controls ---
+
+                    // Arrow key movement double tap listener
+                    if(arrowKeyDoubleTap !== false && event.code === "ArrowLeft"){
+                        console.debug("[ EDITOR ] Jumping using double-tap...")
+                        arrowKeyDoubleTap()
+                        arrowKeyDoubleTap = false
+                        return
+                    }
+                    arrowKeyDoubleTap = false
+
+                    // Open math element
+                    if(event.ctrlKey && event.key === "e"){
+                        event.preventDefault()
+                        const mathElement = await Math.create()
+                        Utils.insertNodeAt(Utils.getCaretPosition(), mathElement.container)
+                        Math.open(mathElement.id)
+                        return
+                    }
+
+                    // Close math
+                    if(event.code === "Escape"){
+                        event.preventDefault()
+                        if(this.activeMathElement) Math.close(this.activeMathElement.id)
+                        return
+                    }
+
+                    // Use enter to create new math
+                    if(event.code === 13 && this.activeMathElement !== null){
+                        event.preventDefault()
+
+                        // Shift will make us move out and create a new line
+                        if(event.shiftKey){
+                            this.hook.focus() // This will blur any selected math
+                            await Utils.waitForEvent(Math.events, "blur")
+                            const newLine = document.createElement("div")
+                            this.hook.appendChild(newLine)
+                            Utils.select(this.hook, this.hook.childNodes.length) // Move into new line
+                        }else {
+                            // Create new line after current active line
+                            this.hook.focus()
+                            await Utils.waitForEvent(Math.events, "blur")
+                            // Make new line
+                            const newLine = document.createElement("div")
+                            this.activeLine.after(newLine)
+                            Utils.select(this.hook, this.hook.childNodes.indexOf(this.activeLine) + 1)
+                            const mathElement = await Math.create()
+                            this.activeLine.appendChild(mathElement.container)
+                        }
+                        return
+                    }
+
+                    // Arrow key control
+                    if(event.code === "ArrowLeft" || event.code === "ArrowRight"){
+                        await Utils.toggleAnchorMode(Utils.getObjectPropertyArray(Math.collection, "container"), true)
+                        const selection = Utils.getSelectedNode()
+                        const selClone = selection // Laziness
+                        const documentSelection = document.getSelection()
+                        await Utils.toggleAnchorMode(Utils.getObjectPropertyArray(Math.collection, "container"), false)
+
+                        // Focus function for math
+                        const direction = event.code === "ArrowLeft" ? "moveToRightEnd" : "moveToLeftEnd"
+                        const focus = async (selection) => {
+                            if(!selection) selection = selClone
+                            const id = selection.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
+                            selection.firstChild.click()
+                            await Utils.waitForEvent(Math.events, "focus")
+                            Math.collection[id].input[direction]()
+                        }
+
+                        // Detect by selection change
+                        if(selection.nodeName.toLowerCase() === "p" && selection.getAttribute("data") !== null && this.activeMathElement === null){
+                            event.preventDefault()
+                            if(direction === "moveToRightEnd"){
+                                // Wait for same keycode again
+                                arrowKeyDoubleTap = focus
+                            }else {
+                                focus(selection)
+                            }
+                        }else // NOTE THE ELSE HERE!
+
+                        // Detect by index jump
+                        if(lastSelection !== null && this.activeMathElement === null && this.moveOutOfThisEvent === false){
+                            // This is a special case, where we twice press the arrow key
+                            // and the index does not change, but we jump over the math element
+                            // we can detect this by checking the last selection's offset and check if
+                            // the current selections offset is the max length of the selected note
+                            // and that the last selection was 0
+                            // Though we need to be careful, as while in the end or beginning of a line
+                            // this will also trigger as the offset will not change
+                            if(lastSelection === 0 && documentSelection.anchorOffset === documentSelection.anchorNode.wholeText.length){
+                                // Check that we are not in the start / end of the line
+                                //if(this.activeLine === selection) return // Cannot select the line itself
+                                const nodeIndex = Utils.getNodeIndex(this.activeLine, selection)
+                                if(nodeIndex !== 0 && nodeIndex !== this.activeLine.childNodes.length - 1){
+                                    // Not in the start / end of a line, get the element before the selection and call click
+                                    const skippedNode = Utils.getNodeByIndex(this.activeLine, nodeIndex - 2)
+                                    if(skippedNode === this.hook) return // Cannot skip the hook
+                                    focus(skippedNode) // Calling a special focus function for math, click will not work with that!
                                 }
                             }
-                            if(target == null) target = self.input
-                            window.internal.ui.editor.mathFocus = null
-                            self.createMath("", target)
-                        })
-                        this.input.focus()
-                    }
-                }
-                // Use arrow keys to move into math elements
-                // These return as activeLine is updated after
-                let jumped = this.movedOutOfLastKeydown
-                if(e.which === 37){ // Left
-                    // Quite the hacky way to make the containers valid anchors
-                    await this.setAnchor(true)
-                    let node = document.getSelection().anchorNode
-                    node = (node.nodeType == 3 ? node.parentNode : node)
-                    if(node !== this.input && node.nodeName === "P" && this.mathFocus === null){
-                        // Move into math
-                        console.log("[ EDITOR ] Jumping to math...")
-                        jumped = true
-                        const id = node.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
-                        node.firstChild.click()
-                        await this.maths[id].input.moveToRightEnd()
-                        e.preventDefault()
-                        return
-                    }
-                    for(const id in this.maths){
-                        const math = this.maths[id]
-                        math.container.contentEditable = true
-                    }
-                    await this.setAnchor(false)
-                }
-                if(e.which === 39){ // Right
-                    // Quite the hacky way to make the containers valid anchors
-                    await this.setAnchor(true)
-                    let node = document.getSelection().anchorNode
-                    node = (node.nodeType == 3 ? node.parentNode : node)
-                    if(node !== this.input && node.nodeName === "P" && this.mathFocus === null){
-                        // Move into math
-                        console.log("[ EDITOR ] Jumping to math...")
-                        jumped = true
-                        const id = node.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
-                        node.firstChild.click()
-                        await this.maths[id].input.moveToLeftEnd()
-                        e.preventDefault()
-                        return
-                    }
-                    for(const id in this.maths){
-                        const math = this.maths[id]
-                        math.container.contentEditable = true
-                    }
-                    await this.setAnchor(false)
-                }
-
-                // Update active line
-                this.updateActiveLine(jumped)
-
-                //console.debug("Key", e.which)
-            })
-            
-            // Save listener
-            this.input.oninput = async () => {
-                // Re-align tools
-                if(this.mathFocus !== null) this.attachTools()
-                if (this.oninput) this.oninput()
-            }
-
-            // Compatibility bullshit patches
-
-            // Document modification listener
-            this.domObserverCallback = async () => {
-                // If the document is empty, force an empty inner DIV element to appear (focus issues)
-                let htmlReference = this.input.innerHTML.replace(/<br>/g, "")
-                if(htmlReference === ""){
-                    // NOT EMPTY
-                    this.input.innerHTML = "<div>" + "‎" + "</div>"
-                }
-            }
-            this.domObserver = new MutationObserver(this.domObserverCallback)
-            this.domObserver.observe(this.input, { attributes: false, childList: true, subtree: true })   
-        }
-        catch(err){
-            error("Editor", "Failed to init editor: " + err.stack != undefined ? err.stack : err)
-        }
-    }
-    
-    /**
-     * Attach math tools
-     * @param {HTMLElement} element 
-     */
-    attachTools(element){
-        if(element) this.toolAttachPoint = element
-        else element = this.toolAttachPoint
-        const dims = element.getBoundingClientRect()
-        const top = dims.top + dims.height
-        const left = dims.left + dims.width
-        const tools = document.getElementById("mathTools")
-        tools.style.display = "none" // set this to block here to unhide this
-        tools.style.top = top + "px"
-        tools.style.left = (left - tools.getBoundingClientRect().width + 5) + "px"
-    }
-
-    /**
-     * Detach math tools
-     */
-    detachTools(){
-        const tools = document.getElementById("mathTools")
-        tools.style.display = "none"
-    }
-
-    /**
-     * Get selection offset until an element
-     * @param {*} element 
-     */
-    getLengthUntil(element){
-        let total = 0
-        for(const node of this.activeLine.childNodes){
-            if(element === node) break
-            total += 1
-        }
-        return total
-    }
-
-    /**
-     * Reopen a math element by id
-     */
-    reopen(id){
-        let latexData = this.maths[id].container.getAttribute("data")
-        this.maths[id].input.write(latexData) // Write the latex back in
-        this.maths[id].image.style.display = "none"
-        this.maths[id].inputElement.style.display = ""
-        this.maths[id].container.style.width = ""
-        this.maths[id].container.style.height = ""
-        this.maths[id].container.className = "mathContainer open"
-        this.maths[id].closed = false
-        this.maths[id].input.focus()
-        this.mathFocus = this.maths[id].input
-        window.setLatexCommandsVisibility(true)
-        this.maths[id].input.reflow()
-        this.attachTools(this.maths[id].container)
-    }
-
-    /**
-     * Insert a new node in the current location in a text field
-     * @param {*} node The node to add
-     */
-    insertNodeAtCaret(node) {
-        // Verify the input has focus
-        if(document.activeElement != this.input) this.input.focus()
-        var sel, range
-        if (window.getSelection) {
-            sel = window.getSelection()
-            if (sel.getRangeAt && sel.rangeCount) {
-                range = sel.getRangeAt(0)
-                range.deleteContents()
-                range.insertNode( node )
-            }
-        } else if (document.selection && document.selection.createRange) {
-            document.selection.createRange().insertNode(node)
-        }
-    }
-
-    /**
-     * Create a new math element
-     */
-    async createMath(latex, here){
-        try {
-            console.log("[ EDITOR ] Creating math...")
-            // Create the elements
-            let img = document.createElement("img")
-            img.draggable = false
-            img.className = "mathImage"
-            let container = document.createElement("p")
-            container.contentEditable = false
-            container.className = "mathContainer open"
-            let math = document.createElement("span")
-            container.appendChild(math)
-            // Create math input
-            let id = await uuid.v4()
-            let mq = MathQuill.getInterface(2)
-            let latexInput = mq.MathField(math, {
-                spaceBehavesLikeTab: false,
-                handlers: {
-                    edit: async () => {
-                        // Write latex data to the container data attribute
-                        if(this.maths[id].closed == false) container.setAttribute("data", latexInput.latex())
-                    },
-                    enter: async () => {
-                        // TODO: Implement add new math input thingy here
-                    },
-                    moveOutOf: async (direction) => {
-                        let active = this.activeLine
-                        this.maths[id].inputElement.children[0].children[0].blur()
-                        this.movedOutOfLastKeydown = true
-                        setTimeout(() => {
-                            const range = document.createRange()
-                            const sel = window.getSelection()
-                            console.log("[ EDITOR ] Jumping out of math...")
-                            let pos = this.getLengthUntil(this.maths[id].container)
-                            if(direction > 0) pos += 1 // Handle direction
-                            range.setStart(active, pos)
-                            range.collapse(true)
-                            sel.removeAllRanges()
-                            sel.addRange(range)
-                            active.focus()
-                        }, 10)
-                    }
-                }
-            })
-            // Register the math input
-            this.maths[id] = {
-                container: container,
-                input: latexInput,
-                inputElement: math,
-                image: img,
-                closed: false
-            }
-            // Onclose event - The change to rendered state
-            math.children[0].children[0].onblur = async () => { // This element loses focus when the input closes
-                // Call the close event only once
-                if(this.maths[id].closed) return
-                this.maths[id].closed = true
-                // Detach tools
-                this.detachTools()
-                // If the latex input is empty remove the element
-                if(this.maths[id].input.latex() == ""){
-                    this.maths[id].image.remove()
-                    this.maths[id].container.remove()
-                    delete this.maths[id]
-                    return
-                }
-                this.maths[id].container.className = "mathContainer closed"
-                // Render the latex into svg
-                let render = await MathJax.tex2svg(latexInput.latex(), {em: 10, ex: 5, display: true})
-                let data = render.getElementsByTagName("svg")[0].outerHTML //Get the raw svg data
-                // Configure the image element
-                let img = this.maths[id].image
-                //img.style.width = Math.ceil(dims.width - 1) + "px"
-                //img.style.height = Math.ceil(dims.height - 5) + "px"
-                img.style.display = "inline-block"
-                // Add in the svg data
-                img.src = "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(data)))
-                // Replace the math element with the image
-                await container.insertBefore(img, this.maths[id].inputElement)
-                // Finalize
-                this.maths[id].inputElement.style.display = "none" // Hide the math element
-                this.maths[id].input.select()
-                this.maths[id].input.keystroke("Backspace")
-                // Compatibility things
-                // Check for text nodes before & after
-                const myIndex = Array.from(container.parentElement.childNodes).indexOf(container)
-                // Check before
-                let textNode
-                if(typeof container.parentElement.childNodes[myIndex - 1] === "undefined" || container.parentElement.childNodes[myIndex - 1].nodeName.toLowerCase() !== "#text"){
-                    textNode = document.createTextNode("‎")
-                    container.before(textNode)
-                }
-                // Check after
-                if(typeof container.parentElement.childNodes[myIndex + 1] === "undefined" || container.parentElement.childNodes[myIndex + 1].nodeName.toLowerCase() !== "#text"){
-                    textNode = document.createTextNode("‎")
-                    container.after(textNode)
-                }
-                // Set UI stuff
-                if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
-                this.mathFocus = null
-                this.events.dispatchEvent(new CustomEvent("mathBlur"))
-                console.log("[ EDITOR ] Math unfocused")
-            }
-            // Onopen event - The change to live state (from rendered)
-            img.setAttribute("onclick", "window.internal.ui.editor.reopen(\"" + id + "\")")
-            // Write possible predefined latex
-            if(latex != undefined) latexInput.write(latex)
-            // Append to the editor
-            if(here == undefined){
-                this.insertNodeAtCaret(container)
-            }else {
-                here.appendChild(container)
-            }
-            // Focus the input
-            latexInput.focus()
-            this.mathFocus = latexInput
-            this.events.dispatchEvent(new CustomEvent("mathFocus"))
-            // Set UI stuff
-            window.setLatexCommandsVisibility(true)
-            this.attachTools(container)
-            return id
-
-        }
-        catch(err){
-            error("Editor", "Failed to add math: " + err.stack != undefined ? err.stack : err)
-        }
-    }
-
-    /**
-     * Load a filesystem target
-     * @param {*} target 
-     * @param {*} id
-     */
-    async load(target, id){
-        try {
-            // Target is filesystem answer
-            this.input.innerHTML = ""
-            this.target = target
-            this.target.id = id
-            console.log("[ Filesystem ] Load:", this.target)
-            let targetLine = this.input
-            // Parse
-            for(let line of this.target.data){
-                if(line.includes("<math>")){
-                    line = line.split("<math>")
-                    
-                    // Create line
-                    const textNode = document.createElement("div")
-                    // NOT EMPTY!
-                    if(line === "") line = "‎" // There must be a space here
-                    targetLine = textNode
-                    this.input.appendChild(textNode)
-
-                    for(let mathStart of line){
-                        // This is math
-                        if(mathStart.includes("</math>")){
-                            mathStart = mathStart.split("</math>")
-                            // Math part              
-                            await this.createMath(mathStart[0], targetLine)
-
-                            // Text part
-                            if(mathStart[1]){
-                                // There can only be one element here!
-                                const textNode = document.createTextNode(mathStart[1])
-                                targetLine.appendChild(textNode)
-                            }
-                        }else {
-                            // Text part
-                            const textNode = document.createTextNode(mathStart)
-                            targetLine.appendChild(textNode)
                         }
+                        lastSelection = documentSelection.anchorOffset
                     }
-                }else {
-                    const textNode = document.createElement("div")
-                    // NOT EMPTY!
-                    if(line === "") line = "‎" // There must be a space here
-                    textNode.innerText = line
-                    targetLine = textNode
-                    this.input.appendChild(textNode)
-                }
-            }
-            // Set active line on first load
-            this.activeLine = this.input.childNodes[0]
-        }
-        catch(err){
-            error("Editor", "Failed to load: " + err.stack != undefined ? err.stack : err)
-        }
-    }
+                    this.moveOutOfThisEvent = false
+                })
 
-    /**
-     * Format the data for saving purposes
-     */
-    async format(){
-        try {
-            // Save here
-            // Format in editor:
-            // Text nodes are in the original line
-            // A new line can be marked by <br>
-            // Text nodes as are their own lines, which include math elements
-            let format = [""]
-            const parse = (main) => {
-                for(const node of main.childNodes){
-                    switch (node.nodeName.toLowerCase()){
-                    case "div": {
-                        // Marks own line
-                        if(format.length !== 1 && format[0] !== "") format.push("")
-                        parse(node)
-                        break
-                    }
-                    case "#text": {
-                        // First line
-                        format[format.length - 1] += node.wholeText
-                        break
-                    }
-                    case "p": {
-                        // Math element
-                        format[format.length - 1] += "<math>" + node.getAttribute("data") + "</math>"
-                        break
-                    }
-                    case "br": {
-                        // Line break in text nodes
-                        format.push("")
-                    }
-                    }
-                }
-            }
-            parse(this.input)
-            // NOT EMPTY
-            if(format[0].startsWith("<math>")) format = "‎" + format
-            if(format[0] === "") format.splice(0, 1)
+                // Document content modification listener
+                const observerCallback = async () => {
+                    // Enable/disable
+                    if(!this.watchDocument) return
 
-            return format
-            /*
-            console.log("[ EDITOR ] Saved:", format)
-            await window.internal.workers.api("Filesystem", "write", {
-                instance: window.internal.ui.activeFilesystemInstance,
-                write: {
-                    data: format,
-                    type: 0
-                },
-                id: this.target.id
-            })*/
-        }
-        catch(err){
-            error("Editor", "Failed to format: " + err.stack != undefined ? err.stack : err)
-        }
+                    const reference = this.hook.innerHTML.replace(/<br>/g, "")
+
+                    // Editor is empty. We need to add an empty line
+                    if(reference === ""){
+                        // Add an empty line
+                        this.hook.innerHTML = `<div>${this.activator}</div>`
+                    }
+
+                    // TODO: Check for extra activators in lines
+                }
+
+                // Set active mathElement
+                Math.events.addEventListener("focus", e => {
+                    this.activeMathElement = e.detail
+                })
+                Math.events.addEventListener("blur", () => {
+                    this.activeMathElement = null
+                })
+
+                // Handle moveOut
+                Math.events.addEventListener("moveOut", () => {
+                    this.moveOutOfThisEvent = true
+                })
+
+                // Active line detection
+                window.addEventListener("selectstart", async e => {
+                    if(this.activeLine === e.target.parentElement) return
+                    this.activeLine = e.target.parentElement
+                    console.debug("[ EDITOR ] Active line change to", this.activeLine)
+                })
+
+                // Activate document content modification listener
+                const observer = new MutationObserver(observerCallback)
+                observer.observe(this.hook, { attributes: false, childList: true, subtree: true })
+                resolve()
+            }
+            catch(e){
+                reject(e)
+            }
+        })
     }
 }
+
+// Export
+export default Editor
