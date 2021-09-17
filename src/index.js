@@ -124,15 +124,13 @@ try {
         // Handle workers
         Workers.default()
 
-        window.internal.workers.essentials.then(() => {
-            // Render
-            ReactDOM.render(
-                <React.StrictMode>
-                    <App></App>
-                </React.StrictMode>,
-                document.getElementById("root")
-            )
-        })
+        // Render
+        ReactDOM.render(
+            <React.StrictMode>
+                <App></App>
+            </React.StrictMode>,
+            document.getElementById("root")
+        )
     }else {
         console.log("Incompatible browser!")
         ReactDOM.render(

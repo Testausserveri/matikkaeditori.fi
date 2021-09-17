@@ -175,5 +175,3 @@ export default async function (){
     }
     return true
 }
-
-window.internal.workers.essentialsResolve()
