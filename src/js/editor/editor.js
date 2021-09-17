@@ -620,7 +620,7 @@ class Editor {
                     break
                 }
                 default: {
-                    console.warn("UNKNOWN ELEMENT IN EDITOR")
+                    console.warn("UNKNOWN ELEMENT IN EDITOR", element)
                 }
                 
                 }
