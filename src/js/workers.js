@@ -173,6 +173,7 @@ export default async function (){
     catch(err){
         console.error("Failed to create Cloud storage worker:", err)
     }
-    window.internal.workers.essentialsResolve()
     return true
 }
+
+window.internal.workers.essentialsResolve()
