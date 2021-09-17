@@ -415,12 +415,27 @@ const Math = new (class _Math {
         const mathObject = this.collection[id]
         const latexData = mathObject.container.getAttribute("data")
         mathObject.input.write(latexData)
-        if(mathObject.inputElement.parentElement !== mathObject.container){
-            // Append container back
-            mathObject.container.appendChild(mathObject.inputElement)
-            // Hide image inside cache
-            this.cache.appendChild(mathObject.image)
+        
+        // Browser specific things
+        if(window.browser === "chrome"){
+            if(mathObject.inputElement.parentElement !== mathObject.container){
+                // Append container back
+                mathObject.container.appendChild(mathObject.inputElement)
+                // Hide image inside cache
+                this.cache.appendChild(mathObject.image)
+            }
+        }else if(window.browser === "firefox"){
+            if(mathObject.container.parentElement === this.cache){
+                const imgContainerReference = mathObject.image.parentElement
+                if(mathObject.image.parentElement.childNodes[0].nodeName.toLowerCase() === "#text"){
+                    mathObject.image.parentElement.before(mathObject.image.parentElement.childNodes[0])
+                }
+                mathObject.image.parentElement.before(mathObject.container)
+                this.cache.appendChild(mathObject.image)
+                imgContainerReference.remove()
+            }
         }
+
         mathObject.image.style.display = "none"
         mathObject.inputElement.style.display = "" // Unset it
         mathObject.container.style.width = "" // Unset it
@@ -463,12 +478,26 @@ const Math = new (class _Math {
         // Configure the image element
         mathObject.image.src = "data:image/svg+xml;base64," + window.btoa(unescape(encodeURIComponent(svg)))
         mathObject.image.style.display = "inline"
-        mathObject.container.appendChild(mathObject.image)
-        this.cache.appendChild(mathObject.inputElement)
+
+        // Browser specific container settings
+        if(window.browser === "chrome"){
+            mathObject.container.appendChild(mathObject.image)
+            this.cache.appendChild(mathObject.inputElement)
+        }else if(window.browser === "firefox"){
+            const imgParent = document.createElement("a")
+            imgParent.className = "mathContainer closed"
+            imgParent.appendChild(mathObject.image)
+            mathObject.container.before(imgParent)
+            this.cache.appendChild(mathObject.container)
+        }
 
         // Set element width and height attributes manually
         // Include 8px padding & 3px margin on sides
-        // TODO
+        //const dims = mathObject.container.getBoundingClientRect()
+        //mathObject.image.setAttribute("height", dims.height)
+        //mathObject.container.style.height = dims.height + "px"
+        //mathObject.image.setAttribute("width", dims.width)
+        //mathObject.container.style.width = dims.width + "px"
 
         // Compatibility things
         mathObject.input.select()
@@ -602,9 +631,23 @@ class Editor {
                     break
                 }
 
+                // Chrome math container
                 case "p": {
-                    // This is a math container
                     format[format.length-1] += "<math>" + element.getAttribute("data") + "</math>"
+                    break
+                }
+
+                // Firefox math container
+                case "a": {
+                    let imgElement = null
+                    for(let child of element.childNodes){
+                        if(child.nodeName.toLowerCase() === "img") {
+                            imgElement = child
+                            break
+                        }
+                    }
+                    if(imgElement === null) console.error("[ EDITOR ] Failed to read Firefox math container latex", element)
+                    format[format.length-1] += "<math>" + imgElement.getAttribute("data") + "</math>"
                     break
                 }
 
@@ -640,6 +683,7 @@ class Editor {
                 let lastSelection = null
                 document.addEventListener("keydown", async event => {
                     // --- Math controls ---
+                    if(document.activeElement !== this.hook) return
 
                     // Arrow key movement double tap listener
                     if(arrowKeyDoubleTap !== false && event.code === "ArrowLeft"){
