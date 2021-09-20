@@ -14,6 +14,20 @@ export function c(){
         window.browser = "chrome"
     }
 
+    // BTOA & ATOB
+    // eslint-disable-next-line no-undef
+    if(Buffer !== undefined){
+        // eslint-disable-next-line no-global-assign
+        window.btoa = (string) => {
+            // eslint-disable-next-line no-undef
+            return new Buffer.from(string, "utf8").toString("base64")
+        }
+        window.atob = (string) => {
+            // eslint-disable-next-line no-undef
+            return new Buffer.from(string, "base64").toString("utf8")
+        }
+    }
+
     return (
         window.Worker && // Worker support
         crypto.subtle != undefined // Crypto package available
