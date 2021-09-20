@@ -797,6 +797,19 @@ class Editor {
                     this.moveOutOfThisEvent = false
                 })
 
+                
+                // Event listener to handle math being opened without an active collection entry
+                // We can detect this by check if the onclick function is nto defined but the "data"-attribute is
+                window.addEventListener("click", async e => {
+                    if(e.target.nodeName.toLowerCase() === "img" && e.target.getAttribute("data") !== null && document.activeElement === this.hook){
+                        const newConstruct = await Math.create()
+                        newConstruct.input.write(e.target.getAttribute("data"))
+                        e.target.before(newConstruct.container)
+                        e.target.remove()
+                        Math.open(newConstruct.id)
+                    }
+                })
+
                 // Document content modification listener
                 const observerCallback = async () => {
                     // Enable/disable
