@@ -17,6 +17,7 @@ export function c(){
     // BTOA & ATOB
     // eslint-disable-next-line no-undef
     if(Buffer !== undefined){
+        console.warn("[ Compatibility ] Using Buffer instead of btoa/atob!")
         // eslint-disable-next-line no-global-assign
         window.btoa = (string) => {
             // eslint-disable-next-line no-undef
