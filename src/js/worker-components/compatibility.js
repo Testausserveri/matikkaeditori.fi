@@ -17,7 +17,7 @@ export function c(){
     // BTOA & ATOB
     // eslint-disable-next-line no-undef
     if(Buffer !== undefined){
-        console.warn("[ Compatibility ] Using Buffer instead of btoa/atob!")
+        console.log("[ Compatibility ] Using Buffer instead of btoa/atob...")
         // eslint-disable-next-line no-global-assign
         window.btoa = (string) => {
             // eslint-disable-next-line no-undef
@@ -26,6 +26,13 @@ export function c(){
         window.atob = (string) => {
             // eslint-disable-next-line no-undef
             return new Buffer.from(string, "base64").toString("utf8")
+        }
+    }else {
+        if(confirm("Your browser does not support the \"Buffer class\". Which is a required component for this application to handle not LATIN-1 (ISO-8859) characters. Please update your browser. The application will continue to function, but unexpected behaviour and at the risk of data integrity it is not recommended.")){
+            console.warn("[ Compatibility ] Running in Buffer compatibility mode")
+        }else {
+            // We shall never return true and cause the app to freeze
+            return false
         }
     }
 
