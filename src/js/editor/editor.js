@@ -621,7 +621,8 @@ class Editor {
      */
     async getContent(){
         let format = ["<meta \"version\"=\"" + localStorage.getItem("version") + "\"></meta>"]
-        for(let line of this.hook.children){
+        for(let i = 0; i < this.hook.childNodes.length; i++){
+            let line = this.hook.childNodes[i]
             // We expect each line to be a container itself!
             // Newline after each line!
             format.push("")
@@ -666,6 +667,15 @@ class Editor {
                     // This is a math render
                     // eslint-disable-next-line no-undef
                     format[format.length-1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
+                    break
+                }
+
+                case "div": {
+                    // This is a line within a line, move it's contents to the hook and 
+                    for(const child of line.childNodes) line.after(child)
+                    line.remove()
+                    i = 0 // Resets to the start
+                    console.warn("[ Editor ] Line structure changes were required! Redoing the getContent...")
                     break
                 }
                 
@@ -805,7 +815,11 @@ class Editor {
                         const newConstruct = await Math.create()
                         newConstruct.input.write(e.target.getAttribute("data"))
                         e.target.before(newConstruct.container)
-                        e.target.remove()
+                        if(e.target.parentNode.nodeName.toLowerCase() === "p") {
+                            e.target.parentNode.remove()
+                        }else {
+                            e.target.remove()
+                        }
                         Math.open(newConstruct.id)
                     }
                 })
