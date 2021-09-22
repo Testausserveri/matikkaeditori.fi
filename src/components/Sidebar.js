@@ -95,9 +95,26 @@ function FilesystemItem(props) {
         }
     ]
 
+    const [DropdownComponent, toggleDropdown] = Dropdown({
+        data: dropdownData,
+        origin: "left",
+        children: <button className="ellipsis">
+            <FontAwesomeIcon icon={faEllipsisH} />
+        </button>
+    }, true)
+
+    const handleClick = (event) => {
+        console.log(event.type)
+        if (event.type == "contextmenu") {
+            event.preventDefault() 
+            toggleDropdown(event, true)
+        } else {
+            props.onClick()
+        }
+    }
     if (props.data.t == 1) { // folder
         return (
-            <li ref={itemRef} className={"fsFolder" + (props.selected ? " selected" : "")} onClick={props.onClick}>
+            <li ref={itemRef} className={"fsFolder" + (props.selected ? " selected" : "")} onClick={handleClick} onContextMenu={handleClick}>
                 {/*<div className="fsIcon">
                     <FontAwesomeIcon icon={faOutlineFolder} />
                 </div>*/}
@@ -113,28 +130,20 @@ function FilesystemItem(props) {
                     >{props.data.name}</span>
                 </div>
                 <div className="action">
-                    <Dropdown data={dropdownData} origin="left">
-                        <button className="ellipsis">
-                            <FontAwesomeIcon icon={faEllipsisH} />
-                        </button>
-                    </Dropdown>
+                    {DropdownComponent}
                 </div>
             </li>
         )
     } else if (props.data.t == 0) { // file
         return (
-            <li ref={itemRef} className={(props.selected ? "selected" : "")} onClick={props.onClick}>
+            <li ref={itemRef} className={(props.selected ? "selected" : "")} onClick={handleClick} onContextMenu={handleClick}>
                 <div className="content">
                     <span>{props.data.name}</span>
                     <span className="date">{props.data.date ? formatDate(props.data.date).pretty : ""}</span>
                     
                 </div>
                 <div className="action">
-                    <Dropdown data={dropdownData} origin="left">
-                        <button className="ellipsis">
-                            <FontAwesomeIcon icon={faEllipsisH} />
-                        </button>
-                    </Dropdown>
+                    {DropdownComponent}
                 </div>
             </li>
         )

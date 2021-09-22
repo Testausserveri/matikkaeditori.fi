@@ -2,12 +2,19 @@
 import React, { useState, useEffect, useRef } from "react"
 import "../css/dropdown.css"
 
-export default function Dropdown(props) {
+export default function Dropdown(props, deconstructable) {
     const [dropdownOpened, setDropdownOpened] = useState(false)
     const dropdownRef = useRef()
-    function toggleDropdown(event) {
+    function toggleDropdown(event, atCursor = false) {
         event.stopPropagation()
         setDropdownOpened(!dropdownOpened)
+
+        let pos, left, top
+        if (atCursor) pos = "unset", left = event.pageX + "px", top = event.pageY + "px"
+
+        dropdownRef.current.style.position = pos || null
+        dropdownRef.current.querySelector(".dropdown").style.left = left || null
+        dropdownRef.current.querySelector(".dropdown").style.top = top || null
     }
     useEffect(() => {
         function handleWindowClickEvent(event) { 
@@ -21,7 +28,8 @@ export default function Dropdown(props) {
             document.removeEventListener("mousedown", handleWindowClickEvent)
         }
     }, [dropdownOpened])
-    return (
+
+    const DropdownComponent = (
         <span ref={dropdownRef} className="dropdownContainer">
             <div className={"dropdown" + (props.origin === "left" ? " leftOrigin" : "")} style={dropdownOpened ? {transform: "scale(1)", opacity: "1"} : {transform: "scale(0)", opacity: "0"}}>
                 <ul>
@@ -37,4 +45,9 @@ export default function Dropdown(props) {
             <span onClick={toggleDropdown}>{props.children}</span>
         </span>
     )
+    if (deconstructable) {
+        return [DropdownComponent, toggleDropdown]
+    } else {
+        return DropdownComponent
+    }
 }
