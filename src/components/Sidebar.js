@@ -191,7 +191,7 @@ export default function Sidebar(props) {
                     <FontAwesomeIcon icon={faPlus} />&nbsp;
                     Uusi vastaus
                 </button>
-                <button className="folderSmall" onClick={() => {props.newFsItem(1)}}>
+                <button id="newFolderBtn" className="folderSmall" onClick={() => {props.newFsItem(1)}}>
                     <FontAwesomeIcon icon={faFolder} />
                 </button>
             </div>

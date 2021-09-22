@@ -174,6 +174,9 @@ function App() {
             if (event.ctrlKey && event.key.toLowerCase() == "n") {
                 event.preventDefault()
                 document.querySelector("#newAnswerBtn").click()
+            } else if (event.ctrlKey && event.key.toLowerCase() == "b") {
+                event.preventDefault()
+                document.querySelector("#newFolderBtn").click()
             } else if (event.key == "Tab") {
                 event.preventDefault()
                 const sel = document.activeElement?.classList?.contains("fsFolder") || document.activeElement?.classList?.contains("folderUpButton") ? document.activeElement : document.querySelector(".filesystemLevel li.selected")
