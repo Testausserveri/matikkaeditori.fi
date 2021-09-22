@@ -177,6 +177,14 @@ function App() {
             } else if (event.ctrlKey && event.key.toLowerCase() == "b") {
                 event.preventDefault()
                 document.querySelector("#newFolderBtn").click()
+            } else if (event.key.toLowerCase() == "f2") {
+                event.preventDefault()
+                if (!document.activeElement.classList.contains("fsFolder")) {
+                    document.querySelector("#documentTitle").focus()
+                } else {
+                    document.activeElement.querySelector(".editableName").focus()
+                }
+                document.execCommand("selectAll",false,null)
             } else if (event.key == "Tab") {
                 event.preventDefault()
                 const sel = document.activeElement?.classList?.contains("fsFolder") || document.activeElement?.classList?.contains("folderUpButton") ? document.activeElement : document.querySelector(".filesystemLevel li.selected")
