@@ -1,7 +1,6 @@
 /**
  * Worker-handler: Register workers, handle events etc.
  */
-import error from "./error.js"
 import * as Comlink from "comlink"
 import * as uuid from "./worker-components/uuid.js"
 
@@ -42,12 +41,6 @@ async function onMessage(event, name){
             }else {
                 console.warn("Worker response was dropped due to a missing task id:", message)
             }
-            break
-        case "error":
-            console.warn("[ WORKERS ] The log \"error\" will soon be removed!")
-            // The worker wants to report an error
-            error("Worker - " + name, message.content)
-            //console.error("[ WORKER - " + name + " ]", message.content)
             break
         case "log":
             console.warn("[ WORKERS ] The log \"command\" will soon be removed!")
@@ -173,6 +166,5 @@ export default async function (){
     catch(err){
         console.error("Failed to create Cloud storage worker:", err)
     }
-    window.internal.workers.essentialsResolve()
     return true
 }

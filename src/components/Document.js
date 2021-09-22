@@ -54,17 +54,17 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
 
         answerRef.current.focus() // Focus on page load
         // Load active item
-        if(activeItemData?.i) await window.internal.ui.editor.load(activeItemData, activeItemData.i)
-        
+        if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data, activeItemData.i)
+        answerRef.current.focus() // Focus on page load
     }, [resultRef, activeItemData?.i])
 
     useEffect(() => {
-        window.internal.ui.editor.oninput = save
+        window.internal.ui.editor.hook.oninput = save
     }, [activeItemData])
 
     const save = async () => {
         console.log("[ SAVE ] Hey bitches we're saving")
-        const format = await window.internal.ui.editor.format()
+        const format = await window.internal.ui.editor.getContent()
         console.log(titleRef.current.innerText, format)
 
         let copy = {...activeItemData}

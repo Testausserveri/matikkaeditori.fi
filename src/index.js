@@ -64,7 +64,7 @@ function G(){
                 C()
                 return
             }).catch(e => {
-                error("Index", "Failed to upgrade: " + e.stack)
+                console.error("[ Index ] Failed to upgrade: " + e.stack)
             }) 
         }else {
             console.log("No upgrades to be done.")
@@ -74,7 +74,7 @@ function G(){
     }else {
         // Version is null
         if(localStorage.length > 1){
-            error("Index", "Version is null!")
+            console.error("[ Index ] Version is null!")
         }else {
             localStorage.setItem("version", window.internal.version)
             C()
@@ -113,13 +113,6 @@ window.api = async (worker, type, message) => {
 /* eslint-enable no-unused-vars */
 
 try {
-    // Render
-    ReactDOM.render(
-        <React.StrictMode>
-            <App></App>
-        </React.StrictMode>,
-        document.getElementById("root")
-    )
 
     // Declare globals
     G()
@@ -131,6 +124,13 @@ try {
         // Handle workers
         Workers.default()
 
+        // Render
+        ReactDOM.render(
+            <React.StrictMode>
+                <App></App>
+            </React.StrictMode>,
+            document.getElementById("root")
+        )
     }else {
         console.log("Incompatible browser!")
         ReactDOM.render(

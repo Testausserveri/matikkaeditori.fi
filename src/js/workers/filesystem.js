@@ -385,10 +385,13 @@ class Filesystem {
                  * ------------------------------------------------------
                  */
                 case 0: {
+                    console.debug("LOCAL")
                     let index = await localForage.getItem("matikkaeditori-index")
                     let checksums = await localForage.getItem("matikkaeditori-checksums")
+                    console.debug("FETCHED")
 
                     if(index !== null && checksums !== null){
+                        console.debug("FOUND SAVE")
                         index = JSON.parse(index)
                         checksums = JSON.parse(checksums)
                         const index_is_valid = await this.validate(index, checksums)
@@ -399,6 +402,7 @@ class Filesystem {
                         this.index = index
                         resolve()
                     }else {
+                        console.debug("NO SAVE")
                         const create = await com.send("confirm", "No save data exists or it cannot be loaded. Would you like to create a new save?")
                         if(create){
                             // TODO: Create index & example file
@@ -406,7 +410,8 @@ class Filesystem {
                             const exampleFile = {
                                 name: "Welcome!",
                                 date: new Date().getTime(),
-                                data: ["Welcome to Matikkaeditori.fi!"],
+                                // eslint-disable-next-line no-undef
+                                data: ["<text>" + btoa("Welcome to Matikkaeditori.fi!") + "</text>"],
                                 checksum: null,
                                 type: 0
                             }
@@ -440,7 +445,9 @@ com.onMessage.addEventListener("message", async e => {
         const instance = new Filesystem(e.content.type)
         // ID must be reused later
         this_worker.shared.filesystem_instances[e.id] = instance
+        console.debug("GOT INIT")
         await instance.init()
+        console.debug("HAS INIT")
         com.send("callback", { id: e.id, instance: instance.id, index: instance.index })
         break
     }
@@ -501,6 +508,6 @@ com.onMessage.addEventListener("message", async e => {
         break
     }
     default:
-        com.send("error", "Unexpected command")
+        console.error("[ Filesystem ] Unknown command", e)
     }
 })

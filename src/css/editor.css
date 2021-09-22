@@ -8,6 +8,10 @@
     word-break: break-all;
 }
 
+.editor div {
+    display: block;
+}
+
 @media only screen and (max-width: 800px) {
     .editor {
         padding: 1rem;
@@ -17,12 +21,22 @@
 .editor:focus {
     outline: none;
 }
+
 .mathContainer.closed {
+    cursor: pointer;
     display: inline-block;
     margin-top: 0px;
     margin-bottom: 0px;
-    margin-left: 5px;
-    margin-right: 5px;
+    margin-left: 3px;
+    margin-right: 3px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.editor img {
+    text-align: center;
+    vertical-align: middle;
+    outline: none;
 }
 
 .mathContainer.open {
@@ -33,7 +47,6 @@
     margin: 5px;
     padding: 8px;
     font-size: 100%;
-    margin: 0;
 }
 
 .mathTools {
