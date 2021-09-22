@@ -176,6 +176,22 @@ function App() {
                 document.querySelector("#newAnswerBtn").click()
             } else if (event.key == "Tab") {
                 event.preventDefault()
+                const sel = document.activeElement?.classList?.contains("fsFolder") ? document.activeElement : document.querySelector(".filesystemLevel li.selected")
+
+                const selTarget = sel[event.shiftKey ? "previousSibling" : "nextSibling"]
+                if (!selTarget) return
+                
+                if (selTarget.classList.contains("fsFolder")) {
+                    selTarget.focus()
+                } else {
+                    sel.blur()
+                    selTarget.click()
+
+                    const x = window.scrollX, y = window.scrollY
+                    window.internal.ui.editor.hook.focus()
+                    window.scrollTo(x, y)
+                    
+                }
             }
         })
     }, [])

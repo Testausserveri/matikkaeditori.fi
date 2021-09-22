@@ -52,10 +52,8 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
 
         console.log(activeItemData)
 
-        answerRef.current.focus() // Focus on page load
         // Load active item
         if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data, activeItemData.i)
-        answerRef.current.focus() // Focus on page load
     }, [resultRef, activeItemData?.i])
 
     useEffect(() => {

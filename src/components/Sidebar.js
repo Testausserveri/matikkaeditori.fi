@@ -109,12 +109,12 @@ function FilesystemItem(props) {
             event.preventDefault() 
             toggleDropdown(event, true)
         } else {
-            props.onClick()
+            props.onClick(event)
         }
     }
     if (props.data.t == 1) { // folder
         return (
-            <li ref={itemRef} className={"fsFolder" + (props.selected ? " selected" : "")} onClick={handleClick} onContextMenu={handleClick}>
+            <li ref={itemRef} className={"fsFolder" + (props.selected ? " selected" : "")} onKeyPress={(event) => {if (event.key == "Enter") { handleClick(event) }}} onClick={handleClick} onContextMenu={handleClick} tabIndex="-1">
                 {/*<div className="fsIcon">
                     <FontAwesomeIcon icon={faOutlineFolder} />
                 </div>*/}
@@ -136,7 +136,7 @@ function FilesystemItem(props) {
         )
     } else if (props.data.t == 0) { // file
         return (
-            <li ref={itemRef} className={(props.selected ? "selected" : "")} onClick={handleClick} onContextMenu={handleClick}>
+            <li ref={itemRef} className={(props.selected ? "selected" : "")} onClick={handleClick} onContextMenu={handleClick} tabIndex="-1">
                 <div className="content">
                     <span>{props.data.name}</span>
                     <span className="date">{props.data.date ? formatDate(props.data.date).pretty : ""}</span>
@@ -173,11 +173,12 @@ export default function Sidebar(props) {
         }, 300)
     }, [currentLevelId])
 
-    const open = async (item) => {
+    const open = async (item, event) => {
         // to-do: save document before unload.
         if (item.t == 0) {
             props.setCreatedItem("")
             props.setActiveItem(item.i)
+            if (event?.isTrusted) window.internal.ui.editor.hook.focus()
         } else if (item.t == 1) {
             props.openFolder(item.i, item.name)
         }
@@ -207,7 +208,7 @@ export default function Sidebar(props) {
                     {level ? level.map((item) => {
                         const selected = activeItemData?.i == item.i
 
-                        return <FilesystemItem createdItem={props.createdItem} level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={() => open(item)}
+                        return <FilesystemItem createdItem={props.createdItem} level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={(event) => open(item, event)}
                         />
                     }) : null}
                 </ul>
