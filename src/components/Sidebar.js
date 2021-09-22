@@ -196,15 +196,15 @@ export default function Sidebar(props) {
                 </button>
             </div>
             <div ref={treeRef}>
-                {props.fsPath.length > 1 ?
-                    <button className="folderUpButton" onClick={() => {
-                        props.openFolder(props.fsPath[props.fsPath.length - 2].id)
-                    }}>
-                        <FontAwesomeIcon icon={faLevelUpAlt} />&nbsp;&nbsp;
-                        {props.fsPath[props.fsPath.length - 2].name}
-                    </button>
-                    : null}
                 <ul className="filesystemLevel">
+                    {props.fsPath.length > 1 ?
+                        <button className="folderUpButton" onClick={() => {
+                            props.openFolder(props.fsPath[props.fsPath.length - 2].id)
+                        }} tabIndex="-1">
+                            <FontAwesomeIcon icon={faLevelUpAlt} />&nbsp;&nbsp;
+                            {props.fsPath[props.fsPath.length - 2].name}
+                        </button>
+                        : null}
                     {level ? level.map((item) => {
                         const selected = activeItemData?.i == item.i
 

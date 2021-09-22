@@ -157,9 +157,10 @@
     border: 1px solid #2FA3CF;
     color: #2FA3CF;
 }
-.head button.folderSmall:hover, .head .secondary:hover, .folderUpButton:hover {
+.head button.folderSmall:hover, .head .secondary:hover, .folderUpButton:hover, .folderUpButton:focus {
     background-color: #2a92ba;
     border-color: #2a92ba;
+    outline: none;
     color: #edf9ff;
 }
 .head button, .folderUpButton {
