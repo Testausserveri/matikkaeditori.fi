@@ -168,6 +168,16 @@ function App() {
             console.error("[ APP ] Failed to initialize filesystem")
             console.debug(e)
         }
+
+        // Register global key bindings
+        document.addEventListener("keydown", (event) => {
+            if (event.ctrlKey && event.key.toLowerCase() == "n") {
+                event.preventDefault()
+                document.querySelector("#newAnswerBtn").click()
+            } else if (event.key == "Tab") {
+                event.preventDefault()
+            }
+        })
     }, [])
 
     const isMobile = windowWidth < 800

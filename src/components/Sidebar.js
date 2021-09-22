@@ -186,7 +186,7 @@ export default function Sidebar(props) {
     return (
         <div className="sidebar" style={props.style}>
             <div className="head">
-                <button className="primary" onClick={() => {props.newFsItem(0)}}>
+                <button id="newAnswerBtn" className="primary" onClick={() => {props.newFsItem(0)}}>
                     <FontAwesomeIcon icon={faPlus} />&nbsp;
                     Uusi vastaus
                 </button>
