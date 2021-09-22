@@ -29,16 +29,23 @@ export default function Dropdown(props, deconstructable) {
         }
     }, [dropdownOpened])
 
+    const hasIcons = !!(props.data.find(item => item.icon !== undefined))
     const DropdownComponent = (
         <span ref={dropdownRef} className="dropdownContainer">
-            <div className={"dropdown" + (props.origin === "left" ? " leftOrigin" : "")} style={dropdownOpened ? {transform: "scale(1)", opacity: "1"} : {transform: "scale(0)", opacity: "0"}}>
+            <div className={"dropdown" + (props.origin === "left" ? " leftOrigin" : "") + (hasIcons ? " hasIcons" : "")} style={dropdownOpened ? {transform: "scale(1)", opacity: "1"} : {transform: "scale(0)", opacity: "0"}}>
                 <ul>
                     {props.data.map(option => (
                         <li key={option.text} onClick={(event) => {
                             event.stopPropagation()
+                            if (option.disabled) return
                             setDropdownOpened(false)
                             option.action(props.context)
-                        }}>{option.text}</li>
+                        }} className={option.disabled ? "disabled" : ""}>
+                            {hasIcons ? 
+                                <span className="dropdownIcon">{option.icon || ""}</span>
+                                : null}
+                            {option.text}
+                        </li>
                     ))}
                 </ul>
             </div>

@@ -7,12 +7,9 @@ import Document from "./components/Document"
 import Sidebar from "./components/Sidebar"
 import { EquationSidebar, MobileEquationToolbar } from "./components/EquationSidebar"
 import MathTools from "./components/MathTools"
-import logo from "./assets/icon.svg"
 import { useEffect, useState } from "react"
 import useWindowDimensions from "./utils/useWindowDimensions"
-import testausserveriLogo from "./assets/testausserveri.svg"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faDiscord } from "@fortawesome/free-brands-svg-icons"
+import { Navigation } from "./components/Navigation"
 
 function App() {
     // Return base page
@@ -214,19 +211,7 @@ function App() {
 
     return (
         <>
-            <div className="navigation">
-                <div>
-                    <img src={logo} alt="Matikkaeditori.fi" />
-                </div>
-                <div>
-                    <a href="https://discord.gg/testaus" target="_blank" rel="noreferrer" className="iconLink">
-                        <FontAwesomeIcon icon={faDiscord} />
-                    </a>
-                    <a href="https://testausserveri.fi" target="_blank" rel="noreferrer" className="iconLink">
-                        <img src={testausserveriLogo} />
-                    </a>
-                </div>
-            </div>
+            <Navigation />
             <div className="app">
                 { (isMobile && mobileViewState === 0) || !isMobile ?
                     <Sidebar setCreatedItem={setCreatedItem} createdItem={createdItem} style={(isMobile ? {flex: "1"} : {})} newFsItem={newFsItem} deleteDocument={deleteDocument} level={fsLevel} fsPath={fsPath} setLevel={setFsLevel} activeItem={activeItem} setActiveItem={setActiveItem} openFolder={openFolder} />

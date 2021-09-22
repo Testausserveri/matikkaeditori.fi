@@ -507,6 +507,11 @@ com.onMessage.addEventListener("message", async e => {
         }   
         break
     }
+    case "reset": {
+        await localForage.clear()
+        com.send("callback", { id: e.id, status: "ok" })
+        break
+    }
     default:
         console.error("[ Filesystem ] Unknown command", e)
     }
