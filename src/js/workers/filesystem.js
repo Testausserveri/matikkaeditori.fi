@@ -436,7 +436,7 @@ class Filesystem {
 }
 
 com.onMessage.addEventListener("message", async e => {
-    console.debug("[ COM - com.js ] Worker <- Main:", e)
+    //console.debug("[ COM - com.js ] Main <- Worker:", e)
     // Detail is the event data
     e = e.detail
     if(!this_worker.shared.ready) return
@@ -445,9 +445,7 @@ com.onMessage.addEventListener("message", async e => {
         const instance = new Filesystem(e.content.type)
         // ID must be reused later
         this_worker.shared.filesystem_instances[e.id] = instance
-        console.debug("GOT INIT")
         await instance.init()
-        console.debug("HAS INIT")
         com.send("callback", { id: e.id, instance: instance.id, index: instance.index })
         break
     }
