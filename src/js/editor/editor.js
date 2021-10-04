@@ -421,15 +421,14 @@ const Math = new (class _Math {
                     const range = document.createRange()
                     const sel = window.getSelection()
                     console.debug("[ EDITOR ] Jumping out of math...")
-                    let index = Utils.getNodeIndex(mathObject.container)
+                    let index = Utils.getNodeIndex(line, mathObject.container)
                     if(direction > 0) index += 1
                     range.setStart(line, index)
                     range.collapse(true)
                     sel.removeAllRanges()
                     sel.addRange(range)
-                    const newSelection = document.getSelection()
                     this.events.dispatchEvent(new CustomEvent("moveOut"))
-                    Utils.selectByIndex(direction === -1 ? newSelection.anchorOffset - 1 : newSelection.anchorOffset, newSelection.anchorNode, direction !== -1)
+                    console.log(direction)
                 }
             }
         })
@@ -812,9 +811,11 @@ class Editor {
                         const focus = async (selection) => {
                             if(!selection) selection = selClone
                             const id = selection.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
+                            Utils.waitForEvent(Math.events, "focus").then(() => {
+                                console.log("DIR", direction)
+                                Math.collection[id].input[direction]()
+                            })
                             selection.firstChild.click()
-                            await Utils.waitForEvent(Math.events, "focus")
-                            Math.collection[id].input[direction]()
                         }
 
                         // Detect by selection change
