@@ -272,7 +272,7 @@ const Utils = new (class _Utils {
             if(char === "<"){
                 // Dump text
                 if(rawText.length !== 0) {
-                    console.debug("[ EDITOR ] Parser dumped raw text", rawText.join(""))
+                    //console.debug("[ EDITOR ] Parser dumped raw text", rawText.join(""))
                     elements.push({
                         name: "text",
                         attributes: [],
@@ -282,27 +282,27 @@ const Utils = new (class _Utils {
                     rawText = []
                 }
 
-                console.debug("[ EDITOR ] Parser detected an element at", i)
+                //console.debug("[ EDITOR ] Parser detected an element at", i)
 
                 // Plot forward until attributes closing tag
                 let nextTagIndex = i + this.findNextOf(">", this.getCloneFromIndex(data, 0), i)
                 
-                console.debug("[ EDITOR ] Parser found closing attribute tag at", i, "for new the element")
+                //console.debug("[ EDITOR ] Parser found closing attribute tag at", i, "for new the element")
 
                 // Get attribute tag data
                 let tagData = this.readBetweenIndexes(data, i + 1, nextTagIndex).join("")
                 
-                console.debug("[ EDITOR ] Parser read this raw first tag data", tagData)
+                //console.debug("[ EDITOR ] Parser read this raw first tag data", tagData)
 
                 // Read tag name
                 let tagName = tagData.split(" ")[0]
 
-                console.debug("[ EDITOR ] New element's tag name is", tagName)
+                //console.debug("[ EDITOR ] New element's tag name is", tagName)
 
                 // Parse attribute data
                 let attributeData = tagData.replace(tagName, "")
 
-                console.debug("[ EDITOR ] Parser read this raw attribute data", attributeData)
+                //console.debug("[ EDITOR ] Parser read this raw attribute data", attributeData)
 
                 let attributes = {}
 
@@ -315,10 +315,10 @@ const Utils = new (class _Utils {
                         let parts = val.split("=")
                         attributes[this.removeDoubleQuotes(parts[0])] = this.removeDoubleQuotes(parts[1]) 
                     }
-                    console.debug("[ EDITOR ] Built attributes construct", attributes)
-                }else {
-                    console.debug("[ EDITOR ] No attribute data to read")
-                }
+                    //console.debug("[ EDITOR ] Built attributes construct", attributes)
+                }/*else {
+                   // console.debug("[ EDITOR ] No attribute data to read")
+                }*/
 
                 // Find the closing tag and read the data
                 let splitByTag = this.getCloneFromIndex(data, nextTagIndex + 1).join("").split("</" + tagName + ">")
@@ -326,7 +326,7 @@ const Utils = new (class _Utils {
 
                 // Forward the index by this elements size
                 i += ("<" + tagData + ">" + rawData + "</" + tagName + ">").length-1
-                console.debug("[ EDITOR ] Parser jumping forward to ", i, "/", data.length)
+                //console.debug("[ EDITOR ] Parser jumping forward to ", i, "/", data.length)
 
                 let element = {
                     name: tagName,
@@ -347,14 +347,14 @@ const Utils = new (class _Utils {
         }
         // Reader loop
         const reader = () => {
-            console.log("[ EDITOR ] Parsing line data of", data.length)
+            //console.log("[ EDITOR ] Parsing line data of", data.length)
             let readToIndex = read()
-            console.log("[ EDITOR ] Reading...", readToIndex, "/", data.length)
+            //console.log("[ EDITOR ] Reading...", readToIndex, "/", data.length)
             if(readToIndex < data.length){
                 ++i
                 reader()
             }else {
-                console.log("[ EDITOR ] Done ", i, "/", data.length)
+                //console.log("[ EDITOR ] Done ", i, "/", data.length)
                 return true
             }
         }
@@ -377,7 +377,7 @@ const Math = new (class _Math {
      * @returns {MathElement}
      */
     async create(){
-        console.debug("[ EDITOR ] Creating math...")
+        //console.debug("[ EDITOR ] Creating math...")
         let mathObject = {
             container: null,
             input: null,
@@ -420,7 +420,7 @@ const Math = new (class _Math {
                     await Utils.waitForEvent(this.events, "blur")
                     const range = document.createRange()
                     const sel = window.getSelection()
-                    console.debug("[ EDITOR ] Jumping out of math...")
+                    //console.debug("[ EDITOR ] Jumping out of math...")
                     let index = Utils.getNodeIndex(line, mathObject.container)
                     if(direction > 0) index += 1
                     range.setStart(line, index)
@@ -451,7 +451,7 @@ const Math = new (class _Math {
      * @param {*} id 
      */
     async open(id){
-        console.debug("[ EDITOR ] Opening math...")
+        //console.debug("[ EDITOR ] Opening math...")
         const mathObject = this.collection[id]
         const latexData = mathObject.container.getAttribute("data")
         mathObject.input.write(latexData)
@@ -493,7 +493,7 @@ const Math = new (class _Math {
      * @param {*} id 
      */
     async close(id){
-        console.debug("[ EDITOR ] Closing math...")
+        //console.debug("[ EDITOR ] Closing math...")
         const mathObject = this.collection[id]
 
         // Make sure we don't close twice
@@ -588,10 +588,11 @@ class Editor {
 
         // Create construct
         let construct = []
+        console.log("[ EDITOR ] Parsing content...")
         for(let i = 0; i < data.length; i++){
             // Find tags
             const line = data[i]
-            console.log("[ EDITOR ] Processing line", i)
+            //console.log("[ EDITOR ] Processing line", i)
             let parsedLine = Utils.parseEmbedded(line)
             construct.push(parsedLine)
         }
