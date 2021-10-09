@@ -104,6 +104,44 @@ const Utils = new (class _Utils {
     }
 
     /**
+     * See if a node is under some other node in the DOM
+     * @param {Node} node 
+     * @param {Node} parent 
+     */
+    isSomeParent(node, parent){
+        if(parent === null) return false
+        const traverse = (innerNode) => {
+            if(innerNode.parentNode === parent){
+                return true
+            }else {
+                // Check other parent
+                if(innerNode.parentNode !== null) return traverse(innerNode.parentNode)
+                return false
+            }
+            
+        }
+        return traverse(node)
+    }
+
+    /**
+     * Find the parent line of a node in content-editable
+     * @param {Node} node 
+     */
+    getParentLine(node){
+        const traverse = (innerNode) => {
+            if(innerNode.parentNode.nodeName.toLowerCase() === "div"){
+                return innerNode.parentNode
+            }else {
+                // Check other parent
+                if(innerNode.parentNode !== null) return traverse(innerNode.parentNode)
+                return null
+            }
+            
+        }
+        return traverse(node)
+    }
+
+    /**
      * Insert a node in a certain range
      * @param {Range} range Position
      * @param {HTMLAnchorElement} node Node on insert
@@ -119,13 +157,16 @@ const Utils = new (class _Utils {
      */
     waitForEvent(from, event){
         return new Promise((resolve) => {
-            from.addEventListener(event, async () => {
+            const handler = async () => {
+                from.removeEventListener(event, handler)
                 resolve()
-            })
+            }
+            from.addEventListener(event, handler)
         })
     }
 
     /**
+     * TODO: Does the same as selectByIndex!
      * Select something
      * @param {HTMLElement} element 
      * @param {number} index 
@@ -231,7 +272,7 @@ const Utils = new (class _Utils {
             if(char === "<"){
                 // Dump text
                 if(rawText.length !== 0) {
-                    console.debug("[ EDITOR ] Parser dumped raw text", rawText.join(""))
+                    //console.debug("[ EDITOR ] Parser dumped raw text", rawText.join(""))
                     elements.push({
                         name: "text",
                         attributes: [],
@@ -241,27 +282,27 @@ const Utils = new (class _Utils {
                     rawText = []
                 }
 
-                console.debug("[ EDITOR ] Parser detected an element at", i)
+                //console.debug("[ EDITOR ] Parser detected an element at", i)
 
                 // Plot forward until attributes closing tag
                 let nextTagIndex = i + this.findNextOf(">", this.getCloneFromIndex(data, 0), i)
                 
-                console.debug("[ EDITOR ] Parser found closing attribute tag at", i, "for new the element")
+                //console.debug("[ EDITOR ] Parser found closing attribute tag at", i, "for new the element")
 
                 // Get attribute tag data
                 let tagData = this.readBetweenIndexes(data, i + 1, nextTagIndex).join("")
                 
-                console.debug("[ EDITOR ] Parser read this raw first tag data", tagData)
+                //console.debug("[ EDITOR ] Parser read this raw first tag data", tagData)
 
                 // Read tag name
                 let tagName = tagData.split(" ")[0]
 
-                console.debug("[ EDITOR ] New element's tag name is", tagName)
+                //console.debug("[ EDITOR ] New element's tag name is", tagName)
 
                 // Parse attribute data
                 let attributeData = tagData.replace(tagName, "")
 
-                console.debug("[ EDITOR ] Parser read this raw attribute data", attributeData)
+                //console.debug("[ EDITOR ] Parser read this raw attribute data", attributeData)
 
                 let attributes = {}
 
@@ -274,10 +315,10 @@ const Utils = new (class _Utils {
                         let parts = val.split("=")
                         attributes[this.removeDoubleQuotes(parts[0])] = this.removeDoubleQuotes(parts[1]) 
                     }
-                    console.debug("[ EDITOR ] Built attributes construct", attributes)
-                }else {
-                    console.debug("[ EDITOR ] No attribute data to read")
-                }
+                    //console.debug("[ EDITOR ] Built attributes construct", attributes)
+                }/*else {
+                   // console.debug("[ EDITOR ] No attribute data to read")
+                }*/
 
                 // Find the closing tag and read the data
                 let splitByTag = this.getCloneFromIndex(data, nextTagIndex + 1).join("").split("</" + tagName + ">")
@@ -285,7 +326,7 @@ const Utils = new (class _Utils {
 
                 // Forward the index by this elements size
                 i += ("<" + tagData + ">" + rawData + "</" + tagName + ">").length-1
-                console.debug("[ EDITOR ] Parser jumping forward to ", i, "/", data.length)
+                //console.debug("[ EDITOR ] Parser jumping forward to ", i, "/", data.length)
 
                 let element = {
                     name: tagName,
@@ -306,14 +347,14 @@ const Utils = new (class _Utils {
         }
         // Reader loop
         const reader = () => {
-            console.log("[ EDITOR ] Parsing line data of", data.length)
+            //console.log("[ EDITOR ] Parsing line data of", data.length)
             let readToIndex = read()
-            console.log("[ EDITOR ] Reading...", readToIndex, "/", data.length)
+            //console.log("[ EDITOR ] Reading...", readToIndex, "/", data.length)
             if(readToIndex < data.length){
                 ++i
                 reader()
             }else {
-                console.log("[ EDITOR ] Done ", i, "/", data.length)
+                //console.log("[ EDITOR ] Done ", i, "/", data.length)
                 return true
             }
         }
@@ -336,7 +377,7 @@ const Math = new (class _Math {
      * @returns {MathElement}
      */
     async create(){
-        console.debug("[ EDITOR ] Creating math...")
+        //console.debug("[ EDITOR ] Creating math...")
         let mathObject = {
             container: null,
             input: null,
@@ -379,16 +420,15 @@ const Math = new (class _Math {
                     await Utils.waitForEvent(this.events, "blur")
                     const range = document.createRange()
                     const sel = window.getSelection()
-                    console.debug("[ EDITOR ] Jumping out of math...")
-                    let index = Utils.getNodeIndex(mathObject.container)
+                    //console.debug("[ EDITOR ] Jumping out of math...")
+                    let index = Utils.getNodeIndex(line, mathObject.container)
                     if(direction > 0) index += 1
                     range.setStart(line, index)
                     range.collapse(true)
                     sel.removeAllRanges()
                     sel.addRange(range)
-                    const newSelection = document.getSelection()
                     this.events.dispatchEvent(new CustomEvent("moveOut"))
-                    Utils.selectByIndex(direction === -1 ? newSelection.anchorOffset - 1 : newSelection.anchorOffset, newSelection.anchorNode, direction !== -1)
+                    console.log(direction)
                 }
             }
         })
@@ -411,7 +451,7 @@ const Math = new (class _Math {
      * @param {*} id 
      */
     async open(id){
-        console.debug("[ EDITOR ] Opening math...")
+        //console.debug("[ EDITOR ] Opening math...")
         const mathObject = this.collection[id]
         const latexData = mathObject.container.getAttribute("data")
         mathObject.input.write(latexData)
@@ -453,7 +493,7 @@ const Math = new (class _Math {
      * @param {*} id 
      */
     async close(id){
-        console.debug("[ EDITOR ] Closing math...")
+        //console.debug("[ EDITOR ] Closing math...")
         const mathObject = this.collection[id]
 
         // Make sure we don't close twice
@@ -502,6 +542,7 @@ const Math = new (class _Math {
         // Compatibility things
         mathObject.input.select()
         mathObject.input.keystroke("Backspace")
+        if(window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
         this.events.dispatchEvent(new CustomEvent("blur", { detail: mathObject }))
     }
 })
@@ -547,10 +588,11 @@ class Editor {
 
         // Create construct
         let construct = []
+        console.log("[ EDITOR ] Parsing content...")
         for(let i = 0; i < data.length; i++){
             // Find tags
             const line = data[i]
-            console.log("[ EDITOR ] Processing line", i)
+            //console.log("[ EDITOR ] Processing line", i)
             let parsedLine = Utils.parseEmbedded(line)
             construct.push(parsedLine)
         }
@@ -700,7 +742,7 @@ class Editor {
                 let lastSelection = null
                 document.addEventListener("keydown", async event => {
                     // --- Math controls ---
-                    if(document.activeElement !== this.hook) return
+                    if(!Utils.isSomeParent(Utils.getSelectedNode(), this.hook)) return
 
                     // Arrow key movement double tap listener
                     if(arrowKeyDoubleTap !== false && event.code === "ArrowLeft"){
@@ -723,31 +765,36 @@ class Editor {
                     // Close math
                     if(event.code === "Escape"){
                         event.preventDefault()
-                        if(this.activeMathElement) Math.close(this.activeMathElement.id)
+                        const container = this.activeLine.container
+                        Math.close(this.activeMathElement.id)
+                        await Utils.waitForEvent(Math.events, "blur")
+                        Utils.selectByIndex(Utils.getNodeIndex(this.activeLine, container) - 1, this.activeLine)
                         return
                     }
 
                     // Use enter to create new math
-                    if(event.code === 13 && this.activeMathElement !== null){
+                    if(event.code === "Enter" && this.activeMathElement !== null){
                         event.preventDefault()
-
                         // Shift will make us move out and create a new line
                         if(event.shiftKey){
                             this.hook.focus() // This will blur any selected math
                             await Utils.waitForEvent(Math.events, "blur")
                             const newLine = document.createElement("div")
-                            this.hook.appendChild(newLine)
-                            Utils.select(this.hook, this.hook.childNodes.length) // Move into new line
+                            newLine.innerHTML = this.activator
+                            this.activeLine.after(newLine)
+                            Utils.selectByIndex(Utils.getNodeIndex(this.hook, newLine), this.hook) // Move into new line
                         }else {
                             // Create new line after current active line
-                            this.hook.focus()
+                            Math.close(this.activeMathElement.id)
                             await Utils.waitForEvent(Math.events, "blur")
                             // Make new line
                             const newLine = document.createElement("div")
                             this.activeLine.after(newLine)
-                            Utils.select(this.hook, this.hook.childNodes.indexOf(this.activeLine) + 1)
+                            Utils.selectByIndex(Utils.getNodeIndex(this.hook, newLine), this.hook)
+                            //Utils.select(this.hook, this.hook.childNodes.indexOf(this.activeLine) + 1)
                             const mathElement = await Math.create()
-                            this.activeLine.appendChild(mathElement.container)
+                            newLine.appendChild(mathElement.container)
+                            Math.open(mathElement.id)
                         }
                         return
                     }
@@ -765,9 +812,11 @@ class Editor {
                         const focus = async (selection) => {
                             if(!selection) selection = selClone
                             const id = selection.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
+                            Utils.waitForEvent(Math.events, "focus").then(() => {
+                                console.log("DIR", direction)
+                                Math.collection[id].input[direction]()
+                            })
                             selection.firstChild.click()
-                            await Utils.waitForEvent(Math.events, "focus")
-                            Math.collection[id].input[direction]()
                         }
 
                         // Detect by selection change
@@ -784,15 +833,14 @@ class Editor {
                         // Detect by index jump
                         if(lastSelection !== null && this.activeMathElement === null && this.moveOutOfThisEvent === false){
                             // This is a special case, where we twice press the arrow key
-                            // and the index does not change, but we jump over the math element
-                            // we can detect this by checking the last selection's offset and check if
-                            // the current selection's offset is the max length of the selected node
-                            // and that the last selection was 0
+                            // and the index does not change, but we jump over the math element.
+                            // We can detect this by checking the last selection's offset and check if
+                            // the current selection's offset is equal to the selected node's parent's number of child nodes
+                            // and that the last selection was at index 0
                             // Though we need to be careful, as while in the end or beginning of a line
                             // this will also trigger as the offset will not change
                             if(lastSelection === 0 && documentSelection.anchorOffset === documentSelection.anchorNode.wholeText.length){
                                 // Check that we are not in the start / end of the line
-                                //if(this.activeLine === selection) return // Cannot select the line itself
                                 const nodeIndex = Utils.getNodeIndex(this.activeLine, selection)
                                 if(nodeIndex !== 0 && nodeIndex !== this.activeLine.childNodes.length - 1){
                                     // Not in the start / end of a line, get the element before the selection and call click
@@ -809,7 +857,7 @@ class Editor {
 
                 
                 // Event listener to handle math being opened without an active collection entry
-                // We can detect this by check if the onclick function is nto defined but the "data"-attribute is
+                // We can detect this by check if the onclick function is not defined but the "data"-attribute is
                 window.addEventListener("click", async e => {
                     if(e.target.nodeName.toLowerCase() === "img" && e.target.getAttribute("data") !== null && document.activeElement === this.hook){
                         const newConstruct = await Math.create()
@@ -854,9 +902,16 @@ class Editor {
                 })
 
                 // Active line detection
-                window.addEventListener("selectstart", async e => {
-                    if(this.activeLine === e.target.parentElement) return
-                    this.activeLine = e.target.parentElement
+                window.addEventListener("click", async () => {
+                    // Get selection data and make sure it's valid
+                    const selection = document.getSelection()
+                    const line = selection.anchorNode.parentElement === this.hook ? selection.anchorNode : Utils.getParentLine(selection.anchorNode)
+                    if(!Utils.isSomeParent(selection.anchorNode, this.hook)) return
+
+                    // Update active line
+                    if(line === this.hook || line === this.hook.parentElement) return
+                    if(this.activeLine === line) return
+                    this.activeLine = line
                     console.debug("[ EDITOR ] Active line change to", this.activeLine)
                 })
 

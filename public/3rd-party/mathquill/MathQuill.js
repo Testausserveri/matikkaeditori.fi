@@ -2898,7 +2898,7 @@
       _.latex = function() {
         var contents = this.textContents();
         if (contents.length === 0) return '';
-        return '\\text{' + contents + '}';
+        return '\\text{' + contents.replace(/\\/g, '\\backslash ').replace(/[{}]/g, '\\$&') + '}';
       };
       _.html = function() {
         return (
@@ -3259,7 +3259,7 @@
           if (ch.match(/[a-z]/i)) VanillaSymbol(ch).createLeftOf(cursor);
           else {
             this.parent.renderCommand(cursor);
-            if (ch !== '\\' || !this.isEmpty()) this.parent.parent.write(cursor, ch);
+            if (ch !== '\\' || !this.isEmpty()) cursor.parent.write(cursor, ch);
           }
         };
         this.ends[L].keystroke = function(key, e, ctrlr) {
