@@ -980,6 +980,9 @@ class Editor {
                 // Set active mathElement
                 Math.events.addEventListener("focus", e => {
                     this.activeMathElement = e.detail
+                    if(this.activeMathElement.isOpen === false){
+                        this.activeMathElement = null
+                    }
                 })
                 Math.events.addEventListener("blur", () => {
                     // Firefox patch: Detect useless br tags in empty lines
