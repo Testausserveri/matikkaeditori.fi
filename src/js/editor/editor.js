@@ -1012,6 +1012,19 @@ class Editor {
                     this.activeLine = line
                     console.debug("[ EDITOR ] Active line change to", this.activeLine)
                 })
+                window.addEventListener("keydown", async event => {
+                    if(event.code === "ArrowUp" || event.code === "ArrowDown"){
+                        const selection = document.getSelection()
+                        const line = selection.anchorNode.parentElement === this.hook ? selection.anchorNode : Utils.getParentLine(selection.anchorNode)
+                        if(!Utils.isSomeParent(selection.anchorNode, this.hook)) return
+
+                        // Update active line
+                        if(line === this.hook || line === this.hook.parentElement) return
+                        if(this.activeLine === line) return
+                        this.activeLine = line
+                        console.debug("[ EDITOR ] Active line change to", this.activeLine)
+                    }
+                })
 
                 // Activate document content modification listener
                 const observer = new MutationObserver(observerCallback)
