@@ -970,7 +970,6 @@ class Editor {
                         for(const line of this.hook.childNodes){
                             if(line.childNodes.length === 0){
                                 let activator = document.createElement("br")
-                                activator.style.display = "inline"
                                 line.appendChild(activator) // this.activator
                             }
                         }
@@ -1016,6 +1015,7 @@ class Editor {
 
                 // Activate document content modification listener
                 const observer = new MutationObserver(observerCallback)
+                observerCallback()
                 observer.observe(this.hook, { attributes: false, childList: true, subtree: true })
                 resolve()
             }
