@@ -790,9 +790,33 @@ class Editor {
                         return
                     }
 
+                    // Firefox patch: Make sure we are not in a math container
+                    if(event.code === "Enter"){
+                        if(window.browser === "firefox"){
+                            const selection = document.getSelection()
+                            const direction = selection.anchorOffset // 0 is left, 1 is right
+                            if(selection.anchorNode.nodeName.toLowerCase() === "a" && selection.anchorNode.childNodes.length === 1 && selection.anchorNode.childNodes[0].nodeName.toLowerCase() === "img"){
+                                event.preventDefault()
+                                if(direction === 0){
+                                    const line = document.createElement("div")
+                                    line.appendChild(document.createElement("br")) // this.activator
+                                    this.activeLine.before(line)
+                                    Utils.selectByIndex(0, line)
+                                }else {
+                                    const line = document.createElement("div")
+                                    line.appendChild(document.createElement("br")) // this.activator
+                                    this.activeLine.after(line)
+                                    Utils.selectByIndex(0, line)
+                                }
+                                return // Forced to return
+                            }
+                        }
+                    }
+
                     // Use enter to create new math
                     if(event.code === "Enter" && this.activeMathElement !== null){
                         event.preventDefault()
+
                         // Shift will make us move out and create a new line
                         if(event.shiftKey){
                             this.hook.focus() // This will blur any selected math
@@ -945,7 +969,9 @@ class Editor {
                     if(window.browser === "firefox"){
                         for(const line of this.hook.childNodes){
                             if(line.childNodes.length === 0){
-                                line.appendChild(document.createElement("br")) // this.activator
+                                let activator = document.createElement("br")
+                                activator.style.display = "inline"
+                                line.appendChild(activator) // this.activator
                             }
                         }
                     }
@@ -956,6 +982,13 @@ class Editor {
                     this.activeMathElement = e.detail
                 })
                 Math.events.addEventListener("blur", () => {
+                    // Firefox patch: Detect useless br tags in empty lines
+                    if(this.activeMathElement !== null && this.activeMathElement.isOpen === false && this.activeMathElement.image !== null && this.activeMathElement.image.parentNode !== null){
+                        console.log(this.activeMathElement.image.parentNode.parentNode.childNodes)
+                        if(this.activeMathElement.image.parentNode.parentNode.childNodes[0].nodeName.toLowerCase() === "br" && this.activeMathElement.image.parentNode.parentNode.childNodes.length === 2){
+                            this.activeMathElement.image.parentNode.parentNode.childNodes[0].remove()
+                        }
+                    }
                     this.activeMathElement = null
                 })
 
