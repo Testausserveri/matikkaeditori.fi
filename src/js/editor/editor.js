@@ -940,6 +940,15 @@ class Editor {
                             }
                         }
                     }
+
+                    // Firefox patch: Do not let lines deactivate, when the are emptied
+                    if(window.browser === "firefox"){
+                        for(const line of this.hook.childNodes){
+                            if(line.childNodes.length === 0){
+                                line.appendChild(document.createElement("br")) // this.activator
+                            }
+                        }
+                    }
                 }
 
                 // Set active mathElement
