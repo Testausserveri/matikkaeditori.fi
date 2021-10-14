@@ -97,11 +97,17 @@ window.reset = async function () {
         let name = pos > -1 ? myCookie.substr(0, pos) : myCookie
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT"
     }
-    window.indexedDB.databases().then((r) => {
-        for (var i = 0; i < r.length; i++) window.indexedDB.deleteDatabase(r[i].name)
-    }).then(() => {
-        window.location.reload()
-    })
+    if(typeof window.indexedDB.databases === "function"){
+        // Chromium
+        window.indexedDB.databases().then((r) => {
+            for (var i = 0; i < r.length; i++) window.indexedDB.deleteDatabase(r[i].name)
+        }).then(() => {
+            window.location.reload()
+        })
+    }else {
+        // Everything else
+        alert("Please clear indexDB manually.")
+    }
 }
 
 // Implement embedded worker api

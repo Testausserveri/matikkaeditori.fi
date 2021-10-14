@@ -423,12 +423,17 @@ const Math = new (class _Math {
                     //console.debug("[ EDITOR ] Jumping out of math...")
                     let index = Utils.getNodeIndex(line, mathObject.container)
                     if(direction > 0) index += 1
+                    // Firefox patch: Index is off by 2 in both directions
+                    if(window.browser === "firefox"){
+                        if(direction < 0) index -= 2
+                        if(direction > 0) index -= 2
+                    }
                     range.setStart(line, index)
                     range.collapse(true)
                     sel.removeAllRanges()
                     sel.addRange(range)
                     this.events.dispatchEvent(new CustomEvent("moveOut"))
-                    console.log(direction)
+                    console.log(direction, index)
                 }
             }
         })
@@ -566,7 +571,7 @@ class Editor {
 
         // Constant variables
         this.events = new EventTarget()
-        this.activator = "‎" // Activator element to fool the browser to enable caret control (special unicode char)
+        this.activator = "<br>"//"‎" // Activator element to fool the browser to enable caret control (special unicode char)
 
         // Dynamic variables
         this.activeMathElement = null
@@ -611,8 +616,12 @@ class Editor {
 
             case "text": {
                 // Basic text
-                if(element.data === "") element.data = this.activator
-                htmlElement = document.createTextNode(element.data)
+                if(element.data === "") {
+                    element.data = this.activator // Redundant, relic of the past
+                    htmlElement = document.createElement("br")
+                }else {
+                    htmlElement = document.createTextNode(element.data)
+                }
                 break
             }
 
@@ -639,16 +648,22 @@ class Editor {
 
         // Write the elements to the editor
         for(let line of construct){
-            let lineElement = document.createElement("div")
+            let lineElement = null
             for(let element of line){
                 if(element.name === "meta"){
                     // This is a meta tag
                     console.log("[ EDITOR ] Parser output META:", element.attributes)
+                    continue
                 }
+                if(!lineElement) lineElement = document.createElement("div") // Create own line if not yet crated
                 let fillResult = await fill(element)
                 if(fillResult !== null) lineElement.appendChild(fillResult)
             }
-            this.hook.appendChild(lineElement)
+            if(line.length === 0) {
+                lineElement = document.createElement("div")
+                if(window.browser === "firefox") lineElement.appendChild(document.createElement("br")) // Firefox line activator
+            }
+            if(lineElement) this.hook.appendChild(lineElement)
         }
 
         // Toggle all math
@@ -701,7 +716,9 @@ class Editor {
 
                 case "br": {
                     // This is a manual line-break
-                    format.push("")
+                    if(window.browser !== "firefox"){ // Does not mean anything on firefox
+                        format.push("")
+                    }
                     break
                 }
 
@@ -728,6 +745,7 @@ class Editor {
                 }
             }
         }
+        console.log("FORMAT", format)
         return format
     }
 
@@ -831,6 +849,8 @@ class Editor {
                         }else // NOTE THE ELSE HERE!
 
                         // Detect by index jump
+                        // TODO: Refactor this badness
+                        // Known issue: Spamming the arrow key causes the actual selection to be lost while processing the open call
                         if(lastSelection !== null && this.activeMathElement === null && this.moveOutOfThisEvent === false){
                             // This is a special case, where we twice press the arrow key
                             // and the index does not change, but we jump over the math element.
@@ -839,14 +859,22 @@ class Editor {
                             // and that the last selection was at index 0
                             // Though we need to be careful, as while in the end or beginning of a line
                             // this will also trigger as the offset will not change
-                            if(lastSelection === 0 && documentSelection.anchorOffset === documentSelection.anchorNode.wholeText.length){
-                                // Check that we are not in the start / end of the line
-                                const nodeIndex = Utils.getNodeIndex(this.activeLine, selection)
-                                if(nodeIndex !== 0 && nodeIndex !== this.activeLine.childNodes.length - 1){
-                                    // Not in the start / end of a line, get the element before the selection and call click
-                                    const skippedNode = Utils.getNodeByIndex(this.activeLine, nodeIndex - 2)
-                                    if(skippedNode === this.hook) return // Cannot skip the hook
-                                    focus(skippedNode) // Calling a special focus function for math, click will not work with that!
+                            // In firefox while moving to the left the offset is 0, while moving to the right it's 1
+                            if((window.browser === "firefox" ? documentSelection.anchorNode.nodeName.toLowerCase() === "a" : true)){
+                                if((window.browser === "firefox" ? (event.code === "ArrowRight" ? lastSelection > 0 : lastSelection === 0) : lastSelection === 0) && documentSelection.anchorOffset === (window.browser === "firefox" ? (event.code === "ArrowRight" ? 1 : 0) : documentSelection.anchorNode.wholeText.length)){
+                                    // Check that we are not in the start / end of the line
+                                    const nodeIndex = Utils.getNodeIndex(this.activeLine, selection)
+                                    if(nodeIndex !== 0 && nodeIndex !== this.activeLine.childNodes.length - 1){
+                                        // Not in the start / end of a line, get the element before the selection and call click
+                                        let skippedNode = null
+                                        skippedNode = Utils.getNodeByIndex(this.activeLine, nodeIndex - 2)
+                                        if(skippedNode === this.hook) return // Cannot skip the hook
+                                        // Firefox patch: Element index is different
+                                        if(skippedNode === undefined || skippedNode.nodeName.toLowerCase() !== "a"){
+                                            skippedNode = Utils.getNodeByIndex(this.activeLine, nodeIndex)
+                                        }
+                                        focus(skippedNode) // Calling a special focus function for math, click will not work with that!
+                                    }
                                 }
                             }
                         }
@@ -883,9 +911,35 @@ class Editor {
                     if(reference === ""){
                         // Add an empty line
                         this.hook.innerHTML = `<div>${this.activator}</div>`
+                        Utils.selectByIndex(0, this.hook)
                     }
 
-                    // TODO: Check for extra activators in lines
+                    // Firefox patch: If the image element is in the beginning/end of a line, remove textNodes from within the container
+                    if(window.browser === "firefox"){
+                        for(const id in Math.collection){
+                            const math = Math.collection[id]
+                            if(!math.isOpen){
+                                // Double parent for "a" container (see Math.close)
+                                if(math.image.parentNode !== null && math.image.parentNode.childNodes.length > 1){
+                                    let before = true
+                                    for(const child of math.image.parentElement.childNodes){
+                                        if(child.nodeName.toLowerCase() === "img") {
+                                            before = false
+                                            continue
+                                        }
+                                        if(child.nodeName.toLowerCase() === "#text"){
+                                            // Move text out of the container
+                                            if(before) math.image.parentElement.before(child)
+                                            else math.image.parentElement.after(child)
+                                            // We can assume the child has selection, so move the caret to it when it has been moved
+                                            //Utils.selectByIndex(Utils.getNodeIndex(child), this.activeLine)
+                                            Utils.select(child, Utils.getNodeIndex(child) + 1)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Set active mathElement
