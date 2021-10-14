@@ -361,6 +361,30 @@ const Utils = new (class _Utils {
         reader()
         return elements
     }
+
+    copyToCursor(html){
+        const sel = document.getSelection()
+        const dummy = document.createElement("div")
+        // Todo: Huge XSS vulnerability here! Fix later...
+        dummy.innerHTML = html.split("<!--StartFragment-->")[1].split("<!--EndFragment-->")[0]
+        const offset = sel.anchorOffset
+        const range = document.createRange()
+        range.setStart(sel.anchorNode, offset)
+        range.collapse(true)
+        sel.removeAllRanges()
+        sel.addRange(range)
+        // Todo: I have no fucking idea why this works and why we need to do this.
+        //       Don't you fucking dare touch this badness I won't help you fix it!!!
+        let last = null
+        const tmp = [...dummy.childNodes]
+        for(let elem of tmp){
+            if(!last) range.insertNode(elem)
+            else last.after(elem)
+            last = elem
+        }
+        sel.collapseToEnd()
+        //sel.setPosition(sel.anchorNode, offset)
+    }
 })
 
 // Math utilities (wrapper for MathQuill)
@@ -985,10 +1009,12 @@ class Editor {
                 })
                 Math.events.addEventListener("blur", () => {
                     // Firefox patch: Detect useless br tags in empty lines
-                    if(this.activeMathElement !== null && this.activeMathElement.isOpen === false && this.activeMathElement.image !== null && this.activeMathElement.image.parentNode !== null){
-                        console.log(this.activeMathElement.image.parentNode.parentNode.childNodes)
-                        if(this.activeMathElement.image.parentNode.parentNode.childNodes[0].nodeName.toLowerCase() === "br" && this.activeMathElement.image.parentNode.parentNode.childNodes.length === 2){
-                            this.activeMathElement.image.parentNode.parentNode.childNodes[0].remove()
+                    if(window.browser === "firefox"){
+                        if(this.activeMathElement !== null && this.activeMathElement.isOpen === false && this.activeMathElement.image !== null && this.activeMathElement.image.parentNode !== null){
+                            console.log(this.activeMathElement.image.parentNode.parentNode.childNodes)
+                            if(this.activeMathElement.image.parentNode.parentNode.childNodes[0].nodeName.toLowerCase() === "br" && this.activeMathElement.image.parentNode.parentNode.childNodes.length === 2){
+                                this.activeMathElement.image.parentNode.parentNode.childNodes[0].remove()
+                            }
                         }
                     }
                     this.activeMathElement = null
@@ -1025,6 +1051,13 @@ class Editor {
                         console.debug("[ EDITOR ] Active line change to", this.activeLine)
                     }
                 })
+
+                // Handle pasting text
+                this.hook.addEventListener("paste", async event => {
+                    event.preventDefault()
+                    const paste = (event.clipboardData || window.clipboardData)
+                    Utils.copyToCursor(paste.getData("text/html"))
+                }) 
 
                 // Activate document content modification listener
                 const observer = new MutationObserver(observerCallback)
