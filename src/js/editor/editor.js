@@ -366,7 +366,7 @@ const Utils = new (class _Utils {
         const sel = document.getSelection()
         const dummy = document.createElement("div")
         // Todo: Huge XSS vulnerability here! Fix later...
-        dummy.innerHTML = html.split("<!--StartFragment-->")[1].split("<!--EndFragment-->")[0]
+        dummy.innerHTML = html.includes("<!--StartFragment-->") ? html.split("<!--StartFragment-->")[1].split("<!--EndFragment-->")[0] : html
         const offset = sel.anchorOffset
         const range = document.createRange()
         range.setStart(sel.anchorNode, offset)
@@ -383,6 +383,7 @@ const Utils = new (class _Utils {
             last = elem
         }
         sel.collapseToEnd()
+        dummy.remove()
         //sel.setPosition(sel.anchorNode, offset)
     }
 })
