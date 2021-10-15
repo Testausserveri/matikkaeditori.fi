@@ -50,8 +50,6 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
         }
         answerRef.current.contentEditable = true
 
-        console.log(activeItemData)
-
         // Load active item
         if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data, activeItemData.i)
     }, [resultRef, activeItemData?.i])
@@ -61,13 +59,12 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
     }, [activeItemData])
 
     const save = async () => {
-        console.log("[ SAVE ] Hey bitches we're saving")
+        console.log("[ SAVE ] Preparing to save...")
         const format = await window.internal.ui.editor.getContent()
         console.log(titleRef.current.innerText, format)
 
         let copy = {...activeItemData}
         copy.data = format
-        console.log(copy)
         saveActiveItemData(copy)
     }
 

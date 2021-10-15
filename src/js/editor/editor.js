@@ -458,7 +458,6 @@ const Math = new (class _Math {
                     sel.removeAllRanges()
                     sel.addRange(range)
                     this.events.dispatchEvent(new CustomEvent("moveOut"))
-                    console.log(direction, index)
                 }
             }
         })
@@ -770,7 +769,6 @@ class Editor {
                 }
             }
         }
-        console.log("FORMAT", format)
         return format
     }
 
@@ -806,7 +804,7 @@ class Editor {
                     }
 
                     // Close math
-                    if(event.code === "Escape"){
+                    if(event.code === "Escape"  && this.activeMathElement !== null){
                         event.preventDefault()
                         const container = this.activeLine.container
                         Math.close(this.activeMathElement.id)
@@ -880,7 +878,6 @@ class Editor {
                             if(!selection) selection = selClone
                             const id = selection.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
                             Utils.waitForEvent(Math.events, "focus").then(() => {
-                                console.log("DIR", direction)
                                 Math.collection[id].input[direction]()
                             })
                             selection.firstChild.click()

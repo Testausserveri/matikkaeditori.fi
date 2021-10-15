@@ -79,7 +79,6 @@ function FilesystemItem(props) {
             text: "Poista",
             action: () => {
                 // Note: Should there be a dialog to ask if you are sure?
-                console.log("IN", props.data)
                 if(confirm("Haluatko varmasti poistaa \"" + props.data.name + "\"?")){
                     props.deleteDocument(props.data.i)
                 }
