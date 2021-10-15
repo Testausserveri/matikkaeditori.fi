@@ -100,6 +100,7 @@ const Utils = new (class _Utils {
      */
     getSelectedNode(){
         const node = document.getSelection().focusNode
+        if(node === null) return null 
         return (node.nodeType == 3 ? node.parentNode : node)
     }
 
@@ -386,6 +387,24 @@ const Utils = new (class _Utils {
         dummy.remove()
         //sel.setPosition(sel.anchorNode, offset)
     }
+
+    // TODO: Start using this with Utils.waitFor
+    /**
+     * Execute a function & await a promise in async context
+     * @param {*} input 
+     * @param {*} promise 
+     * @returns 
+     */
+    async asyncTrigger(input, promise){
+        return new Promise((resolve, reject) => {
+            promise.then((...args) => {
+                resolve(...args)
+            }).catch((...args) => {
+                reject(...args)
+            })
+            input()
+        })
+    }
 })
 
 // Math utilities (wrapper for MathQuill)
@@ -537,6 +556,7 @@ const Math = new (class _Math {
             mathObject.image.remove()
             mathObject.container.remove()
             delete this.collection[id]
+            this.events.dispatchEvent(new CustomEvent("blur", { detail: mathObject }))
             return
         }
 
@@ -610,10 +630,12 @@ class Editor {
      */
     async setContent(data, id){
         // UI compatibility
+        this.watchDocument = false
         this.target = {
             i: id
         }
         this.hook.innerHTML = ""
+        // eslint-disable-next-line no-constant-condition
 
         // Create construct
         let construct = []
@@ -671,6 +693,7 @@ class Editor {
         }
 
         // Write the elements to the editor
+        let addedContent = false
         for(let line of construct){
             let lineElement = null
             for(let element of line){
@@ -685,16 +708,21 @@ class Editor {
             }
             if(line.length === 0) {
                 lineElement = document.createElement("div")
-                if(window.browser === "firefox") lineElement.appendChild(document.createElement("br")) // Firefox line activator
+                lineElement.appendChild(document.createElement("br")) // line activator
             }
-            if(lineElement) this.hook.appendChild(lineElement)
+            if(lineElement) {
+                this.hook.appendChild(lineElement)
+                addedContent = true
+            }
         }
+        if(!addedContent) this.hook.innerHTML = `<div>${this.activator}</div>` // If no content was added, activate first line
 
         // Toggle all math
         for(let id in Math.collection){
-            Math.open(id)
-            Math.close(id)
+            await Math.open(id)
+            await Math.close(id)
         }
+        this.watchDocument = true
     }
 
     /**
@@ -741,7 +769,8 @@ class Editor {
                 case "br": {
                     // This is a manual line-break
                     if(window.browser !== "firefox"){ // Does not mean anything on firefox
-                        format.push("")
+                        // <br> in a line by itself does not do anything on Chrome either
+                        if(element.parentNode.childNodes.length !== 1) format.push("")
                     }
                     break
                 }
@@ -814,25 +843,23 @@ class Editor {
                     }
 
                     // Firefox patch: Make sure we are not in a math container
-                    if(event.code === "Enter"){
-                        if(window.browser === "firefox"){
-                            const selection = document.getSelection()
-                            const direction = selection.anchorOffset // 0 is left, 1 is right
-                            if(selection.anchorNode.nodeName.toLowerCase() === "a" && selection.anchorNode.childNodes.length === 1 && selection.anchorNode.childNodes[0].nodeName.toLowerCase() === "img"){
-                                event.preventDefault()
-                                if(direction === 0){
-                                    const line = document.createElement("div")
-                                    line.appendChild(document.createElement("br")) // this.activator
-                                    this.activeLine.before(line)
-                                    Utils.selectByIndex(0, line)
-                                }else {
-                                    const line = document.createElement("div")
-                                    line.appendChild(document.createElement("br")) // this.activator
-                                    this.activeLine.after(line)
-                                    Utils.selectByIndex(0, line)
-                                }
-                                return // Forced to return
+                    if(event.code === "Enter" && window.browser === "firefox"){
+                        const selection = document.getSelection()
+                        const direction = selection.anchorOffset // 0 is left, 1 is right
+                        if(selection.anchorNode.nodeName.toLowerCase() === "a" && selection.anchorNode.childNodes.length === 1 && selection.anchorNode.childNodes[0].nodeName.toLowerCase() === "img"){
+                            event.preventDefault()
+                            if(direction === 0){
+                                const line = document.createElement("div")
+                                line.appendChild(document.createElement("br")) // this.activator
+                                this.activeLine.before(line)
+                                Utils.selectByIndex(0, line)
+                            }else {
+                                const line = document.createElement("div")
+                                line.appendChild(document.createElement("br")) // this.activator
+                                this.activeLine.after(line)
+                                Utils.selectByIndex(0, line)
                             }
+                            return // Forced to return
                         }
                     }
 
@@ -850,8 +877,21 @@ class Editor {
                             Utils.selectByIndex(Utils.getNodeIndex(this.hook, newLine), this.hook) // Move into new line
                         }else {
                             // Create new line after current active line
-                            Math.close(this.activeMathElement.id)
-                            await Utils.waitForEvent(Math.events, "blur")
+                            const id = this.activeMathElement.id
+                            const offset = Utils.getNodeIndex(this.activeLine, this.activeMathElement.container)
+                            await Utils.asyncTrigger(() => {Math.close(id)}, Utils.waitForEvent(Math.events, "blur"))
+                            // Make sure the math element just closed still exists (may get deleted if empty)
+                            if(Math.collection[id] === undefined) {
+                                // Return caret to previous selection
+                                // If line is empty, select the start
+                                if(this.activeLine.childNodes.length === 1 && this.activeLine.childNodes[0].nodeName.toLowerCase() === "br"){
+                                    Utils.selectByIndex(Utils.getNodeIndex(this.hook, this.activeLine), this.hook)
+                                }else {
+                                    // Make sure the editor is not empty
+                                    if(this.hook.childNodes.length !== 0) Utils.selectByIndex(offset - 1, this.activeLine)
+                                }
+                                return
+                            }
                             // Make new line
                             const newLine = document.createElement("div")
                             this.activeLine.after(newLine)
@@ -862,6 +902,19 @@ class Editor {
                             Math.open(mathElement.id)
                         }
                         return
+                    }
+
+                    // Disable shift+Enter
+                    if(event.key === "Enter" && this.activeMathElement === null){
+                        // Causes issues at least on chromium, prevention is required
+                        event.preventDefault()
+                        // Create a new line normally
+                        const newLine = document.createElement("div")
+                        newLine.innerHTML = "<br>"
+                        this.activeLine.after(newLine)
+                        this.activeLine = newLine
+                        Utils.selectByIndex(Utils.getNodeIndex(this.hook, this.activeLine), this.hook)
+                        console.debug("[ EDITOR ] Active line change to", this.activeLine)
                     }
 
                     // Arrow key control
@@ -947,7 +1000,7 @@ class Editor {
                 })
 
                 // Document content modification listener
-                const observerCallback = async () => {
+                const observerCallback = async e => {
                     // Enable/disable
                     if(!this.watchDocument) return
 
@@ -958,6 +1011,13 @@ class Editor {
                         // Add an empty line
                         this.hook.innerHTML = `<div>${this.activator}</div>`
                         Utils.selectByIndex(0, this.hook)
+                    }
+
+                    // Text modified? What is activeLine?
+                    const parentLine = e && e.addedNodes && e.addedNodes[0] !== null ? Utils.getParentLine() : null
+                    if(parentLine && this.activeLine !== parentLine){
+                        this.activeLine = parentLine
+                        console.debug("[ EDITOR ] Active line change to", this.activeLine)
                     }
 
                     // Firefox patch: If the image element is in the beginning/end of a line, remove textNodes from within the container
@@ -1009,7 +1069,6 @@ class Editor {
                     // Firefox patch: Detect useless br tags in empty lines
                     if(window.browser === "firefox"){
                         if(this.activeMathElement !== null && this.activeMathElement.isOpen === false && this.activeMathElement.image !== null && this.activeMathElement.image.parentNode !== null){
-                            console.log(this.activeMathElement.image.parentNode.parentNode.childNodes)
                             if(this.activeMathElement.image.parentNode.parentNode.childNodes[0].nodeName.toLowerCase() === "br" && this.activeMathElement.image.parentNode.parentNode.childNodes.length === 2){
                                 this.activeMathElement.image.parentNode.parentNode.childNodes[0].remove()
                             }
@@ -1028,6 +1087,15 @@ class Editor {
                     // Get selection data and make sure it's valid
                     const selection = document.getSelection()
                     const line = selection.anchorNode.parentElement === this.hook ? selection.anchorNode : Utils.getParentLine(selection.anchorNode)
+
+                    // If we have only one line in the editor, we can focus that (as there are no other options)
+                    if(this.hook.childNodes.length === 1 && this.activeLine !== this.hook.childNodes[0]) {
+                        this.activeLine = this.hook.childNodes[0]
+                        Utils.selectByIndex(0, this.hook)
+                        console.debug("[ EDITOR ] Active line change to", this.activeLine)
+                        return
+                    }
+
                     if(!Utils.isSomeParent(selection.anchorNode, this.hook)) return
 
                     // Update active line
@@ -1038,6 +1106,7 @@ class Editor {
                 })
                 window.addEventListener("keydown", async event => {
                     if(event.code === "ArrowUp" || event.code === "ArrowDown"){
+                        // Move with arrow keys
                         const selection = document.getSelection()
                         const line = selection.anchorNode.parentElement === this.hook ? selection.anchorNode : Utils.getParentLine(selection.anchorNode)
                         if(!Utils.isSomeParent(selection.anchorNode, this.hook)) return
