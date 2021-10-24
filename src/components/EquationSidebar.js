@@ -66,7 +66,7 @@ export function EquationSidebar() {
     }, [])
 
     return (
-        <div className="sidebar">
+        <div className="sidebar equationSidebar">
             <div className="head">
                 <button className="primary" onClick={async () => {
                     window.internal.ui.editor.hook.focus() // Force focus
