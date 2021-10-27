@@ -28,7 +28,7 @@ function G(){
         console: console_config(),
         ui: {
             activeFilesystemInstance: null,
-            activeLocation: true, // True for root
+            activeLocation: null,
             editor: null
         },
         time_at_live: new Date().getTime(), // Time since code first started to run

@@ -51,7 +51,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
         answerRef.current.contentEditable = true
 
         // Load active item
-        if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data, activeItemData.i)
+        if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data)
     }, [resultRef, activeItemData?.i])
 
     useEffect(() => {

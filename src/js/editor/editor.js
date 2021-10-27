@@ -363,11 +363,91 @@ const Utils = new (class _Utils {
         return elements
     }
 
+    /**
+     * Format HTML editor data to the official save format
+     * @param {HTMLElement} hook 
+     */
+    toEmbedded(hook){
+        let format = []
+        for(let i = 0; i < hook.childNodes.length; i++){
+            let line = hook.childNodes[i]
+            // We expect each line to be a container itself!
+            // Newline after each line!
+            format.push("")
+            for(let element of line.childNodes){
+                switch(element.nodeName.toLowerCase()){
+                case "#text": {
+                    // This is plain text
+                    // eslint-disable-next-line no-undef
+                    format[format.length-1] += "<text>" + btoa(element.wholeText) + "</text>"
+                    break
+                }
+
+                // Chrome math container
+                case "p": {
+                    // eslint-disable-next-line no-undef
+                    format[format.length-1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
+                    break
+                }
+
+                // Firefox math container
+                case "a": {
+                    let imgElement = null
+                    for(let child of element.childNodes){
+                        if(child.nodeName.toLowerCase() === "img") {
+                            imgElement = child
+                            break
+                        }
+                    }
+                    if(imgElement === null) console.error("[ EDITOR ] Failed to read Firefox math container latex", element)
+                    // eslint-disable-next-line no-undef
+                    format[format.length-1] += "<math>" + btoa(imgElement.getAttribute("data")) + "</math>"
+                    break
+                }
+
+                case "br": {
+                    // This is a manual line-break
+                    if(window.browser !== "firefox"){ // Does not mean anything on firefox
+                        // <br> in a line by itself does not do anything on Chrome either
+                        if(element.parentNode.childNodes.length !== 1) format.push("")
+                    }
+                    break
+                }
+
+                case "img": {
+                    // This is a math render
+                    // eslint-disable-next-line no-undef
+                    format[format.length-1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
+                    break
+                }
+
+                case "div": {
+                    // This is a line within a line, move it's contents to the hook and 
+                    for(const child of line.childNodes) line.after(child)
+                    line.remove()
+                    i = 0 // Resets to the start
+                    console.warn("[ Editor ] Line structure changes were required! Redoing the getContent...")
+                    break
+                }
+                
+                default: {
+                    console.warn("UNKNOWN ELEMENT IN EDITOR", element)
+                }
+                
+                }
+            }
+        }
+        return format
+    }
+
     copyToCursor(html){
         const sel = document.getSelection()
         const dummy = document.createElement("div")
         // Todo: Huge XSS vulnerability here! Fix later...
         dummy.innerHTML = html.includes("<!--StartFragment-->") ? html.split("<!--StartFragment-->")[1].split("<!--EndFragment-->")[0] : html
+        // Test the HTML for valid data
+
+
         const offset = sel.anchorOffset
         const range = document.createRange()
         range.setStart(sel.anchorNode, offset)
@@ -730,74 +810,8 @@ class Editor {
      */
     async getContent(){
         let format = ["<meta \"version\"=\"" + localStorage.getItem("version") + "\"></meta>"]
-        for(let i = 0; i < this.hook.childNodes.length; i++){
-            let line = this.hook.childNodes[i]
-            // We expect each line to be a container itself!
-            // Newline after each line!
-            format.push("")
-            for(let element of line.childNodes){
-                switch(element.nodeName.toLowerCase()){
-                case "#text": {
-                    // This is plain text
-                    // eslint-disable-next-line no-undef
-                    format[format.length-1] += "<text>" + btoa(element.wholeText) + "</text>"
-                    break
-                }
-
-                // Chrome math container
-                case "p": {
-                    // eslint-disable-next-line no-undef
-                    format[format.length-1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
-                    break
-                }
-
-                // Firefox math container
-                case "a": {
-                    let imgElement = null
-                    for(let child of element.childNodes){
-                        if(child.nodeName.toLowerCase() === "img") {
-                            imgElement = child
-                            break
-                        }
-                    }
-                    if(imgElement === null) console.error("[ EDITOR ] Failed to read Firefox math container latex", element)
-                    // eslint-disable-next-line no-undef
-                    format[format.length-1] += "<math>" + btoa(imgElement.getAttribute("data")) + "</math>"
-                    break
-                }
-
-                case "br": {
-                    // This is a manual line-break
-                    if(window.browser !== "firefox"){ // Does not mean anything on firefox
-                        // <br> in a line by itself does not do anything on Chrome either
-                        if(element.parentNode.childNodes.length !== 1) format.push("")
-                    }
-                    break
-                }
-
-                case "img": {
-                    // This is a math render
-                    // eslint-disable-next-line no-undef
-                    format[format.length-1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
-                    break
-                }
-
-                case "div": {
-                    // This is a line within a line, move it's contents to the hook and 
-                    for(const child of line.childNodes) line.after(child)
-                    line.remove()
-                    i = 0 // Resets to the start
-                    console.warn("[ Editor ] Line structure changes were required! Redoing the getContent...")
-                    break
-                }
-                
-                default: {
-                    console.warn("UNKNOWN ELEMENT IN EDITOR", element)
-                }
-                
-                }
-            }
-        }
+        const read = Utils.toEmbedded(this.hook)
+        format = format.concat(read)
         return format
     }
 
@@ -826,6 +840,7 @@ class Editor {
                     // Open math element
                     if(event.ctrlKey && event.key === "e"){
                         event.preventDefault()
+                        if(this.activeMathElement !== null) return // No math inside math (mathception :0)
                         const mathElement = await Math.create()
                         Utils.insertNodeAt(Utils.getCaretPosition(), mathElement.container)
                         Math.open(mathElement.id)

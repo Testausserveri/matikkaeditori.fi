@@ -21,7 +21,10 @@ function App() {
     }])
 
     // id of active item e.g. open in the editor
-    const [activeItem, setActiveItem] = useState("")
+    const [activeItem, setActiveItem] = (item) => {
+        window.internal.ui.activeLocation = item.id
+        return useState("")
+    }
     
     // id of lastly created item
     const [createdItem, setCreatedItem] = useState("")
