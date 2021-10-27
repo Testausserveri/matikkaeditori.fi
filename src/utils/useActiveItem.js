@@ -13,6 +13,7 @@ export default function useActiveItem(activeItem, level, setLevel) {
 
     const fsSave = useCallback(debounce((newData, targetId) => {
         if (!newData) return
+        alert(window.internal.ui.activeLocation)
         window.internal.workers.api("Filesystem", "write", {
             instance: window.internal.ui.activeFilesystemInstance,
             id: targetId,

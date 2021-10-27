@@ -177,6 +177,7 @@ export default function Sidebar(props) {
         if (item.t == 0) {
             props.setCreatedItem("")
             props.setActiveItem(item.i)
+            window.internal.ui.activeLocation = item.id // Todo: Move to place
             if (event?.isTrusted) window.internal.ui.editor.hook.focus()
         } else if (item.t == 1) {
             props.openFolder(item.i, item.name)

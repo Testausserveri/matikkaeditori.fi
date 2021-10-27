@@ -51,6 +51,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
         answerRef.current.contentEditable = true
 
         // Load active item
+        window.internal.ui.activeLocation = activeItem
         if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data)
     }, [resultRef, activeItemData?.i])
 
@@ -83,7 +84,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
         console.log("[ EDITOR ] Updating document title...")
         await window.internal.workers.api("Filesystem", "write", {
             instance: window.internal.ui.activeFilesystemInstance,
-            id: window.internal.ui.editor.target.i,
+            id: window.internal.ui.activeLocation,
             write: {
                 name: event.target.innerText,
                 type: 0

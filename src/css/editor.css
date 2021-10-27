@@ -47,6 +47,7 @@
     margin: 5px;
     padding: 8px;
     font-size: 100%;
+    display: block;
 }
 
 .mathTools {
