@@ -199,7 +199,7 @@ const Utils = {
      * @returns {void}
      */
     selectByIndex(index, element, collapse){
-        if(element.childNodes.length - 1 < index) return console.error("[ EDITOR ] Selection given to selectByIndex is out of range!")
+        if(element.childNodes.length - 1 < index) throw console.error("[ EDITOR ] Selection given to selectByIndex is out of range!")
         const range = document.createRange()
         const sel = document.getSelection()
         range.selectNodeContents(element.childNodes[index])

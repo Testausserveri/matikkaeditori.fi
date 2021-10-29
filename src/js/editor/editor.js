@@ -216,6 +216,7 @@ class Editor {
                 await Utils.toggleAnchorMode(Utils.getObjectPropertyArray(Math.collection, "container"), false)
                 holdKeydown = false
             }
+            this.moveOutOfThisEvent = false
 
             // --- Math element control ---
             // Create with ctrl+e
@@ -246,18 +247,18 @@ class Editor {
                 }else {
                     // Crate new line after current active line
                     const id = this.activeMathElement.id
-                    const offset = Utils.getNodeIndex(this.activeLine, this.activeMathElement.container)
+                    //const offset = Utils.getNodeIndex(this.activeLine, this.activeMathElement.container)
                     Math.close(this.activeMathElement.id)
                     // Make sure the math element just closed still exists (may get deleted if empty)
                     if(Math.collection[id] !== undefined){
                         // Return caret to previous selection
                         // If line is empty, select the start
-                        if(this.activeLine.childNodes.length === 1 && this.activeLine.childNodes[0].nodeName.toLowerCase() === "br"){
+                        /*if(this.activeLine.childNodes.length === 1 && this.activeLine.childNodes[0].nodeName.toLowerCase() === "br"){
                             Utils.selectByIndex(Utils.getNodeIndex(this.hook, this.activeLine), this.hook)
                         }else {
                             // Make sure the editor is not empty
                             if(this.hook.childNodes.length !== 0) Utils.selectByIndex(offset - 1, this.activeLine)
-                        }
+                        }*/
                         // Make new line
                         const newLine = document.createElement("div")
                         this.activeLine.after(newLine)
@@ -338,7 +339,7 @@ class Editor {
                 }
             }
             // Select end of math element
-            if(this.watchHook) Utils.select(this.activeLine, Utils.getNodeIndex(this.activeLine, this.activeMathElement.container) + 1)
+            if(this.watchHook && !this.moveOutOfThisEvent) Utils.select(this.activeLine, Utils.getNodeIndex(this.activeLine, this.activeMathElement.container) + 1)
             this.activeMathElement = null
         })
         // Handle moveOut
@@ -451,6 +452,18 @@ class Editor {
                         let activator = document.createElement("br")
                         line.appendChild(activator) // this.activator
                     }
+                }
+            }
+
+            // Firefox patch: Do not let lines deactivate, when there's only a math element present
+            if(window.browser === "firefox"){
+                // Left
+                if(this.activeLine.childNodes[0].nodeName.toLowerCase() === "a"){
+                    this.activeLine.childNodes[0].before(document.createElement("br"))
+                }
+                // Right
+                if(this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "a"){
+                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].after(document.createElement("br"))
                 }
             }
         }

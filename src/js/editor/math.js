@@ -56,12 +56,15 @@ const Math = {
                     }
                 },
                 moveOutOf: async direction => {
+                    this.events.dispatchEvent(new CustomEvent("moveOut", { detail: obj }))
                     this.close(obj.id)
                     const line = Utils.getParentLine(obj.container)
                     let outsideNodeIndex = Utils.getNodeIndex(line, obj.container)
                     if(direction > 0) outsideNodeIndex += 1
+                    if(line.childNodes[line.childNodes.length - 1] === obj.container) {
+                        obj.container.after(document.createElement("br"))
+                    }
                     Utils.select(line, outsideNodeIndex)
-                    this.events.dispatchEvent(new CustomEvent("moveOut", { detail: obj }))
                 }
             }
         })
