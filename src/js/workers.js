@@ -110,7 +110,7 @@ import CloudStorage from "worker-loader!./workers/cloud-storage.js"
  * Create a worker using comlink
  * @param {string} name Worker name 
  */
-async function createWorker(name){
+export async function createWorker(name){
     const Worker = {Filesystem, CloudStorage}[name]
     const worker = new Worker()
     // Standard: { init: <promise to resolve when ready>, share: <data to be added to global memory> }

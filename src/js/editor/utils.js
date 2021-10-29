@@ -442,6 +442,7 @@ const Utils = {
      */
     toEmbedded(element){
         const format = []
+        let redo = false
         if(!(element instanceof HTMLElement)) throw console.error("[ EDITOR ] Element given to toEmbedded is not instance of HTMLElement.")
         for(let i = 0; i < element.childNodes.length; i++){
             const line = element.childNodes[i]
@@ -480,6 +481,7 @@ const Utils = {
                     line.remove()
                     i = 0
                     console.warn("[ Editor ] Line structure changes were required! Redoing the getContent...")
+                    redo = true
                     break
                 }
                 default: {
@@ -488,6 +490,7 @@ const Utils = {
                 }
             }
         }
+        if(redo) return this.toEmbedded(element)
         return format.length === 0 ? "" : format
     },
 
