@@ -47,7 +47,6 @@ const Utils = {
         // Todo: This is a very hacky way to do this
         //       and it WILL NOT scale well
         return new Promise(resolve => {
-            console.log("S", list, mode)
             for(const item of list){
                 item.contentEditable = mode
             }

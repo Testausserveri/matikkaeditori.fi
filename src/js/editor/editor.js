@@ -203,8 +203,6 @@ class Editor {
                             let skippedNode = Utils.getNodeByIndex(this.activeLine, lastSelection.anchorOffset - 1)
                             if(skippedNode){
                                 if(skippedNode.nodeName.toLowerCase() === "a"){
-                                    console.log("SKIP")
-                                    console.log("SKIPPED", skippedNode)
                                     focus(skippedNode)
                                 }else if(window.browser === "firefox"){
                                     skippedNode = Utils.getNodeByIndex(this.activeLine, lastSelection.anchorOffset)
