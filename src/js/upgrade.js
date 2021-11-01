@@ -77,98 +77,108 @@ export default {
             updateProgress("<b>Onnistui!</b>")
             
             updateProgress("Luetaan vanha tallenne...")
-            try {
-                // Get old save data
-                const raw = localStorage.getItem("data").split("")
-                if(raw[0] === "\"") raw.splice(0, 1)
-                if(raw[raw.length - 1] === "\"") raw.pop()
-                const data = JSON.parse(raw.join(""))
-                updateProgress("<b>Onnistui!</b>")
-                updateProgress("Löydettiin " + Object.keys(data).length + " tallenne(tta). Päivitetään...")
-
-                
-                // Format function
-                const format = async html => {
-                    for(const line of html.body.children[0].children){
-                        if(line.className.includes("math-editor")) {
-                            // Broken math element, cannot be converted
-                            return
-                        }
-                        // Handle possible math / image in line structure (bug in legacy editor)
-                        if(line.tagName.toLowerCase() === "img"){
-                            if(line.hasAttribute("style")){
-                                // Math
-                                const math = document.createElement("a")
-                                math.setAttribute("data", (line.getAttribute("alt") !== null && line.getAttribute("alt").length !== 0 ? line.getAttribute("alt") : "Unset"))
-                                const nLine = document.createElement("div")
-                                nLine.appendChild(math)
-                                line.after(nLine)
-                                line.remove()
-                            }else {
-                                // Image
-                                const nLine = document.createElement("div")
-                                line.after(nLine)
-                                nLine.appendChild(line)
-                            }
-                        }
-
-                        // Handle line elements
-                        for(const child of line.children){
-                            if(child.tagName.toLowerCase() === "img" && child.hasAttribute("style")){
-                                // Math
-                                const math = document.createElement("a")
-                                math.setAttribute("data", (child.getAttribute("alt") !== null && child.getAttribute("alt").length !== 0 ? child.getAttribute("alt") : "Unset"))
-                                child.after(math)
-                                child.remove() 
-                            }
-                        }
-
-                    }
-                    try {
-                        return Utils.toEmbedded(html.body.children[0])
-                    }
-                    catch(e){
-                        // Keep formatting
-                        updateProgress("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yritetään uudelleen...", false, true)
-                        console.error(e)
-                        return await format()
-                    }
-                }
-
-                for(const id in data){
-                    // Get metadata
-                    const newId = uuid.v4()
-                    const saveData = data[id]
-                    const date = saveData.date
-                    const formattedDate = new Date(date)
-                    let title = saveData.answer.split("<div>")[0].split("<br>")[0].replace(/&nbsp;/g, " ").trim()
-                    if(title.length === 0) title = "Unnamed"
+            if(!localStorage.getItem("data")){
+                updateProgress("Vanhaa tallennetta ei löydetty.")
+            }else {
+                try {
+                    // Get old save data
+                    const raw = localStorage.getItem("data").split("")
+                    if(raw[0] === "\"") raw.splice(0, 1)
+                    if(raw[raw.length - 1] === "\"") raw.pop()
+                    const data = JSON.parse(raw.join(""))
+                    updateProgress("<b>Onnistui!</b>")
+                    updateProgress("Löydettiin " + Object.keys(data).length + " tallenne(tta). Päivitetään...")
+    
                     
-                    // Get data
-                    const parser = new DOMParser()
-                    const html = parser.parseFromString("<body><div>" + saveData.answer + "<div></body>", "text/html")
-                    updateProgress("&nbsp;&nbsp;&nbsp;&nbsp;> \"" + title + "\" (" +  id + ") -> " + newId)
-                    const embedded = await format(html)
-                    updateProgress(" <b>Luettu.</b>", true, true)
-
-                    // Save to the new filesystem
-                    await window.internal.workers.api("Filesystem", "write", {
-                        instance: instance.instance,
-                        id: newId,
-                        write: {
-                            name: title,
-                            type: 0,
-                            data: embedded,
-                            date: formattedDate.getTime()
-                        },
-                        location: true
-                    })
-                    updateProgress(" <b>Päivitetty.</b>", true, true)
+                    // Format function
+                    const format = async html => {
+                        for(const line of html.body.children[0].children){
+                            if(line.className.includes("math-editor")) {
+                                // Broken math element, cannot be converted
+                                return
+                            }
+                            // Handle possible math / image in line structure (bug in legacy editor)
+                            if(line.tagName.toLowerCase() === "img"){
+                                if(line.hasAttribute("style")){
+                                    // Math
+                                    const math = document.createElement("a")
+                                    math.setAttribute("data", btoa(line.getAttribute("alt") !== null && line.getAttribute("alt").length !== 0 ? line.getAttribute("alt") : "Unset"))
+                                    const nLine = document.createElement("div")
+                                    nLine.appendChild(math)
+                                    line.after(nLine)
+                                    line.remove()
+                                }else {
+                                    // Image
+                                    const nLine = document.createElement("div")
+                                    line.after(nLine)
+                                    nLine.appendChild(line)
+                                }
+                            }
+    
+                            // Handle line elements
+                            for(const child of line.children){
+                                if(child.tagName.toLowerCase() === "img" && child.hasAttribute("style")){
+                                    // Math
+                                    const math = document.createElement("a")
+                                    math.setAttribute("data", btoa(child.getAttribute("alt") !== null && child.getAttribute("alt").length !== 0 ? child.getAttribute("alt") : "Unset"))
+                                    child.after(math)
+                                    child.remove() 
+                                }
+                            }
+    
+                        }
+                        try {
+                            return Utils.toEmbedded(html.body.children[0])
+                        }
+                        catch(e){
+                            // Keep formatting
+                            updateProgress("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Yritetään uudelleen...", false, true)
+                            console.error(e)
+                            return await format()
+                        }
+                    }
+    
+                    for(const id in data){
+                        // Get metadata
+                        const newId = uuid.v4()
+                        const saveData = data[id]
+                        const date = saveData.date
+                        const formattedDate = new Date(date)
+                        let title = saveData.answer.split("<div>")[0].split("<br>")[0].replace(/&nbsp;/g, " ").trim()
+                        if(title.length === 0) title = "Unnamed"
+                        
+                        // Get data
+                        const parser = new DOMParser()
+                        const html = parser.parseFromString("<body><div>" + saveData.answer + "<div></body>", "text/html")
+                        updateProgress("&nbsp;&nbsp;&nbsp;&nbsp;> \"" + title + "\" (" +  id + ") -> " + newId)
+                        const embedded = await format(html)
+                        updateProgress(" <b>Luettu.</b>", true, true)
+    
+                        // Save to the new filesystem
+                        await window.internal.workers.api("Filesystem", "write", {
+                            instance: instance.instance,
+                            id: newId,
+                            write: {
+                                name: title,
+                                type: 0,
+                                data: embedded,
+                                date: formattedDate.getTime()
+                            },
+                            location: true
+                        })
+                        updateProgress(" <b>Päivitetty.</b>", true, true)
+                    }
                 }
-            }
-            catch(e){
-                console.error(e)
-                updateProgress("Päivitys epäonnistui. Lisätietoja konsolissa.")
+                catch(e){
+                    console.log("%cAlku ----------------------------", "color: #d42c2c; font-size: 33px; font-family: Inconsolata, monospace; font-weight: bold;")
+                    console.error(e)
+                    console.trace("Trace")
+                    console.log("%cLoppu ----------------------------", "color: #d42c2c; font-size: 33px; font-family: Inconsolata, monospace; font-weight: bold;")
+                    updateProgress("Päivitys epäonnistui. Lisätietoja:")
+                    updateProgress("<h3 style=\"color: red;\">" + e.message + "</h3>", false, true)
+                    updateProgress("<p style=\"color: darkred; margin-top: -30px;\">" + e.stack + "</p>", false, true)
+                    return
+                }
             }
 
             // Refresh and update version field
