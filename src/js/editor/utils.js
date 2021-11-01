@@ -1,3 +1,4 @@
+/* globals  */
 import Math from "./math.js"
 
 /**
@@ -227,10 +228,12 @@ const Utils = {
     /**
      * Copy HTML to the cursor position
      * @param {string} html 
+     * @param {Array} files Blob references of files included in the html
      * @returns {void}
      */
-    copyToCursor(html){
+    copyToCursor(html, files){
         const sel = document.getSelection()
+        console.log("COPY", html)
         const dummy = document.createElement("div")
         // Todo: Huge XSS vulnerability here! Fix later...
         dummy.innerHTML = html.includes("<!--StartFragment-->") ? html.split("<!--StartFragment-->")[1].split("<!--EndFragment-->")[0] : html
@@ -245,7 +248,19 @@ const Utils = {
         //       Don't you fucking dare touch this badness I won't help you fix it!!!
         let last = null
         const tmp = [...dummy.childNodes]
+        let fileIterator = 0
         for(let elem of tmp){
+            // Correct image urls
+            if(elem.nodeName.toLowerCase() === "img"){
+                const blob = files[fileIterator]
+                ++fileIterator
+                const reader = new FileReader()
+                reader.onload = () => {
+                    elem.src = reader.result
+                    console.log("SRC", elem.src)
+                }
+                reader.readAsDataURL(blob)
+            }
             if(!last) range.insertNode(elem)
             else last.after(elem)
             last = elem
@@ -470,8 +485,14 @@ const Utils = {
                     break
                 }
                 case "img": {
-                    // Rendered math
-                    format[format.length - 1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
+                    // Rendered math or image
+                    const data = element.getAttribute("data")
+                    if(data){ // Math
+                        format[format.length - 1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
+                    }else {
+                        format[format.length - 1] += "<img>" + (element.src ?? "unset") + "</img>"
+                    }
+                    
                     break
                 }
                 case "div": {
@@ -501,7 +522,6 @@ const Utils = {
      */
     fill(element){
         let html = null
-        if(element.data) element.data = atob(element.data)
         switch(element.name){
         case "meta": {
             // Not an element
@@ -512,15 +532,24 @@ const Utils = {
             if(element.data === ""){
                 html = document.createElement("br")
             }else {
-                html = document.createTextNode(element.data)
+                html = document.createTextNode(atob(element.data))
             }
             break
         }
         case "math": {
             // Math element
             const mathElement = Math.create()
+            console.log("ELEM", element)
+            console.log("MATH", atob(element.data), atob(atob(element.data)), element.data)
             mathElement.input.write(atob(element.data))
             html = mathElement.container
+            break
+        }
+        case "img": {
+            // Image attachment
+            const img = document.createElement("img")
+            img.src = element.data
+            html = img
             break
         }
         default: {

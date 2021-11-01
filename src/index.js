@@ -130,6 +130,7 @@ window.api = async (worker, type, message) => {
             console.log("Browser compatibility checks passed!")
             // Declare globals & Handle low-level setup (upgrades etc.)
             await G()
+
             // --- This is where the actual application code begins ---
             // Handle workers
             Workers.default()

@@ -388,7 +388,7 @@ class Editor {
         this.hook.addEventListener("paste", async event => {
             event.preventDefault()
             const paste = (event.clipboardData || window.clipboardData)
-            Utils.copyToCursor(paste.getData("text/html"))
+            Utils.copyToCursor(paste.getData("text/html"), paste.files)
         }) 
         // Activate document content modification listener
         const observerCallback = async e => {
