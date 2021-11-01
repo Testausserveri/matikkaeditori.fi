@@ -142,7 +142,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
                 </Dropdown>
             </div>
             <div className="page" spellCheck={false}>
-                <div autoFocus="true" ref={answerRef} className="editor" id="editor-element" contentEditable="true"></div>
+                <div autoFocus="true" ref={answerRef} className="editor" id="editor-element" contentEditable="false"></div>
             </div>
         </div>
     )

@@ -76,6 +76,7 @@ class Editor {
      */
     setContent(data){
         this.watchHook = false
+        this.hook.contentEditable = false
         this.hook.innerHTML = ""
         Math.flush()
         
@@ -120,6 +121,7 @@ class Editor {
         }
 
         this.watchHook = true
+        this.hook.contentEditable = true
     }
 
     /**
@@ -339,7 +341,7 @@ class Editor {
                 }
             }
             // Select end of math element
-            if(this.watchHook && !this.moveOutOfThisEvent) Utils.select(this.activeLine, Utils.getNodeIndex(this.activeLine, this.activeMathElement.container) + 1)
+            if(this.watchHook && !this.moveOutOfThisEvent && this.activeLine.childNodes.length <= Utils.getNodeIndex(this.activeLine, this.activeMathElement.container) + 1) Utils.select(this.activeLine, Utils.getNodeIndex(this.activeLine, this.activeMathElement.container) + 1)
             this.activeMathElement = null
         })
         // Handle moveOut

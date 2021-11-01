@@ -233,7 +233,6 @@ const Utils = {
      */
     copyToCursor(html, files){
         const sel = document.getSelection()
-        console.log("COPY", html)
         const dummy = document.createElement("div")
         // Todo: Huge XSS vulnerability here! Fix later...
         dummy.innerHTML = html.includes("<!--StartFragment-->") ? html.split("<!--StartFragment-->")[1].split("<!--EndFragment-->")[0] : html
@@ -257,7 +256,6 @@ const Utils = {
                 const reader = new FileReader()
                 reader.onload = () => {
                     elem.src = reader.result
-                    console.log("SRC", elem.src)
                 }
                 reader.readAsDataURL(blob)
             }
@@ -367,6 +365,9 @@ const Utils = {
         let i = 0
 
         // Read function
+        // Yes, we could use an XML parser, but the overhead here should be minimal
+        // and the simplicity of it makes it secure. We don't want any sort of
+        // code injection or XSS vulnerabilities due to XML parser related issues
         const read = () => {
             const char = data[i]
             // New element?
@@ -467,12 +468,12 @@ const Utils = {
                 switch(element.nodeName.toLowerCase()){
                 case "#text": {
                     // This is plain text
-                    format[format.length - 1] += "<text>" + btoa(element.wholeText) + "</text>"
+                    format[format.length - 1] += "<text>" + btoa(element.textContent) + "</text>"
                     break
                 }
                 case "a": {
                     // Math container
-                    format[format.length - 1] += "<math>" + btoa(element.getAttribute("data")) + "</math>"
+                    format[format.length - 1] += "<math>" + element.getAttribute("data") + "</math>"
                     break
                 }
                 case "br": {
@@ -539,8 +540,6 @@ const Utils = {
         case "math": {
             // Math element
             const mathElement = Math.create()
-            console.log("ELEM", element)
-            console.log("MATH", atob(element.data), atob(atob(element.data)), element.data)
             mathElement.input.write(atob(element.data))
             html = mathElement.container
             break
