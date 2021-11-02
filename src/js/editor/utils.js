@@ -1,4 +1,3 @@
-/* globals  */
 import Math from "./math.js"
 
 /**
@@ -229,42 +228,70 @@ const Utils = {
      * Copy HTML to the cursor position
      * @param {string} html 
      * @param {Array} files Blob references of files included in the html
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    copyToCursor(html, files){
-        const sel = document.getSelection()
-        const dummy = document.createElement("div")
-        // Todo: Huge XSS vulnerability here! Fix later...
-        dummy.innerHTML = html.includes("<!--StartFragment-->") ? html.split("<!--StartFragment-->")[1].split("<!--EndFragment-->")[0] : html
-        // Todo: Test the HTML for valid data
-        const offset = sel.anchorOffset
-        const range = document.createRange()
-        range.setStart(sel.anchorNode, offset)
-        range.collapse(true)
-        sel.removeAllRanges()
-        sel.addRange(range)
-        // Todo: I have no fucking idea why this works and why we need to do this.
-        //       Don't you fucking dare touch this badness I won't help you fix it!!!
-        let last = null
-        const tmp = [...dummy.childNodes]
-        let fileIterator = 0
-        for(let elem of tmp){
-            // Correct image urls
-            if(elem.nodeName.toLowerCase() === "img"){
-                const blob = files[fileIterator]
-                ++fileIterator
-                const reader = new FileReader()
-                reader.onload = () => {
-                    elem.src = reader.result
+    async copyToCursor(html, files){
+        return new Promise(resolve => {
+            // Get cursor position as a range
+            const sel = document.getSelection()
+            const offset = sel.anchorOffset
+            const range = document.createRange()
+            range.setStart(sel.anchorNode, offset)
+            range.collapse(true)
+            sel.removeAllRanges()
+            sel.addRange(range)
+            if(html !== ""){
+                // This is copied content
+                const dummy = document.createElement("div")
+                // Todo: Huge XSS vulnerability here! Fix later...
+                dummy.innerHTML = html.includes("<!--StartFragment-->") ? html.split("<!--StartFragment-->")[1].split("<!--EndFragment-->")[0] : html
+                // Todo: Test the HTML for valid data
+                // Todo: I have no fucking idea why this works and why we need to do this.
+                //       Don't you fucking dare touch this badness I won't help you fix it!!!
+                let last = null
+                const tmp = [...dummy.childNodes]
+                let fileIterator = 0
+                for(let elem of tmp){
+                    // Correct image urls
+                    if(elem.nodeName.toLowerCase() === "img"){
+                        const blob = files[fileIterator]
+                        ++fileIterator
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                            elem.draggable = true
+                            elem.src = reader.result
+                        }
+                        reader.readAsDataURL(blob)
+                    }
+                    if(!last) range.insertNode(elem)
+                    else last.after(elem)
+                    last = elem
                 }
-                reader.readAsDataURL(blob)
+                sel.collapseToEnd()
+                dummy.remove()
+                resolve()
+            }else {
+                // Only a copied file, if anything
+                let last = null
+                for(const file of files){
+                    if(file.type.startsWith("image/")){
+                        // We can copy this
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                            const elem = document.createElement("img")
+                            elem.draggable = true
+                            elem.src = reader.result
+                            if(!last) range.insertNode(elem)
+                            else last.after(elem)
+                            last = elem
+                        }
+                        reader.readAsDataURL(file)
+                    }
+                }
+                sel.collapseToEnd()
+                resolve()
             }
-            if(!last) range.insertNode(elem)
-            else last.after(elem)
-            last = elem
-        }
-        sel.collapseToEnd()
-        dummy.remove()
+        })
     },
 
     /**
@@ -280,10 +307,27 @@ const Utils = {
      */
     getObjectPropertyArray(obj, property){
         if(typeof obj !== "object") throw console.error("[ EDITOR ] Object given to getObjectPropertyArray is not type of object.")
+        if(typeof property !== "string") throw console.error("[ EDITOR ] Property given to getObjectPropertyArray is not type of string.")
         const keys = Object.keys(obj)
         const list = []
         for(const key of keys){
-            if(obj[key][property]) list.push(obj[key][property])
+            if(obj[key][property] !== undefined) list.push(obj[key][property])
+        }
+        return list
+    },
+
+    /**
+     * Read a value of array's object and return them as an array
+     * @param {Array} array 
+     * @param {string} property 
+     * @returns {[...any]}
+     */
+    getArrayItemPropertyArray(array, property){
+        if(!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to getArrayItemPropertyArray is not an array.")
+        if(typeof property !== "string") throw console.error("[ EDITOR ] Property given to getArrayItemPropertyArray is not type of string.")
+        let list = []
+        for(const entry of array){
+            if(entry[property] !== undefined) list.push(entry[property])
         }
         return list
     },
@@ -496,6 +540,11 @@ const Utils = {
                     
                     break
                 }
+                case "article": {
+                    // Responsive image
+                    format[format.length - 1] += "<img height=\"" + element.style.height + "\" width=\"" + element.style.width + "\">" + (element.children[0].src ?? "unset") + "</img>"
+                    break
+                }
                 case "div": {
                     // Line within a line
                     // This may be caused by a bug, or a browser content editable related inconsistency
@@ -547,8 +596,13 @@ const Utils = {
         case "img": {
             // Image attachment
             const img = document.createElement("img")
+            const container = document.createElement("article")
+            container.appendChild(img)
             img.src = element.data
-            html = img
+            if(element.attributes.height) container.style.height = element.attributes.height
+            if(element.attributes.width) container.style.width = element.attributes.width
+            container.draggable = true
+            html = container
             break
         }
         default: {

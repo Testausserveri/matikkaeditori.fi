@@ -68,6 +68,8 @@ class Editor {
         this.activeLine = null
         this.watchHook = true
         this.moveOutOfThisEvent = false // Todo: Needed?
+        this.resizeObserverNodes = []
+        this.resizeObserver = null 
     }
 
     /**
@@ -390,7 +392,8 @@ class Editor {
         this.hook.addEventListener("paste", async event => {
             event.preventDefault()
             const paste = (event.clipboardData || window.clipboardData)
-            Utils.copyToCursor(paste.getData("text/html"), paste.files)
+            await Utils.copyToCursor(paste.getData("text/html"), paste.files)
+            this.hook.oninput() // Counts as input
         }) 
         // Activate document content modification listener
         const observerCallback = async e => {
@@ -418,6 +421,25 @@ class Editor {
             if(parentLine && this.activeLine !== parentLine){
                 this.activeLine = parentLine
                 console.debug("[ EDITOR ] Active line change to", this.activeLine)
+            }
+
+            // Handle resize observers for images
+            if(!this.resizeObserver) this.resizeObserver = new ResizeObserver(() => {
+                if(typeof this.hook.oninput === "function") this.hook.oninput()
+            })
+            let newResizeList = []
+            for(const line of this.hook.childNodes){
+                for(const node of line.childNodes){
+                    if(node.nodeName.toLowerCase() === "article"){
+                        newResizeList.push(node)
+                    }
+                }
+            }
+            // We need to re-generate the observers
+            if(newResizeList != this.resizeObserverNodes){
+                this.resizeObserver.disconnect()
+                for(const node of newResizeList) this.resizeObserver.observe(node)
+                console.debug("[ EDITOR ] Resize observer list recreated.")
             }
 
             // Firefox patch: If the image element is in the beginning/end of a line, remove textNodes from within the container

@@ -34,9 +34,24 @@
 }
 
 .editor img {
+    height: 100%;
+    width: auto;
+    outline: none;
+}
+
+.editor article {
     text-align: center;
     vertical-align: middle;
-    outline: none;
+    display: inline-block;
+    border: 1px solid #d5e0e5;
+    background-color: #edf9ff;
+    border-radius: 1px;
+    cursor: pointer;
+    resize: both;
+    overflow: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    max-width: 100%;
 }
 
 .mathContainer.open {
