@@ -15,72 +15,78 @@ import C from "./js/console"
 import { console_config } from "./js/console"
 
 // Global handler
-function G(){
-    // Declare globals
-    // eslint-disable-next-line no-unused-vars
-    window.internal = {
-        workers: {
-            list: {},
-            handlers: {},
-            shared: {},
-            api: Workers.api
-        },
-        console: console_config(),
-        ui: {
-            activeFilesystemInstance: null,
-            activeLocation: true, // True for root
-            editor: null
-        },
-        time_at_live: new Date().getTime(), // Time since code first started to run
-        /**
-         * --------------------------------------------------
-         * Very important version field!
-         * CHANGE TO HANDLE BREAKING CHANGES VIA "upgrade.js"
-         * --------------------------------------------------
-         */
-        version: "beta"
-    }
+async function G(){
+    return new Promise(resolve => {
+        // Declare globals
+        // eslint-disable-next-line no-unused-vars
+        window.internal = {
+            workers: {
+                list: {},
+                handlers: {},
+                shared: {},
+                api: Workers.api
+            },
+            console: console_config(),
+            ui: {
+                activeFilesystemInstance: null,
+                activeLocation: null,
+                editor: null
+            },
+            time_at_live: new Date().getTime(), // Time since code first started to run
+            /**
+             * --------------------------------------------------
+             * Very important version field!
+             * CHANGE TO HANDLE BREAKING CHANGES VIA "upgrade.js"
+             * --------------------------------------------------
+             */
+            version: "beta"
+        }
 
-    // Promise for UI to wait before doing anything
-    window.internal.workers.essentials = new Promise((resolve) => {
-        window.internal.workers.essentialsResolve = resolve
-    })
+        // Promise for UI to wait before doing anything
+        window.internal.workers.essentials = new Promise((resolve) => {
+            window.internal.workers.essentialsResolve = resolve
+        })
 
-    // User ID
-    let id = localStorage.getItem("id")
-    if(id == null){
-        id = uuid.v4()
-    }
-    localStorage.setItem("id", id)
-    window.id = id // This is used to salt all filesystem verity hashes. When cloud saves are implemented, this needs to be exported in to the cloud save location.
+        // User ID
+        let id = localStorage.getItem("id")
+        if(id == null){
+            id = uuid.v4()
+        }
+        localStorage.setItem("id", id)
+        window.id = id // This is used to salt all filesystem verity hashes. When cloud saves are implemented, this needs to be exported in to the cloud save location.
 
-    // Handle version upgrades
-    const current_version = localStorage.getItem("version")
-    if(current_version !== null){
-        if(current_version !== window.internal.version){
-            upgrade[current_version]().then(() => {
-                console.log("Upgraded to " + window.internal.version)
-                // Run the console component here
+        // Handle version upgrades
+        const current_version = localStorage.getItem("version")
+        if(current_version !== null){
+            if(current_version !== window.internal.version){
+                if(typeof upgrade[current_version] !== "function"){
+                    alert("Upgrading to \"" + window.internal.version + "\" from \"" + current_version + "\" is not possible at this time.")
+                    window.location.reload()
+                }
+                upgrade[current_version]().then(() => {
+                    console.log("Upgraded to " + window.internal.version)
+                    // Run the console component here
+                    C()
+                    resolve()
+                }).catch(e => {
+                    console.error("[ Index ] Failed to upgrade: " + e.stack)
+                }) 
+            }else {
+                console.log("No upgrades to be done. (" + current_version + ")")
                 C()
-                return
-            }).catch(e => {
-                console.error("[ Index ] Failed to upgrade: " + e.stack)
-            }) 
+                resolve()
+            }
         }else {
-            console.log("No upgrades to be done.")
-            C()
-            return
+            // Version is null
+            if(localStorage.length > 1){
+                console.error("[ Index ] Version is null!")
+            }else {
+                localStorage.setItem("version", window.internal.version)
+                C()
+                resolve()
+            }
         }
-    }else {
-        // Version is null
-        if(localStorage.length > 1){
-            console.error("[ Index ] Version is null!")
-        }else {
-            localStorage.setItem("version", window.internal.version)
-            C()
-            return
-        }
-    }
+    })
 }
 
 // Debug stuff
@@ -116,37 +122,37 @@ window.api = async (worker, type, message) => {
     console.log("Response:", req)
 }
 
-/* eslint-enable no-unused-vars */
+(async () => {
+    // MAIN
+    try {
+        // Check browser compatibility
+        if(c.c()){
+            console.log("Browser compatibility checks passed!")
+            // Declare globals & Handle low-level setup (upgrades etc.)
+            await G()
 
-try {
+            // --- This is where the actual application code begins ---
+            // Handle workers
+            Workers.default()
 
-    // Declare globals
-    G()
-
-    // Check browser compatibility
-    if(c.c()){
-        console.log("Browser compatibility checks passed!")
-        // --- This is where the actual application code begins ---
-        // Handle workers
-        Workers.default()
-
-        // Render
-        ReactDOM.render(
-            <React.StrictMode>
-                <App></App>
-            </React.StrictMode>,
-            document.getElementById("root")
-        )
-    }else {
-        console.log("Incompatible browser!")
-        ReactDOM.render(
-            <React.StrictMode>
-                <p>Incompatible browser!</p>
-            </React.StrictMode>,
-            document.getElementById("root")
-        )
+            // Render
+            ReactDOM.render(
+                <React.StrictMode>
+                    <App></App>
+                </React.StrictMode>,
+                document.getElementById("root")
+            )
+        }else {
+            console.log("Incompatible browser!")
+            ReactDOM.render(
+                <React.StrictMode>
+                    <p>Incompatible browser!</p>
+                </React.StrictMode>,
+                document.getElementById("root")
+            )
+        }
     }
-}
-catch(err){
-    error("Index", err)
-}
+    catch(err){
+        error("Index", err)
+    }
+})()

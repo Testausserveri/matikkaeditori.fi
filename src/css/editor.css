@@ -34,9 +34,33 @@
 }
 
 .editor img {
+    height: 100%;
+    width: auto;
+    outline: none;
+}
+
+.editor article {
     text-align: center;
     vertical-align: middle;
-    outline: none;
+    display: inline-block;
+    border: 1px solid #d5e0e5;
+    background-color: #edf9ff;
+    border-radius: 1px;
+    cursor: pointer;
+    resize: both;
+    overflow: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    max-width: 100%;
+    margin: 5px;
+}
+
+.droptext {
+    width: calc(var(--document-width) - 3 rem - 3 rem );
+    margin: 1.5 rem auto 1.5 rem auto;
+    display: none;
+    justify-content: space-between;
+    margin-bottom: -10px;
 }
 
 .mathContainer.open {
@@ -47,6 +71,7 @@
     margin: 5px;
     padding: 8px;
     font-size: 100%;
+    display: block;
 }
 
 .mathTools {

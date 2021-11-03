@@ -51,7 +51,8 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
         answerRef.current.contentEditable = true
 
         // Load active item
-        if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data, activeItemData.i)
+        window.internal.ui.activeLocation = activeItem
+        if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data)
     }, [resultRef, activeItemData?.i])
 
     useEffect(() => {
@@ -60,6 +61,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
 
     const save = async () => {
         console.log("[ SAVE ] Preparing to save...")
+        // TODO: Getting the content on every oninput causes massive lag
         const format = await window.internal.ui.editor.getContent()
         console.log(titleRef.current.innerText, format)
 
@@ -83,7 +85,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
         console.log("[ EDITOR ] Updating document title...")
         await window.internal.workers.api("Filesystem", "write", {
             instance: window.internal.ui.activeFilesystemInstance,
-            id: window.internal.ui.editor.target.i,
+            id: window.internal.ui.activeLocation,
             write: {
                 name: event.target.innerText,
                 type: 0
@@ -140,8 +142,9 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
                     </button>
                 </Dropdown>
             </div>
+            <h1 className="droptext" id="droptext" >Pudota kuva tai gif ja lisää se editoriin!</h1>
             <div className="page" spellCheck={false}>
-                <div autoFocus="true" ref={answerRef} className="editor" id="editor-element" contentEditable="true"></div>
+                <div autoFocus="true" ref={answerRef} className="editor" id="editor-element" contentEditable="false"></div>
             </div>
         </div>
     )

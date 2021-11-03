@@ -293,7 +293,7 @@ class Filesystem {
                     }
                     const base = {
                         name: data.name ?? json.name,
-                        date: new Date().getTime(),
+                        date: data.date ?? new Date().getTime(),
                     }
                     if(data.type === 0){
                         // Files have data

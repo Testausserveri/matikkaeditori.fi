@@ -28,7 +28,7 @@ export default function useActiveItem(activeItem, level, setLevel) {
         let i = copy.findIndex(item => item.i === activeItem)
         copy[i] = newData
         setLevel(copy)  // save client-side
-        fsSave(newData, window.internal.ui.editor.target.i) // save fs (debounced, see above)
+        fsSave(newData, window.internal.ui.activeLocation) // save fs (debounced, see above)
     }
 
     return [data, modify]

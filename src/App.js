@@ -19,7 +19,6 @@ function App() {
         id: true,
         name: "Juuri"
     }])
-
     // id of active item e.g. open in the editor
     const [activeItem, setActiveItem] = useState("")
     
