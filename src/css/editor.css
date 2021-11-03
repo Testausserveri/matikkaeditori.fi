@@ -56,7 +56,7 @@
 }
 
 .droptext {
-    width: calc(var(--document-width) - 3 rem - 3 rem );
+    width: calc(var(--document-width) - 3rem - 3rem);
     margin: 1.5 rem auto 1.5 rem auto;
     display: none;
     justify-content: space-between;
