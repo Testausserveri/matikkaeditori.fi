@@ -80,6 +80,11 @@ async function G(){
             // Version is null
             if(localStorage.length > 1){
                 console.error("[ Index ] Version is null!")
+                if(confirm("Application version is unknown. Would you like to reset it?")){
+                    localStorage.setItem("version", window.internal.version)
+                    C()
+                    resolve()
+                }
             }else {
                 localStorage.setItem("version", window.internal.version)
                 C()
