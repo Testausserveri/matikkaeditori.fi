@@ -61,6 +61,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
 
     const save = async () => {
         console.log("[ SAVE ] Preparing to save...")
+        // TODO: Getting the content on every oninput causes massive lag
         const format = await window.internal.ui.editor.getContent()
         console.log(titleRef.current.innerText, format)
 
@@ -141,6 +142,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
                     </button>
                 </Dropdown>
             </div>
+            <h1 className="droptext" id="droptext" >Pudota kuva tai gif ja lisää se editoriin!</h1>
             <div className="page" spellCheck={false}>
                 <div autoFocus="true" ref={answerRef} className="editor" id="editor-element" contentEditable="false"></div>
             </div>

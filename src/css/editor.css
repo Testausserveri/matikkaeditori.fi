@@ -52,6 +52,15 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
     max-width: 100%;
+    margin: 5px;
+}
+
+.droptext {
+    width: calc(var(--document-width) - 3 rem - 3 rem );
+    margin: 1.5 rem auto 1.5 rem auto;
+    display: none;
+    justify-content: space-between;
+    margin-bottom: -10px;
 }
 
 .mathContainer.open {

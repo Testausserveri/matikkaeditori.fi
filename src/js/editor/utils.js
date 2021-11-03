@@ -256,10 +256,19 @@ const Utils = {
                     if(elem.nodeName.toLowerCase() === "img"){
                         const blob = files[fileIterator]
                         ++fileIterator
+                        const container = document.createElement("article")
+                        container.contentEditable = false
+                        container.draggable = true
+                        elem.contentEditable = false
+                        const img = elem
+                        elem = container
+                        container.appendChild(img)
                         const reader = new FileReader()
                         reader.onload = () => {
-                            elem.draggable = true
-                            elem.src = reader.result
+                            img.src = reader.result
+                        }
+                        if(img.src.toString().includes(".gif")){
+                            alert("GIFs cannot be copied at the moment :( Take this image instead!")
                         }
                         reader.readAsDataURL(blob)
                     }
@@ -278,12 +287,16 @@ const Utils = {
                         // We can copy this
                         const reader = new FileReader()
                         reader.onload = () => {
-                            const elem = document.createElement("img")
-                            elem.draggable = true
-                            elem.src = reader.result
-                            if(!last) range.insertNode(elem)
-                            else last.after(elem)
-                            last = elem
+                            const img = document.createElement("img")
+                            const container = document.createElement("article")
+                            container.contentEditable = false
+                            img.contentEditable = false
+                            container.draggable = true
+                            container.appendChild(img)
+                            img.src = reader.result
+                            if(!last) range.insertNode(img)
+                            else last.after(img)
+                            last = img
                         }
                         reader.readAsDataURL(file)
                     }
@@ -597,6 +610,8 @@ const Utils = {
             // Image attachment
             const img = document.createElement("img")
             const container = document.createElement("article")
+            container.contentEditable = false
+            img.contentEditable = false
             container.appendChild(img)
             img.src = element.data
             if(element.attributes.height) container.style.height = element.attributes.height

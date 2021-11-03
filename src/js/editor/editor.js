@@ -442,7 +442,7 @@ class Editor {
                 console.debug("[ EDITOR ] Resize observer list recreated.")
             }
 
-            // Firefox patch: If the image element is in the beginning/end of a line, remove textNodes from within the container
+            // Firefox patch: If a math element is in the beginning/end of a line, remove textNodes from within the container
             if(window.browser === "firefox"){
                 for(const id in Math.collection){
                     const math = Math.collection[id]
@@ -461,7 +461,7 @@ class Editor {
                                     else math.image.parentElement.after(child)
                                     // We can assume the child has selection, so move the caret to it when it has been moved
                                     //Utils.selectByIndex(Utils.getNodeIndex(child), this.activeLine)
-                                    Utils.select(child, Utils.getNodeIndex(child) + 1)
+                                    Utils.select(child, Utils.getNodeIndex(line, child) + 1)
                                 }
                             }
                         }
@@ -494,6 +494,45 @@ class Editor {
         const observer = new MutationObserver(observerCallback)
         observerCallback()
         observer.observe(this.hook, { attributes: false, childList: true, subtree: true })
+        
+        // Drag and drop images / video / gifs
+        const text = document.getElementById("droptext")
+        let hideBlur = false
+        this.hook.parentElement.ondrop = event => {
+            event.preventDefault()
+            for(const file of event.dataTransfer.files){
+                if(file.type.startsWith("image/")){
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                        const img = document.createElement("img")
+                        const container = document.createElement("article")
+                        container.contentEditable = false
+                        img.contentEditable = false
+                        container.draggable = true
+                        container.appendChild(img)
+                        img.src = reader.result
+                        Utils.copyToCursor(container.outerHTML, [])
+                    }
+                    reader.readAsDataURL(file)
+                }
+            }
+            this.hook.style.filter = ""
+            if(text) text.style.display = "none"
+        }
+        this.hook.parentElement.ondragover = () => {
+            hideBlur = false
+            this.hook.style.filter = "blur(8px)"
+            if(text) text.style.display = "block"
+        }
+        this.hook.parentElement.ondragleave = () => {
+            hideBlur = true
+            setTimeout(() => {
+                if(!hideBlur) return
+                this.hook.style.filter = ""
+                if(text) text.style.display = "none"
+            }, 500)
+        }
+        
         return
     }
 
