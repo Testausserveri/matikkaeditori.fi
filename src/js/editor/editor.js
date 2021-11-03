@@ -70,6 +70,7 @@ class Editor {
         this.moveOutOfThisEvent = false // Todo: Needed?
         this.resizeObserverNodes = []
         this.resizeObserver = null 
+        this.observerCallback = null
     }
 
     /**
@@ -124,6 +125,7 @@ class Editor {
 
         this.watchHook = true
         this.hook.contentEditable = true
+        this.observerCallback()
     }
 
     /**
@@ -396,7 +398,7 @@ class Editor {
             this.hook.oninput() // Counts as input
         }) 
         // Activate document content modification listener
-        const observerCallback = async e => {
+        const observerCallback = this.observerCallback = async e => {
             // Enable/disable
             if(!this.watchHook) return
 
@@ -469,7 +471,7 @@ class Editor {
                 }
             }
 
-            // Firefox patch: Do not let lines deactivate, when the are emptied
+            // Firefox patch: Do not let lines deactivate, when they are emptied
             if(window.browser === "firefox"){
                 for(const line of this.hook.childNodes){
                     if(line.childNodes.length === 0){
@@ -479,14 +481,14 @@ class Editor {
                 }
             }
 
-            // Firefox patch: Do not let lines deactivate, when there's only a math element present
+            // Firefox patch: Do not let lines deactivate, when there's only a math/image element present
             if(window.browser === "firefox"){
                 // Left
-                if(this.activeLine.childNodes[0].nodeName.toLowerCase() === "a"){
+                if(this.activeLine.childNodes[0].nodeName.toLowerCase() === "a" || this.activeLine.childNodes[0].nodeName.toLowerCase() === "article"){
                     this.activeLine.childNodes[0].before(document.createElement("br"))
                 }
                 // Right
-                if(this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "a"){
+                if(this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "a" || this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "article"){
                     this.activeLine.childNodes[this.activeLine.childNodes.length - 1].after(document.createElement("br"))
                 }
             }
@@ -506,7 +508,7 @@ class Editor {
                     reader.onload = () => {
                         const img = document.createElement("img")
                         const container = document.createElement("article")
-                        container.contentEditable = false
+                        if(!window.browser !== "browser") container.contentEditable = false
                         img.contentEditable = false
                         container.draggable = true
                         container.appendChild(img)
@@ -519,7 +521,8 @@ class Editor {
             this.hook.style.filter = ""
             if(text) text.style.display = "none"
         }
-        this.hook.parentElement.ondragover = () => {
+        this.hook.parentElement.ondragover = e => {
+            if(e.originalTarget !== undefined && e.originalTarget.nodeName.toLowerCase() === "img") return
             hideBlur = false
             this.hook.style.filter = "blur(8px)"
             if(text) text.style.display = "block"

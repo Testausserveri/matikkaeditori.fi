@@ -231,6 +231,7 @@ const Utils = {
      * @returns {Promise<void>}
      */
     async copyToCursor(html, files){
+        console.log("COPY", html, files)
         return new Promise(resolve => {
             // Get cursor position as a range
             const sel = document.getSelection()
@@ -290,13 +291,13 @@ const Utils = {
                             const img = document.createElement("img")
                             const container = document.createElement("article")
                             container.contentEditable = false
-                            img.contentEditable = false
+                            if(!window.browser !== "browser") img.contentEditable = false
                             container.draggable = true
                             container.appendChild(img)
                             img.src = reader.result
-                            if(!last) range.insertNode(img)
-                            else last.after(img)
-                            last = img
+                            if(!last) range.insertNode(container)
+                            else last.after(container)
+                            last = container
                         }
                         reader.readAsDataURL(file)
                     }
