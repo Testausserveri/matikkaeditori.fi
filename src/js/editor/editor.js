@@ -392,6 +392,7 @@ class Editor {
 
         // Handle pasting text
         this.hook.addEventListener("paste", async event => {
+            if(this.activeMathElement !== null) return // No rich copying inside math
             event.preventDefault()
             const paste = (event.clipboardData || window.clipboardData)
             await Utils.copyToCursor(paste.getData("text/html"), paste.files)
@@ -441,6 +442,7 @@ class Editor {
             if(newResizeList != this.resizeObserverNodes){
                 this.resizeObserver.disconnect()
                 for(const node of newResizeList) this.resizeObserver.observe(node)
+                this.resizeObserverNodes = newResizeList
                 console.debug("[ EDITOR ] Resize observer list recreated.")
             }
 
@@ -498,7 +500,7 @@ class Editor {
         observer.observe(this.hook, { attributes: false, childList: true, subtree: true })
         
         // Drag and drop images / video / gifs
-        const text = document.getElementById("droptext")
+        /*const text = document.getElementById("droptext")
         let hideBlur = false
         this.hook.parentElement.ondrop = event => {
             event.preventDefault()
@@ -523,6 +525,7 @@ class Editor {
         }
         this.hook.parentElement.ondragover = e => {
             if(e.originalTarget !== undefined && e.originalTarget.nodeName.toLowerCase() === "img") return
+            if(this.resizeObserverNodes.includes(e.target.parentNode)) return
             hideBlur = false
             this.hook.style.filter = "blur(8px)"
             if(text) text.style.display = "block"
@@ -534,7 +537,7 @@ class Editor {
                 this.hook.style.filter = ""
                 if(text) text.style.display = "none"
             }, 500)
-        }
+        }*/
         
         return
     }
