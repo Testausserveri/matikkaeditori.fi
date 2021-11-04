@@ -118,6 +118,18 @@ const Utils = {
     },
 
     /**
+     * Convert a node list to an array
+     * @param {NodeListOf} list 
+     */
+    listToArray(list){
+        const array = []
+        for(const entry of list){
+            array.push(entry)
+        }
+        return array
+    },
+
+    /**
      * --------------------------------------------------------
      * Event & Async tools
      * --------------------------------------------------------
@@ -231,7 +243,6 @@ const Utils = {
      * @returns {Promise<void>}
      */
     async copyToCursor(html, files){
-        console.log("COPY", html, files)
         return new Promise(resolve => {
             // Get cursor position as a range
             const sel = document.getSelection()
@@ -272,6 +283,10 @@ const Utils = {
                             alert("GIFs cannot be copied at the moment :( Take this image instead!")
                         }
                         reader.readAsDataURL(blob)
+                    }
+                    // Correct text nodes
+                    if(elem.nodeName.toLowerCase() === "span"){
+                        elem = document.createTextNode(elem.innerText)
                     }
                     if(!last) range.insertNode(elem)
                     else last.after(elem)
