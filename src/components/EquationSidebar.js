@@ -24,13 +24,13 @@ function writeSymbol(event, data) {
 
 function SymbolGroup({symbols, hidden}) {
     return (
-        <div className="symbolGroup" style={{maxHeight: hidden ? "0" : "500px", marginBottom: hidden ? "0" : "1rem"}}>
+        <div className="symbolGroup" style={{maxHeight: hidden ? "0" : "500px", marginBottom: hidden ? "0" : "1rem"}} id="symbols">
             <h3>{symbols.label}</h3>
             <div className="symbols">
                 {symbols.characters.map((character) => {
                     if (character.popular == true || 1 == 1) {
                         return (
-                            <div key={character.character || character.action} onMouseDown={(event) => {writeSymbol(event, character)}}>
+                            <div key={character.character || character.action} x-tooltip={character.label} onMouseDown={(event) => {writeSymbol(event, character)}}>
                                 {character.character
                                 || <img src={character.svg} />}
                             </div>
@@ -61,6 +61,8 @@ export function EquationSidebar() {
     const [latexCommandsVisible, setLatexCommandsVisible] = useState(false)
     useEffect(() => {
         window.setLatexCommandsVisibility = function (state) {
+            if(state) document.getElementById("symbols").style.overflow = "visible"
+            else document.getElementById("symbols").style.overflow = ""
             setLatexCommandsVisible(state)
         }
     }, [])

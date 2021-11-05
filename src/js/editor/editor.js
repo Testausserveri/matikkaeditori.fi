@@ -40,6 +40,7 @@
 // Dependencies
 import Utils from "./utils.js"
 import Math from "./math.js"
+import * as uuid from "./uuid.js"
 
 // Configure interface cache
 Math.cache.style.display = "none"
@@ -82,6 +83,7 @@ class Editor {
         this.hook.contentEditable = false
         this.hook.innerHTML = ""
         Math.flush()
+        this.observerCallback()
         
         // Parse
         console.log("[ EDITOR ] Setting editor content...")
@@ -124,8 +126,8 @@ class Editor {
         }
 
         this.watchHook = true
-        this.hook.contentEditable = true
         this.observerCallback()
+        this.hook.contentEditable = true
     }
 
     /**
@@ -167,7 +169,7 @@ class Editor {
                 const direction = event.code === "ArrowLeft" ? "moveToRightEnd" : "moveToLeftEnd"
                 const focus = selection => {
                     if(!selection) selection = selectionClone
-                    const id = selection.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
+                    const id = selection.getAttribute("_id") ?? selection.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
                     Utils.waitForEvent(Math.events, "focus").then(() => {
                         Math.collection[id].input[direction]()
                     })
@@ -195,7 +197,7 @@ class Editor {
                         // Firefox patch: Only handle when text is selected
                         && (window.browser === "firefox" ? documentSelection.anchorNode.nodeName.toLowerCase() === "text" : true)
                         // Not in the start / end of a line
-                        && Utils.getNodeIndex(this.activeLine, lastSelection.anchorNode) !== 0 && Utils.getNodeIndex(this.activeLine, lastSelection.anchorNode) !== lastSelection.anchorNode.parentNode.childNodes.length
+                        && Utils.getNodeIndex(this.activeLine, lastSelection.anchorNode) !== 0 && Utils.getNodeIndex(this.activeLine, lastSelection.anchorNode) !== lastSelection.anchorNode?.parentNode?.childNodes?.length
                     ){
                         // Detect the jump
                         if(window.browser === "firefox" ? 
@@ -304,27 +306,54 @@ class Editor {
                 event.preventDefault()
                 // Create a new line normally
                 const newLine = document.createElement("div")
-                newLine.innerHTML = "<br>"
+                if(window.browser === "firefox") newLine.innerHTML = "<br>"
                 this.activeLine.after(newLine)
                 this.activeLine = newLine
                 console.debug("[ EDITOR ] Active line change to", this.activeLine)
                 Utils.selectByIndex(Utils.getNodeIndex(this.hook, this.activeLine), this.hook)
                 return
             }
+
+            // Patch: Dummy text in front of math if backspace used in front of row
+            if(event.key === "Backspace" && this.activeMathElement === null){
+                //event.preventDefault()
+                const selection = Utils.getCaretPosition()
+                if(this.activeLine === selection.startContainer && selection.startOffset === 0){
+                    const id = uuid.v4()
+                    const dummy = document.createElement("a")
+                    dummy.contentEditable = true
+                    dummy.innerText = "-"
+                    dummy.setAttribute("_id", id)
+                    selection.startContainer.childNodes[0].before(dummy)
+                    const m = new MutationObserver(() => {
+                        document.querySelectorAll("[_id=\"" + id + "\"]")[0].remove()
+                        m.disconnect()
+                    })
+                    Utils.selectByIndex(0, selection.startContainer)
+                    console.log("HOOk", this.hook.childNodes[Utils.getNodeIndex(this.hook, this.activeLine) - 1])
+                    m.observe(this.hook.childNodes[Utils.getNodeIndex(this.hook, this.activeLine) - 1], { subtree: true, childList: true, characterData: true })
+                }
+            }
         })
 
         // Event listener to handle math being opened without an active collection entry
         window.addEventListener("click", event => {
             if(event.target.nodeName.toLowerCase() === "img" && event.target.getAttribute("data") !== null && document.activeElement === this.hook){
-                const newMath = Math.create()
-                newMath.input.write(btoa(event.target.getAttribute("data")))
-                event.target.before(newMath.container)
-                if(event.target.parentNode.nodeName.toLowerCase() === "a"){
-                    event.target.parentNode.remove()
+                let id = null
+                if(!event.target.parentNode.hasAttribute("_id")){
+                    const newMath = Math.create()
+                    newMath.input.write(btoa(event.target.getAttribute("data")))
+                    event.target.before(newMath.container)
+                    if(event.target.parentNode.nodeName.toLowerCase() === "a"){
+                        event.target.parentNode.remove()
+                    }else {
+                        event.target.remove()
+                    }
+                    id = newMath.id
                 }else {
-                    event.target.remove()
+                    id = event.target.parentNode.getAttribute("_id")
                 }
-                Math.open(newMath.id)
+                Math.open(id)
             }
         })
 
@@ -395,7 +424,7 @@ class Editor {
             if(this.activeMathElement !== null) return // No rich copying inside math
             event.preventDefault()
             const paste = (event.clipboardData || window.clipboardData)
-            await Utils.copyToCursor(paste.getData("text/html"), paste.files)
+            await Utils.copyToCursor(paste.getData("text"), paste.files)
             this.hook.oninput() // Counts as input
         }) 
         // Activate document content modification listener
@@ -444,6 +473,21 @@ class Editor {
                 for(const node of newResizeList) this.resizeObserver.observe(node)
                 this.resizeObserverNodes = newResizeList
                 console.debug("[ EDITOR ] Resize observer list recreated.")
+            }
+
+            // Patch: Add math elements missing from the collection back in
+            for(const id in Math.collection){
+                const math = Math.collection[id]
+                if(!document.body.contains(math.container)){
+                    // Container has been lost
+                    const container = document.querySelectorAll("[_id=\"" + math.id + "\"]")[0]
+                    if(container){
+                        math.container = container
+                        math.image = math.container.firstChild
+                        //math.image.setAttribute("onclick", "window.internal.ui.editor.local.Math.open(\"" + math.id + "\")")
+                        console.debug("[ EDITOR ] Rebound", math)
+                    }
+                }
             }
 
             // Firefox patch: If a math element is in the beginning/end of a line, remove textNodes from within the container

@@ -72,7 +72,7 @@ const Utils = {
     isSomeParent(node, parent){
         if(!(node instanceof Node)) throw console.error("[ EDITOR ] Node given to isSomeParent is not instance of Node.")
         if(parent === null) return false
-        const traverse = (innerNode) => {
+        /*const traverse = (innerNode) => {
             if(innerNode.parentNode === parent){
                 return true
             }else {
@@ -82,7 +82,8 @@ const Utils = {
             }
             
         }
-        return traverse(node)
+        return traverse(node)*/
+        return parent.contains(node) // Faster & More efficient!
     },
 
     /**
@@ -242,7 +243,7 @@ const Utils = {
      * @param {Array} files Blob references of files included in the html
      * @returns {Promise<void>}
      */
-    async copyToCursor(html, files){
+    /*async _copyToCursor(html, files){
         return new Promise(resolve => {
             // Get cursor position as a range
             const sel = document.getSelection()
@@ -284,6 +285,7 @@ const Utils = {
                         }
                         reader.readAsDataURL(blob)
                     }
+
                     // Correct text nodes
                     if(elem.nodeName.toLowerCase() === "span"){
                         elem = document.createTextNode(elem.innerText)
@@ -317,6 +319,48 @@ const Utils = {
                         reader.readAsDataURL(file)
                     }
                 }
+                sel.collapseToEnd()
+                resolve()
+            }
+        })
+    },*/
+
+    copyToCursor(text, files){
+        return new Promise((resolve) => {
+            // Get cursor position as a range
+            const sel = document.getSelection()
+            const offset = sel.anchorOffset
+            const range = document.createRange()
+            range.setStart(sel.anchorNode, offset)
+            range.collapse(true)
+            sel.removeAllRanges()
+            sel.addRange(range)
+            if(files.length !== 0){
+                let last = null
+                for(const file of files){
+                    if(file.type.startsWith("image/")){
+                        // We can copy this
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                            const img = document.createElement("img")
+                            const container = document.createElement("article")
+                            container.contentEditable = false
+                            if(!window.browser !== "browser") img.contentEditable = false
+                            container.draggable = true
+                            container.appendChild(img)
+                            img.src = reader.result
+                            if(!last) range.insertNode(container)
+                            else last.after(container)
+                            last = container
+                        }
+                        reader.readAsDataURL(file)
+                    }
+                }
+                sel.collapseToEnd()
+                resolve()
+            }else {
+                const node = document.createTextNode(text)
+                range.insertNode(node)
                 sel.collapseToEnd()
                 resolve()
             }

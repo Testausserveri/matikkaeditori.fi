@@ -34,6 +34,7 @@ const Math = {
 
         // Create HTML elements
         obj.container = document.createElement("a") // Generally behaves correctly
+        obj.container.setAttribute("_id", obj.id)
         obj.container.contentEditable = false
         obj.container.className = "mathContainer closed"
         obj.inputElement = document.createElement("span")
@@ -75,7 +76,7 @@ const Math = {
         }
 
         // Finalize
-        obj.image.setAttribute("onclick", "window.internal.ui.editor.local.Math.open(\"" + obj.id + "\")")
+        //obj.image.setAttribute("onclick", "window.internal.ui.editor.local.Math.open(\"" + obj.id + "\")")
         obj.container.setAttribute("data", "")
         return obj
     },
