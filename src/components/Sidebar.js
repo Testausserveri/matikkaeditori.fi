@@ -116,9 +116,9 @@ function FilesystemItem(props) {
     if (props.data.t == 1) { // folder
         return (
             <li ref={itemRef} className={"fsFolder" + (props.selected ? " selected" : "")} onKeyPress={(event) => {if (event.key == "Enter") { handleClick(event) }}} onClick={handleClick} onContextMenu={handleClick} tabIndex="-1">
-                {/*<div className="fsIcon">
+                {<div className="fsIcon">
                     <FontAwesomeIcon icon={faOutlineFolder} />
-                </div>*/}
+                </div>}
                 <div className="content">
                     <span
                         className="editableName"
@@ -165,6 +165,12 @@ export default function Sidebar(props) {
 
     if (level) level.reverse()
 
+    if(document.getElementById("sidebar") && document.getElementById("sidebar").childNodes[0].nodeName.toLowerCase() !== "span") {
+        document.getElementById("sidebar").childNodes.forEach(node => {
+            if (node.nodeName.toLowerCase() === "span" && level !== null) node.style.display = "none"
+        })
+    }
+
     const treeRef = useRef()
     const currentLevelId = props.fsPath[props.fsPath.length - 1].id
     useEffect(() => {
@@ -196,8 +202,8 @@ export default function Sidebar(props) {
                     <FontAwesomeIcon icon={faFolder} />
                 </button>
             </div>
-            <div ref={treeRef} id="sidebar">
-                <ul className="filesystemLevel">
+            <div ref={treeRef}>
+                <ul className="filesystemLevel" id="sidebar">
                     {props.fsPath.length > 1 ?
                         <button className="folderUpButton" onClick={() => {
                             props.openFolder(props.fsPath[props.fsPath.length - 2].id)
