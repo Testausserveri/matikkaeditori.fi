@@ -12,8 +12,9 @@ import latexCommands from "../js/editor/commands.js"
 function writeSymbol(event, data) {
     event.preventDefault()
     if(window.internal.ui.editor.activeMathElement != null){
-        if(data.action != undefined){
-            window.internal.ui.editor.activeMathElement.input.cmd(data.action)
+        if(data.action){
+            if(data.action.includes("{X}")) window.internal.ui.editor.activeMathElement.input.write(data.label)
+            else window.internal.ui.editor.activeMathElement.input.cmd(data.action)
         }else {
             window.internal.ui.editor.activeMathElement.input.typedText(data.character)
         }
