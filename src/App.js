@@ -167,6 +167,9 @@ function App() {
 
         // Register global key bindings
         document.addEventListener("keydown", (event) => {
+            // Disable if math is open
+            if(window.internal.ui.editor.activeElement !== null) return
+
             if (event.ctrlKey && event.key.toLowerCase() == "n") {
                 event.preventDefault()
                 document.querySelector("#newAnswerBtn").click()
