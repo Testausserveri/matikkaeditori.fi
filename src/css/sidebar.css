@@ -74,6 +74,19 @@
     transition: background-color .15s ease-out;
     border: 1px solid transparent;
 }
+
+.filesystemLevel>span>span {
+    margin-bottom: 0.7rem;
+    width: calc(100% - 0.7rem);
+    background-color: white;
+    height: 62px;
+    box-shadow: var(--small-shadow);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background-color .15s ease-out;
+    border: 1px solid transparent;
+}
+
 .filesystemLevel li:hover:not(.dropdown li:hover) {
     background-color: #f6f8f9;
 }

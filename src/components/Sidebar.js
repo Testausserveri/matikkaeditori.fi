@@ -11,6 +11,8 @@ import { faPlus, faFolder, faEllipsisH, faLevelUpAlt } from "@fortawesome/free-s
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 import useActiveItem from "../utils/useActiveItem"
 import Dropdown from "./Dropdown"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 function FilesystemItem(props) {
     if (!props.data) return null
@@ -183,7 +185,6 @@ export default function Sidebar(props) {
             props.openFolder(item.i, item.name)
         }
     }
-
     return (
         <div className="sidebar" style={props.style}>
             <div className="head">
@@ -195,7 +196,7 @@ export default function Sidebar(props) {
                     <FontAwesomeIcon icon={faFolder} />
                 </button>
             </div>
-            <div ref={treeRef}>
+            <div ref={treeRef} id="sidebar">
                 <ul className="filesystemLevel">
                     {props.fsPath.length > 1 ?
                         <button className="folderUpButton" onClick={() => {
@@ -207,10 +208,10 @@ export default function Sidebar(props) {
                         : null}
                     {level ? level.map((item) => {
                         const selected = activeItemData?.i == item.i
-
                         return <FilesystemItem createdItem={props.createdItem} level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={(event) => open(item, event)}
                         />
                     }) : null}
+                    <Skeleton count={20}/>
                 </ul>
             </div>
         </div>

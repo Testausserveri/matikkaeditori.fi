@@ -14,6 +14,8 @@ import Dropdown from "./Dropdown"
 
 import Export from "../js/export"
 import useActiveItem from "../utils/useActiveItem"
+import Skeleton from "react-loading-skeleton"
+import "react-loading-skeleton/dist/skeleton.css"
 
 
 // eslint-disable-next-line react/prop-types
@@ -129,7 +131,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
                         onKeyDown={(event) => {if (event.key == "Enter") {saveTitle(event)}} } 
                         onBlur={(event) => {saveTitle(event)}}
                         ref={titleRef}>
-                        {activeItemData?.name}
+                        {activeItemData?.name ?? <Skeleton style={{ width: "12rem", height: "2rem", background: "white" }}/>}
                     </h2>
 
                 </div>
