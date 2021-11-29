@@ -7,11 +7,11 @@
  * was not distributed with this file, You can obtain
  * one at http://mozilla.org/MPL/2.0/.
  */
- @font-face {
+ /*@font-face {
     font-family: Symbola;
     src: url(font/Symbola.eot);
     src: local("Symbola Regular"), local("Symbola"), url(font/Symbola.woff2) format("woff2"), url(font/Symbola.woff) format("woff"), url(font/Symbola.ttf) format("truetype"), url(font/Symbola.otf) format("opentype"), url(font/Symbola.svg#Symbola) format("svg");
-  }
+  }*/
   .mq-editable-field {
     display: -moz-inline-box;
     display: inline-block;
@@ -198,6 +198,7 @@
     display: block;
   }
   .mq-math-mode .mq-supsub .mq-sub {
+    margin-top: 1px;
     display: block;
     float: left;
   }
@@ -332,6 +333,32 @@
     cursor: text;
     font-family: Symbola, "Times New Roman", serif;
   }
+  /*
+    Patch: Add support for \underarrow
+  */
+  .mq-math-mode .mq-underarrow {
+    border-bottom: 1px solid black;
+    margin-top: 1px;
+    padding-top: 0.4em;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    position: relative;
+  }
+  .mq-math-mode .mq-underarrow:before {
+    position: absolute;
+    display: block;
+    padding-top: 4px;
+    line-height: 1px;
+    font-size: .8em;
+    min-width: 0.8em;
+    bottom: -1px;
+  }
+  .mq-math-mode .mq-underarrow.mq-arrow-right:before {
+    content: "\2192";
+    text-align: right;
+    right: -1px;
+  }
+  /* End patch */
   .mq-math-mode .mq-overarrow {
     border-top: 1px solid black;
     margin-top: 1px;

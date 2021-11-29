@@ -4206,6 +4206,9 @@
     LatexCmds.overline = LatexCmds.bar = bind(Style, '\\overline', 'span', 'class="mq-non-leaf mq-overline"');
     LatexCmds.overrightarrow = bind(Style, '\\overrightarrow', 'span', 'class="mq-non-leaf mq-overarrow mq-arrow-right"');
     LatexCmds.overleftarrow = bind(Style, '\\overleftarrow', 'span', 'class="mq-non-leaf mq-overarrow mq-arrow-left"');
+    LatexCmds.underrightarrow = bind(Style, '\\underrightarrow', 'span', 'class="mq-non-leaf mq-underarrow mq-arrow-right"');
+    LatexCmds.underleftarrow = bind(Style, '\\underleftarrow', 'span', 'class="mq-non-leaf mq-underarrow mq-arrow-left"');
+    LatexCmds.underleftrightarrow = bind(Style, '\\underleftrightarrow', 'span', 'class="mq-non-leaf mq-underarrow mq-arrow-leftright"');
     
     // `\textcolor{color}{math}` will apply a color to the given math content, where
     // `color` is any valid CSS Color Value (see [SitePoint docs][] (recommended),
