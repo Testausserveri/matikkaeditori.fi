@@ -134,11 +134,6 @@ const Math = {
             obj.container.removeAttribute("style")
             obj.image.removeAttribute("style")
             obj.isOpen = true
-            // Check latex validity first
-            obj.flags.push("ignoreInputDynamic")
-            obj.flags.push("ignoreInputDynamic")
-            obj.dynamicInterface.latex(obj.data)
-            obj.dynamicInterface.latex("")
             // MathQuill weirdness
             obj.dynamicInterface.focus()
             obj.dynamicInterface.reflow()
@@ -198,6 +193,7 @@ const Math = {
         if(!this.collection[id]) throw "Math element \"" + id + "\" does not exist"
         const obj = this.collection[id]
         if(!obj.writable) return
+        if(from === undefined) from = ""
 
         obj.data = data
         obj.container.setAttribute("math", btoa(data))
@@ -327,12 +323,17 @@ const Math = {
                 this.open(id)
             }
             // Close all open math
+            let closeThese = []
             for(const _id in this.collection){
                 if(_id === id) continue
+                console.log(this.collection[_id].isOpen, await Utils.wasParentClicked(this.collection[_id].container))
                 if(this.collection[_id].isOpen && await Utils.wasParentClicked(this.collection[_id].container)) {
                     continue // Clicks to math UI
                 }
-                if(this.collection[_id].isOpen) this.close(_id)
+                if(this.collection[_id].isOpen) closeThese.push(_id)
+            }
+            for(const id of closeThese){
+                this.close(id)
             }
         })
     }
