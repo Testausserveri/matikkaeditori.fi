@@ -22,36 +22,23 @@
     outline: none;
 }
 
-.mathContainer.closed {
-    cursor: pointer;
-    display: inline-block;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    margin-left: 3px;
-    margin-right: 3px;
-    border-radius: 4px;
-    margin-bottom: 5px;
-}
-
-.editor img {
-    height: 100%;
-    width: auto;
-    outline: none;
-}
-
-.editor article {
+.editor attachment {
     text-align: center;
     vertical-align: middle;
     display: inline-block;
-    border: 1px solid #d5e0e5;
-    background-color: #edf9ff;
-    border-radius: 1px;
     cursor: pointer;
     resize: both;
     overflow: hidden;
     -ms-overflow-style: none;
     scrollbar-width: none;
     max-width: 100%;
+    margin: 6px;
+}
+
+.editor:focus attachment {
+    border: 1px solid #d5e0e5;
+    background-color: #edf9ff;
+    border-radius: 1px;
     margin: 5px;
 }
 
@@ -61,17 +48,6 @@
     display: none;
     justify-content: space-between;
     margin-bottom: -10px;
-}
-
-.mathContainer.open {
-    box-shadow: 0 0 3px 1px rgba(0, 0, 0, 0.226);
-    border-color: #709AC0;
-    border-radius: 1px;
-    width: 100%;
-    margin: 5px;
-    padding: 8px;
-    font-size: 100%;
-    display: block;
 }
 
 .mathTools {
@@ -118,18 +94,15 @@
     color: #709AC0;
 }
 
-.mathContainer.closed img {
-    display: inline-block;
-    vertical-align: middle;
-    margin: 4px 0;
-    padding: 3px 0;
-    cursor: pointer;
-    border: 1px solid transparent;
-    padding: 10px;
+.editor img {
+    height: 100%;
+    width: auto;
+    outline: none;
+    margin: 1px;
 }
-
-.editor:focus .mathContainer.closed img {
+.editor:focus img {
     border: 1px solid #d5e0e5;
+    margin: 0px;
     background-color: #edf9ff;
     border-radius: 1px;
 }
