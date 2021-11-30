@@ -27,6 +27,7 @@ jobs:
           npm ci
           npm run build
           echo "v3.matikkaeditori.fi" >> build/CNAME
+          echo "VERSION: " >> build/VERSION
           echo $(git rev-parse --short "$GITHUB_SHA") >> build/VERSION
           git config user.name github-actions
           git config user.email github-actions@github.com
