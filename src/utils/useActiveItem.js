@@ -20,14 +20,21 @@ export default function useActiveItem(activeItem, level, setLevel) {
                 data: newData.data,
                 type: 0
             }
+        }).then(() => {
+            // Save success
+            window.internal.ui.saved = true
+            document.getElementById("saveIndicator").className = "savedIndicator"
+        }).catch(() => {
+            alert("Tallentaminen epäonnistui.")
         })
-    }, 3000), [activeItem])
+    }, 1000), [activeItem])
 
     const modify = async (newData) => {
         let copy = [...level]
         let i = copy.findIndex(item => item.i === activeItem)
         copy[i] = newData
         setLevel(copy)  // save client-side
+        window.internal.ui.saved = false
         fsSave(newData, window.internal.ui.activeLocation) // save fs (debounced, see above)
     }
 
