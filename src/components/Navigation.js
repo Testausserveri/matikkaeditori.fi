@@ -16,6 +16,7 @@ export function Navigation() {
                 <img src={logo} alt="Matikkaeditori.fi" />
             </div>
             <div>
+                <p>{window.internal.versionHash}</p>
                 <a href="https://discord.gg/testaus" target="_blank" rel="noreferrer" className="iconLink">
                     <FontAwesomeIcon icon={faDiscord} />
                 </a>

@@ -40,13 +40,29 @@ async function G(){
              * CHANGE TO HANDLE BREAKING CHANGES VIA "upgrade.js"
              * --------------------------------------------------
              */
-            version: "beta"
+            version: "beta",
+            versionHash: ""
         }
 
         // Promise for UI to wait before doing anything
         window.internal.workers.essentials = new Promise((resolve) => {
             window.internal.workers.essentialsResolve = resolve
         })
+
+        // Fetch version hash
+        fetch("/VERSION")
+            .then(res => res.text())
+            .then(res => {
+                if(res.startsWith("VERSION: ")){
+                    window.internal.versionHash = res.split(": ")[1]
+                }else {
+                    window.internal.versionHash = "Development version"
+                }
+            }).catch(e => {
+                window.internal.versionHash = "Unknown"
+                console.error("Failed to get version number", e)
+            })
+
 
         // User ID
         let id = localStorage.getItem("id")

@@ -157,6 +157,15 @@ body {
     color: #2FA3CF;
     transition: filter 0.1s;
 }
+.navigation p {
+    display: inline;
+    margin: 0px;
+    font-style: italic;
+    font-size: 11px;
+    line-height: 20px;
+    height: 20px;
+    color: grey;
+}
 .navigation div a.iconLink:hover {
     filter: brightness(0.75);
 }
