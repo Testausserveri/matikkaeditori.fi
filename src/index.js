@@ -30,7 +30,8 @@ async function G(){
             ui: {
                 activeFilesystemInstance: null,
                 activeLocation: null,
-                editor: null
+                editor: null,
+                saved: false
             },
             time_at_live: new Date().getTime(), // Time since code first started to run
             /**
@@ -66,14 +67,14 @@ async function G(){
                 upgrade[current_version]().then(() => {
                     console.log("Upgraded to " + window.internal.version)
                     // Run the console component here
-                    C()
+                    C(window)
                     resolve()
                 }).catch(e => {
                     console.error("[ Index ] Failed to upgrade: " + e.stack)
                 }) 
             }else {
                 console.log("No upgrades to be done. (" + current_version + ")")
-                C()
+                C(window)
                 resolve()
             }
         }else {
@@ -82,13 +83,13 @@ async function G(){
                 console.error("[ Index ] Version is null!")
                 if(confirm("Application version is unknown. Would you like to reset it?")){
                     localStorage.setItem("version", window.internal.version)
-                    C()
+                    C(window)
                     resolve()
                 }
             }else {
                 localStorage.setItem("version", window.internal.version)
                 C()
-                resolve()
+                resolve(window)
             }
         }
     })
@@ -122,10 +123,22 @@ window.reset = async function () {
 }
 
 // Implement embedded worker api
+// TODO: Remove from production!
 window.api = async (worker, type, message) => {
     const req = await window.internal.workers.api(worker, type, message)
     console.log("Response:", req)
 }
+
+// Page close listener
+window.addEventListener("beforeunload", e => {
+    if(!window.internal.ui.saved){
+        // Not saved yet!
+        const confirmationMessage = "Jotain on vielä tallentamatta" + " Älä sulje vielä sivua!";
+        (e || window.event).returnValue = confirmationMessage
+        return confirmationMessage
+    }
+    return
+});
 
 (async () => {
     // MAIN

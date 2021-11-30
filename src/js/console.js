@@ -1,8 +1,10 @@
+import * as uuid from "./worker-components/uuid.js"
+
 /**
  * Console wrapper to collect logs to an internal variable.
  * By: @Esinko (11.02.2021)
  */
-export default function (){
+export default function (window){
     // Don't rewrite twice
     //console.debug("[ Console ] Rewriting console functions...")
     if(console.rewritten === true) return
@@ -10,7 +12,8 @@ export default function (){
 
     // Workers don't have window available
     // So here we create a dummy object
-    if(window === undefined) var window = { internal: { console: console_config() } }
+    console.debug("WINDOW", window)
+    if(window === undefined || window.console === undefined) window = { internal: { console: console_config() }, isDummy: true }
 
     // Redefine all the functions
     for(let func of window.internal.console.list){
@@ -37,7 +40,14 @@ export default function (){
             }
             // Write the data to the cache
             // TODO: Parse css (style) code from the args?
-            window.internal.console.logs.push("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ]", ...args)
+            //console.warn("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ]" + args)
+            if(window.isDummy === true){
+                const id = uuid.v4()
+                // Send message
+                postMessage(JSON.stringify({ type: "log", content: args, id }))
+            }else {
+                window.internal.console.logs.push("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ] " + args)
+            }
         }
     }
 
@@ -51,6 +61,7 @@ export default function (){
  */
 export function console_config(){
     // No actions to be done here, just return the base tree
+    console.warn("CONFIG")
     return {
         list: [
             // These values will be put behind a wrapper for log collection
