@@ -5,6 +5,7 @@ import { useRef, useEffect, useCallback } from "react"
 
 import "../css/editor.css"
 import "../css/tooltip.css"
+import "../js/editor/input.css"
 import Editor from "../js/editor/editor.js"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -62,11 +63,10 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
     }, [activeItemData])
 
     const save = async () => {
-        console.log("[ SAVE ] Preparing to save...")
         // TODO: Getting the content on every oninput causes massive lag
         const format = await window.internal.ui.editor.getContent()
-        console.log(titleRef.current.innerText, format)
-
+        document.getElementById("saveIndicator").className = "saveIndicator"
+        
         let copy = {...activeItemData}
         copy.data = format
         saveActiveItemData(copy)
@@ -127,7 +127,7 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
                         className={fsPath.length > 1 ? "slimmer" : ""}
                         id="documentTitle" 
                         suppressContentEditableWarning={true} 
-                        onClick={() => {document.execCommand("selectAll",false,null)}} 
+                        onClick={() => {document.execCommand("selectAll",false,null)}}
                         onKeyDown={(event) => {if (event.key == "Enter") {saveTitle(event)}} } 
                         onBlur={(event) => {saveTitle(event)}}
                         ref={titleRef}>
@@ -135,14 +135,15 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
                     </h2>
 
                 </div>
-
-                
-
-                <Dropdown data={exportDropdown}>
-                    <button className="secondary">
-                        <FontAwesomeIcon icon={faDownload} /> Vie
-                    </button>
-                </Dropdown>
+                <div className="headSecondary">
+                    <p>Tallenne:</p>
+                    <div className="savedIndicator" id="saveIndicator"></div>
+                    <Dropdown data={exportDropdown}>
+                        <button className="secondary">
+                            <FontAwesomeIcon icon={faDownload} /> Vie
+                        </button>
+                    </Dropdown>
+                </div>
             </div>
             <h1 className="droptext" id="droptext" >Pudota kuva tai gif ja lisää se editoriin!</h1>
             <div className="page" spellCheck={false}>
