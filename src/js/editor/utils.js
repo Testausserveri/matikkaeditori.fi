@@ -222,6 +222,19 @@ const Utils = {
     },
 
     /**
+     * Move caret to a certain position with an element
+     */
+    selectEndOf(node){
+        const range = document.createRange()
+        const sel = document.getSelection()
+        range.setStartAfter(node)
+        range.setEndAfter(node)
+
+        sel.removeAllRanges()
+        sel.addRange(range)
+    },
+
+    /**
      * Get current caret position
      * @returns {Range}
      */
@@ -269,7 +282,7 @@ const Utils = {
                     if(elem.nodeName.toLowerCase() === "img"){
                         const blob = files[fileIterator]
                         ++fileIterator
-                        const container = document.createElement("article")
+                        const container = document.createElement("attachment")
                         container.contentEditable = false
                         container.draggable = true
                         elem.contentEditable = false
@@ -343,7 +356,7 @@ const Utils = {
                         const reader = new FileReader()
                         reader.onload = () => {
                             const img = document.createElement("img")
-                            const container = document.createElement("article")
+                            const container = document.createElement("attachment")
                             container.contentEditable = false
                             if(!window.browser !== "browser") img.contentEditable = false
                             container.draggable = true
@@ -364,6 +377,27 @@ const Utils = {
                 sel.collapseToEnd()
                 resolve()
             }
+        })
+    },
+
+    /**
+     * Check if the parent was clicked. In this case, the parent inherits all of the child node click events.
+     * 
+     * NOTE: This function forces 2 animation frames!
+     * @param {HTMLElement|Node} parent 
+     */
+    async wasParentClicked(parent){
+        return new Promise(resolve => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const activeElement = Utils.getSelectedNode()
+                    if(this.isSomeParent(activeElement, parent) || activeElement === parent){
+                        resolve(true)
+                    }else {
+                        resolve(false)
+                    }
+                })
+            })
         })
     },
 
@@ -447,6 +481,22 @@ const Utils = {
         if(typeof index !== "number") throw console.error("[ EDITOR ] Index given to getCloneFromIndex is not type of number.")
         let arrayClone = JSON.parse(JSON.stringify(array))
         return arrayClone.slice(index)
+    },
+
+    /**
+     * Compare 2 arrays
+     * @param {Array} array1 
+     * @param {Array} array2 
+     * @returns {Boolean}
+     */
+    areEqual(array1, array2){
+        if(
+            Array.isArray(array1) &&
+            Array.isArray(array2)
+        ){
+            return array1.length === array2.length && array1.every((val, i) => array2[i] === val)
+        }
+        return false
     },
 
     /**
@@ -588,9 +638,10 @@ const Utils = {
                     format[format.length - 1] += "<text>" + btoa(element.textContent) + "</text>"
                     break
                 }
-                case "a": {
+                case "math": {
                     // Math container
-                    format[format.length - 1] += "<math>" + element.getAttribute("data") + "</math>"
+                    // TODO: Escape this
+                    format[format.length - 1] += "<math>" + element.getAttribute("math") + "</math>"
                     break
                 }
                 case "br": {
@@ -603,6 +654,8 @@ const Utils = {
                     break
                 }
                 case "img": {
+                    console.warn("[ EDITOR ] IMG parsing is disabled.")
+                    /*
                     // Rendered math or image
                     const data = element.getAttribute("data")
                     if(data){ // Math
@@ -610,12 +663,17 @@ const Utils = {
                     }else {
                         format[format.length - 1] += "<img>" + (element.src ?? "unset") + "</img>"
                     }
-                    
+                    */
                     break
                 }
-                case "article": {
+                case "attachment": {
                     // Responsive image
-                    format[format.length - 1] += "<img height=\"" + element.style.height + "\" width=\"" + element.style.width + "\">" + (element.children[0].src ?? "unset") + "</img>"
+                    if(element.childNodes[0].nodeName.toLowerCase() === "img"){
+                        format[format.length - 1] += "<img height=\"" + element.style.height + "\" width=\"" + element.style.width + "\">" + (element.children[0].src ?? "unset") + "</img>"
+                    }else {
+                        console.warn("[ EDITOR ] Unknown attachment type")
+                    }
+
                     break
                 }
                 case "div": {
@@ -662,14 +720,15 @@ const Utils = {
         case "math": {
             // Math element
             const mathElement = Math.create()
-            mathElement.input.write(atob(element.data))
+            console.debug("READ DATA", element.data)
+            Math.write(mathElement.id, atob(element.data))
             html = mathElement.container
             break
         }
         case "img": {
             // Image attachment
             const img = document.createElement("img")
-            const container = document.createElement("article")
+            const container = document.createElement("attachment")
             container.contentEditable = false
             img.contentEditable = false
             container.appendChild(img)
