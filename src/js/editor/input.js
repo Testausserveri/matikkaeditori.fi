@@ -7,7 +7,7 @@
  * 
  */
 
-import { faEye, faPaintBrush } from "@fortawesome/free-solid-svg-icons"
+import { faEye, faCode } from "@fortawesome/free-solid-svg-icons"
 
 /**
  * Simple utility to create a new element with a few arbitrary parameters
@@ -55,7 +55,7 @@ export default () => {
     }
     dynamicLatexLabel.innerHTML = 
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" height="30px">
-        <path fill="#2FA3CF" d="${faPaintBrush.icon[4]}"/>
+        <path fill="#2FA3CF" d="${faEye.icon[4]}"/>
     </svg>`
 
     // Raw latex input field & label
@@ -69,8 +69,8 @@ export default () => {
         rawLatex.style.display = ""
     }
     rawLatexLabel.innerHTML = 
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" height="20px">
-        <path fill="#2FA3CF" d="${faEye.icon[4]}"/>
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${faCode.icon[0]} ${faCode.icon[1]}" height="20px">
+        <path fill="#2FA3CF" d="${faCode.icon[4]}"/>
     </svg>`
 
     // Create dummy interface for raw latex, as that's simply a text input
