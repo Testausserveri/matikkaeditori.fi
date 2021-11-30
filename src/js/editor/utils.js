@@ -383,19 +383,22 @@ const Utils = {
     /**
      * Check if the parent was clicked. In this case, the parent inherits all of the child node click events.
      * 
-     * NOTE: This function forces 2 animation frames!
+     * NOTE: This function forces 3 animation frames!
      * @param {HTMLElement|Node} parent 
      */
     async wasParentClicked(parent){
         return new Promise(resolve => {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    const activeElement = Utils.getSelectedNode()
-                    if(this.isSomeParent(activeElement, parent) || activeElement === parent){
-                        resolve(true)
-                    }else {
-                        resolve(false)
-                    }
+                    requestAnimationFrame(() => {
+                        const activeElement = Utils.getSelectedNode()
+                        //console.log("ACTIVE", activeElement)
+                        if(this.isSomeParent(activeElement, parent) || activeElement === parent){
+                            resolve(true)
+                        }else {
+                            resolve(false)
+                        }
+                    })
                 })
             })
         })
