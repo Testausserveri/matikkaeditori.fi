@@ -518,6 +518,7 @@ class Editor {
                             }
                             if(child.nodeName.toLowerCase() === "#text"){
                                 // Move text out of the container
+                                math.container.contentEditable = false
                                 if(before) math.image.parentElement.before(child)
                                 else math.image.parentElement.after(child)
                                 // We can assume the child has selection, so move the caret to it when it has been moved
@@ -526,6 +527,11 @@ class Editor {
                         }
                     }
                 }
+            }
+
+            // Patch: If line ends with math, activate it
+            if(["math", "attachment"].includes(this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase())){
+                this.activeLine.childNodes[this.activeLine.childNodes.length - 1].after(document.createElement("br"))
             }
 
             // Firefox patch: Do not let lines deactivate, when they are emptied
@@ -545,13 +551,13 @@ class Editor {
                     this.activeLine.childNodes[0].nodeName.toLowerCase() === "math" || 
                     this.activeLine.childNodes[0].nodeName.toLowerCase() === "attachment"
                 ){ // Left
-                    this.activeLine.childNodes[0].before(document.createElement("br"))
+                    this.activeLine.childNodes[0].contentEditable = true
                 }
                 if(
                     this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "math" || 
                     this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "attachment"
                 ){ // Right
-                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].after(document.createElement("br"))
+                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].contentEditable = true
                 }
             }
         }
