@@ -1,4 +1,4 @@
-import * as uuid from "./worker-components/uuid.js"
+//import * as uuid from "./worker-components/uuid.js"
 
 /**
  * Console wrapper to collect logs to an internal variable.
@@ -12,7 +12,6 @@ export default function (window){
 
     // Workers don't have window available
     // So here we create a dummy object
-    console.debug("WINDOW", window)
     if(window === undefined || window.console === undefined) window = { internal: { console: console_config() }, isDummy: true }
 
     // Redefine all the functions
@@ -42,9 +41,9 @@ export default function (window){
             // TODO: Parse css (style) code from the args?
             //console.warn("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ]" + args)
             if(window.isDummy === true){
-                const id = uuid.v4()
+                //const id = uuid.v4()
                 // Send message
-                postMessage(JSON.stringify({ type: "log", content: args, id }))
+                //postMessage(JSON.stringify({ type: "log", content: args, id }))
             }else {
                 window.internal.console.logs.push("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ] " + args)
             }
@@ -61,7 +60,6 @@ export default function (window){
  */
 export function console_config(){
     // No actions to be done here, just return the base tree
-    console.warn("CONFIG")
     return {
         list: [
             // These values will be put behind a wrapper for log collection
