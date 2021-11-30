@@ -13,10 +13,19 @@ function writeSymbol(event, data) {
     event.preventDefault()
     if(window.internal.ui.editor.activeMathElement != null){
         if(data.action){
-            if(data.action.includes("{X}")) window.internal.ui.editor.activeMathElement.input.write(data.label)
-            else window.internal.ui.editor.activeMathElement.input.cmd(data.action)
+            if(data.useWrite){
+                window.internal.ui.editor.activeMathElement.dynamicInterface.write(data.action)
+            }else {
+                if(Array.isArray(data.action)){
+                    for(const action of data.action){
+                        window.internal.ui.editor.activeMathElement.dynamicInterface.cmd(action)
+                    }
+                }else {
+                    window.internal.ui.editor.activeMathElement.dynamicInterface.cmd(data.action)
+                }
+            }
         }else {
-            window.internal.ui.editor.activeMathElement.input.typedText(data.character)
+            window.internal.ui.editor.activeMathElement.dynamicInterface.typedText(data.character)
         }
     }else {
         document.execCommand("insertText", false, data.character)
