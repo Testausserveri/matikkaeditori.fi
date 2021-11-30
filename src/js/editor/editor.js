@@ -540,17 +540,19 @@ class Editor {
             }
 
             // Patch: Do not let lines deactivate, when there's only a math/image element present
-            if(
-                this.activeLine.childNodes[0].nodeName.toLowerCase() === "math" || 
-                this.activeLine.childNodes[0].nodeName.toLowerCase() === "attachment"
-            ){ // Left
-                this.activeLine.childNodes[0].before(document.createElement("br"))
-            }
-            if(
-                this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "math" || 
-                this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "attachment"
-            ){ // Right
-                this.activeLine.childNodes[this.activeLine.childNodes.length - 1].after(document.createElement("br"))
+            if(this.activeLine.childNodes.length !== 0){
+                if(
+                    this.activeLine.childNodes[0].nodeName.toLowerCase() === "math" || 
+                    this.activeLine.childNodes[0].nodeName.toLowerCase() === "attachment"
+                ){ // Left
+                    this.activeLine.childNodes[0].before(document.createElement("br"))
+                }
+                if(
+                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "math" || 
+                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "attachment"
+                ){ // Right
+                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].after(document.createElement("br"))
+                }
             }
         }
         const observer = new MutationObserver(observerCallback)
