@@ -326,8 +326,7 @@ const Math = {
             let closeThese = []
             for(const _id in this.collection){
                 if(_id === id) continue
-                if(this.collection === {}) break // Flushed in the middle of things...?
-                console.log(this.collection[_id].isOpen, await Utils.wasParentClicked(this.collection[_id].container))
+                if(this.collection[_id] === undefined) break // Flushed in the middle of things...?
                 if(this.collection[_id].isOpen && await Utils.wasParentClicked(this.collection[_id].container)) {
                     continue // Clicks to math UI
                 }
