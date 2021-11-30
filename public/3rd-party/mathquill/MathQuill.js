@@ -5477,7 +5477,7 @@
     });
     
     
-    Environments.cases = P(Matrix, function(_, super_) {
+    LatexCmds.cases = Environments.cases = P(Matrix, function(_, super_) {
       _.environment = 'cases';
       _.parentheses = {
         left: '{',
