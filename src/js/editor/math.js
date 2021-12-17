@@ -320,11 +320,15 @@ const Math = {
         document.body.appendChild(Math.domCache)
 
         // Listener to open stuff
-        window.addEventListener("mousedown", async e => {
+        window.addEventListener("click", async e => {
             const id = e.target.getAttribute("math-id") ?? e.target.parentElement.getAttribute("math-id")
             if(id && !this.collection[id].isOpen){
                 this.open(id)
             }
+        })
+        // Listener to close stuff
+        window.addEventListener("mousedown", async e => {
+            const id = e.target.getAttribute("math-id") ?? e.target.parentElement.getAttribute("math-id")
             // Close all open math
             let closeThese = []
             for(const _id in this.collection){
