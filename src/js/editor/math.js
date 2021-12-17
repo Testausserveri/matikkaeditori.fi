@@ -160,6 +160,8 @@ const Math = {
                 throw "Cache miss"
             }
         }
+
+        obj.container.contentEditable = false
         
         // Todo: This should not live in here. This component is dynamic.
         if(window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(true)
@@ -288,6 +290,7 @@ const Math = {
             // Todo: This should not live in here. This component is dynamic.
             if(window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
         }
+        obj.container.contentEditable = true
         this.events.dispatchEvent(new CustomEvent("blur", { detail: obj }))
         if(removed) delete this.collection[id]
         obj.container.setAttribute("math", btoa(obj.data))
@@ -317,7 +320,7 @@ const Math = {
         document.body.appendChild(Math.domCache)
 
         // Listener to open stuff
-        window.addEventListener("click", async e => {
+        window.addEventListener("mousedown", async e => {
             const id = e.target.getAttribute("math-id") ?? e.target.parentElement.getAttribute("math-id")
             if(id && !this.collection[id].isOpen){
                 this.open(id)
