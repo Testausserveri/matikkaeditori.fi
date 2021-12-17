@@ -100,7 +100,7 @@ class Editor {
                 }
             }
         }
-        if(!wrote) this.hook.innerHTML = "<div><br><div>" // Empty document
+        if(!wrote) this.hook.innerHTML = "<div><br></div>" // Empty document
 
         // Toggle math
         for(const id in Math.collection){
@@ -124,7 +124,7 @@ class Editor {
         let holdKeydown = false // Skip the next keydown evenet
 
         // Global keyboard listener
-        document.addEventListener("keydown", async event => {
+        document.addEventListener("keydown", event => {
             // Only catch events when the editor is active
             if(!Utils.isSomeParent(Utils.getSelectedNode(), this.hook)) return
 
@@ -134,7 +134,7 @@ class Editor {
             //
             //--------------------------------------------------------------------------------------------------------------
 
-            // Update active line while moving up or down with arrow keyss 
+            // Update active line while moving up or down with arrow keys
             if(event.code === "ArrowUp" || event.code === "ArrowDown"){
                 // Move with arrow keys
                 const selection = document.getSelection()
@@ -169,7 +169,7 @@ class Editor {
 
             // Main arrow key control handler
             if(!event.ctrlKey && (event.code === "ArrowLeft" || event.code === "ArrowRight")){
-                await Utils.toggleAnchorMode(Utils.getObjectPropertyArray(Math.collection, "container"), true)
+                //await Utils.toggleAnchorMode(Utils.getObjectPropertyArray(Math.collection, "container"), true)
                 const selection = Utils.getSelectedNode()
                 const selectionClone = selection // Todo: Laziness?
                 const documentSelection = document.getSelection()
@@ -230,7 +230,7 @@ class Editor {
                     }
                     lastSelection = { anchorOffset: documentSelection.anchorOffset, anchorNode: documentSelection.anchorNode }
                 }
-                await Utils.toggleAnchorMode(Utils.getObjectPropertyArray(Math.collection, "container"), false)
+                //await Utils.toggleAnchorMode(Utils.getObjectPropertyArray(Math.collection, "container"), false)
                 holdKeydown = false
             }
             this.moveOutOfThisEvent = false
@@ -318,13 +318,34 @@ class Editor {
             if(event.shiftKey && event.key === "Enter" && this.activeMathElement === null){
                 // Causes issues at least on chromium, prevention is required
                 event.preventDefault()
+                // TODO: Fix this shit later
+                alert("Using shift+enter is for now disabled.")
+                /*// Get nodes before the caret
+                const selection = Utils.getSelectedNode()
+                console.log("SELECTION")
+                let append = []
+                if(selection.nodeName.toLowerCase() === "#text"){
+                    console.warn("Can't handle this!")
+                }else {
+                    const selectionIndex = Utils.getNodeIndex(this.activeLine, selection)
+                    console.log("INDEX")
+                    for(let i = selectionIndex; i < this.activeLine.childNodes.length; i++){
+                        append.push(this.activeLine.childNodes[i])
+                    }
+                }
                 // Create a new line normally
                 const newLine = document.createElement("div")
-                newLine.innerHTML = "<br>" // Activate it as an editable line
+                if(append.length === 0){
+                    newLine.innerHTML = "<br>" // Activate it as an editable line
+                }else {
+                    for(const element of append){
+                        newLine.appendChild(element)
+                    }
+                }
                 this.activeLine.after(newLine)
                 this.activeLine = newLine
                 console.debug("[ EDITOR ] Active line change to", this.activeLine)
-                Utils.selectByIndex(Utils.getNodeIndex(this.hook, this.activeLine), this.hook)
+                Utils.selectByIndex(Utils.getNodeIndex(this.hook, this.activeLine), this.hook)*/
                 return
             }
 
@@ -339,12 +360,13 @@ class Editor {
                     while (index !== 0){ // Ha! You can freeze the UI thread with this! 
                         --index
                         const id = Object.keys(Math.collection)[index]
-                        const tmpElement = document.createElement("a")
+                        const tmpElement = document.createElement("img")
                         // When we match the size, it's impossible for the human eye to detect
                         // the math being gone for one frame, when the text does not reflow
                         const dimensions = Math.collection[id].container.getBoundingClientRect()
                         tmpElement.style.width = dimensions.width + "px"
                         tmpElement.style.height = dimensions.height + "px"
+                        tmpElement.style.border = "unset"
                         tmpElement.style.display = "inline-flex"
                         tmpElement.style.verticalAlign = "middle"
                         tmpElement.setAttribute("dummy-id", id)
@@ -360,6 +382,7 @@ class Editor {
                             const dummy = document.querySelectorAll("[dummy-id=\"" + id + "\"]")[0]
                             const math = Math.collection[id]
                             dummy.after(math.container)
+                            console.log("COPY DUMMY", dummy)
                             dummy.remove()
                         }
                     })
@@ -432,14 +455,23 @@ class Editor {
             console.debug("[ EDITOR ] Active line change to", this.activeLine)
         })
 
-        // Handle pasting text
-        this.hook.addEventListener("paste", async event => {
-            if(this.activeMathElement !== null) return // No rich copying inside math
-            event.preventDefault()
-            const paste = (event.clipboardData || window.clipboardData)
-            await Utils.copyToCursor(paste.getData("text"), paste.files)
-            this.hook.oninput() // Counts as input
-        }) 
+        // Shift copied math back
+        this.hook.addEventListener("paste", async () => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    // Fix math elements
+                    for(const line of this.hook.children){
+                        for(let i = 0; i < line.childNodes.length; i++){
+                            const node = line.childNodes[i]
+                            const nextNode = line.childNodes[i + 1]
+                            if(node.nodeName.toLowerCase() === "math" && (nextNode && nextNode.nodeName.toLowerCase() === "img")){
+                                node.appendChild(nextNode)
+                            }
+                        }
+                    }
+                })
+            })
+        })
 
         // Document content modification listener callback
         const observerCallback = this.observerCallback = async e => {
@@ -518,7 +550,6 @@ class Editor {
                             }
                             if(child.nodeName.toLowerCase() === "#text"){
                                 // Move text out of the container
-                                math.container.contentEditable = false
                                 if(before) math.image.parentElement.before(child)
                                 else math.image.parentElement.after(child)
                                 // We can assume the child has selection, so move the caret to it when it has been moved
@@ -530,8 +561,12 @@ class Editor {
             }
 
             // Patch: If line ends with math, activate it
-            if(["math", "attachment"].includes(this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase())){
-                this.activeLine.childNodes[this.activeLine.childNodes.length - 1].after(document.createElement("br"))
+            if(this.activeLine.childNodes.length !== 0 && this.activeLine.childNodes.length > 1){
+                if(
+                    ["math", "attachment"].includes(this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase())
+                ){
+                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].after(document.createElement("br"))
+                }
             }
 
             // Firefox patch: Do not let lines deactivate, when they are emptied
@@ -546,7 +581,8 @@ class Editor {
             }
 
             // Patch: Do not let lines deactivate, when there's only a math/image element present
-            if(this.activeLine.childNodes.length !== 0){
+            // TODO: Needed?
+            if(this.activeLine.childNodes.length === 1){
                 if(
                     this.activeLine.childNodes[0].nodeName.toLowerCase() === "math" || 
                     this.activeLine.childNodes[0].nodeName.toLowerCase() === "attachment"
@@ -564,7 +600,7 @@ class Editor {
         const observer = new MutationObserver(observerCallback)
         observerCallback()
         observer.observe(this.hook, { attributes: false, childList: true, subtree: true })
-        
+
         // Drag and drop images / video / gifs
         /*const text = document.getElementById("droptext")
         let hideBlur = false

@@ -36,7 +36,7 @@ function createElement(type, className, parent){
 export default () => {
     // Parent
     const container = createElement("math", "inputContainer")
-    container.contentEditable = false
+    container.contentEditable = true
 
     // Sections
     const section1 = createElement("section", "inputSection inputs", container)

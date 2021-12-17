@@ -393,6 +393,7 @@ const Utils = {
                     requestAnimationFrame(() => {
                         const activeElement = Utils.getSelectedNode()
                         //console.log("ACTIVE", activeElement)
+                        console.log("Was parent clicked?",activeElement, parent)
                         if(this.isSomeParent(activeElement, parent) || activeElement === parent){
                             resolve(true)
                         }else {
