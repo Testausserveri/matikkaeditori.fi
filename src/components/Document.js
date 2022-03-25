@@ -55,7 +55,10 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
 
         // Load active item
         window.internal.ui.activeLocation = activeItem
-        if(activeItemData?.i) await window.internal.ui.editor.setContent(activeItemData.data)
+        if(activeItemData?.i) {
+            await window.internal.ui.editor.setContent(activeItemData.data)
+            window.internal.ui.saved = true
+        }
     }, [resultRef, activeItemData?.i])
 
     useEffect(() => {

@@ -121,6 +121,7 @@ const Utils = {
     /**
      * Convert a node list to an array
      * @param {NodeListOf} list 
+     * @returns {Node[]}
      */
     listToArray(list){
         const array = []
@@ -389,18 +390,14 @@ const Utils = {
     async wasParentClicked(parent){
         return new Promise(resolve => {
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        const activeElement = Utils.getSelectedNode()
-                        //console.log("ACTIVE", activeElement)
-                        console.log("Was parent clicked?",activeElement, parent)
-                        if(this.isSomeParent(activeElement, parent) || activeElement === parent){
-                            resolve(true)
-                        }else {
-                            resolve(false)
-                        }
-                    })
-                })
+                const activeElement = Utils.getSelectedNode()
+                //console.log("ACTIVE", activeElement)
+                console.log("Was parent clicked?", activeElement, parent)
+                if(this.isSomeParent(activeElement, parent) || activeElement === parent){
+                    resolve(true)
+                }else {
+                    resolve(false)
+                }
             })
         })
     },

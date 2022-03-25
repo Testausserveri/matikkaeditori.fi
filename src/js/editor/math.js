@@ -101,12 +101,12 @@ const Math = {
         }
 
         // Listen for close events
-        obj.dynamicInput.children[0].children[0].onblur = async () => { // Not a listener -> Not a memory leak.
+        /*obj.dynamicInput.children[0].children[0].onblur = async () => { // Not a listener -> Not a memory leak.
             if(obj.isOpen && !Utils.wasParentClicked(obj.container)) this.close(obj.id)
         }
         obj.latexInput.onblur = async () => { // Not a listener -> Not a memory leak.
             if(obj.isOpen && !Utils.wasParentClicked(obj.container)) this.close(obj.id)
-        }
+        }*/
 
         // Finalize
         //obj.image.setAttribute("onclick", "window.internal.ui.editor.local.Math.open(\"" + obj.id + "\")")
@@ -218,8 +218,7 @@ const Math = {
 
         // Pop-out of cache
         placeholder.before(obj.dynamicInput)
-        placeholder.remove()
-        
+        placeholder.remove() 
     },
     
     /**
@@ -326,22 +325,16 @@ const Math = {
                 this.open(id)
             }
         })
+
         // Listener to close stuff
         window.addEventListener("mousedown", async e => {
             const id = e.target.getAttribute("math-id") ?? e.target.parentElement.getAttribute("math-id")
             // Close all open math
-            let closeThese = []
-            for(const _id in this.collection){
-                if(_id === id) continue
-                if(this.collection[_id] === undefined) break // Flushed in the middle of things...?
-                if(this.collection[_id].isOpen && await Utils.wasParentClicked(this.collection[_id].container)) {
-                    continue // Clicks to math UI
-                }
-                if(this.collection[_id].isOpen) closeThese.push(_id)
-            }
-            for(const id of closeThese){
-                this.close(id)
-            }
+            const closeThese = Object.keys(this.collection)
+                .filter((_id) => _id !== id)
+                .filter((_id) => this.collection[_id].isOpen)
+                .filter((_id) => !Utils.isSomeParent(e.target, this.collection[_id].container))
+            closeThese.forEach((_id) => this.close(_id))
         })
     }
 }

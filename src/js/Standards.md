@@ -1,6 +1,6 @@
 # Worker standard
 
-1. Workers are created by "worker.js", which for now statically import them using "worker-loader".
+1. Workers are created by "worker.js", which for now statically imports them using "worker-loader".
 2. Workers are launched by the same script and are required to use "comlink" to expose a transferable object to said script. This object needs to meet these requirements:
 
 ```js

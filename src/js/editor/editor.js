@@ -294,7 +294,7 @@ class Editor {
             // --------------------------------------------------------------------------------------------------------------
 
             // TODO: I forget what this does...
-            if(event.code === "Enter" && window.browser === "firefox"){
+            /* if(event.code === "Enter" && window.browser === "firefox"){
                 const selection = document.getSelection()
                 const direction = selection.anchorOffset // 0 is left, 1 is right
                 if(selection.anchorNode.nodeName.toLowerCase() === "a" && selection.anchorNode.childNodes.length === 1 && selection.anchorNode.childNodes[0].nodeName.toLowerCase() === "img"){
@@ -312,6 +312,14 @@ class Editor {
                     }
                     return // Forced to return
                 }
+            } */
+            // Patch: <br> appears in the beginning of a new line when using enter. This breaks things, so we shall remove it.
+            if (event.key === "Enter" && this.activeMathElement === null) {
+                // We can expect a new line is created here
+                requestAnimationFrame(() => {
+                    const newline = Utils.listToArray(this.hook.childNodes)[Utils.getNodeIndex(this.hook, this.activeLine)]
+                    if (newline.childNodes[0].nodeName.toLowerCase() === "br") newline.childNodes[0].remove()
+                })
             }
 
             // Patch: Manually implement shift+Enter
@@ -350,7 +358,6 @@ class Editor {
             }
 
             // Patch: Dummy text in front of math if backspace used in front of row
-            // Note: WIP!
             if(event.key === "Backspace" && this.activeMathElement === null){
                 //event.preventDefault()
                 const selection = Utils.getCaretPosition()
@@ -382,7 +389,6 @@ class Editor {
                             const dummy = document.querySelectorAll("[dummy-id=\"" + id + "\"]")[0]
                             const math = Math.collection[id]
                             dummy.after(math.container)
-                            console.log("COPY DUMMY", dummy)
                             dummy.remove()
                         }
                     })
