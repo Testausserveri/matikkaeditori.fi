@@ -36,6 +36,7 @@ export default function Navigation() {
                         {
                             text: "Kiitä kehittäjiä",
                             action: async () => {
+                                // eslint-disable-next-line no-alert
                                 const thanksFrom = prompt("Keneltä kiitokset?").trim() || "nimetön"
                                 await fetch("https://takahuone.matikkaeditori.fi/shawarma", {
                                     method: "POST",
@@ -45,6 +46,7 @@ export default function Navigation() {
                                     },
                                     body: `from=${encodeURIComponent(thanksFrom)}`
                                 })
+                                // eslint-disable-next-line no-alert
                                 alert(`Olet ihana, ${thanksFrom} 💖`)
                                 setThanksDisabled(true)
                             },

@@ -102,6 +102,7 @@ function FilesystemItem(props) {
         },
         {
             text: "Näytä ID",
+            // eslint-disable-next-line no-alert
             action: () => { alert(props.data.i) }
         }
     ]

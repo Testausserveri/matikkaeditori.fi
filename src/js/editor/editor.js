@@ -326,6 +326,7 @@ class Editor {
                 // Causes issues at least on chromium, prevention is required
                 event.preventDefault()
                 // TODO: Fix this shit later
+                // eslint-disable-next-line no-alert
                 alert("Using shift+enter is for now disabled.")
                 /* // Get nodes before the caret
                 const selection = Utils.getSelectedNode()
