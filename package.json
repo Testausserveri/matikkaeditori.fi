@@ -48,6 +48,9 @@
     "@testing-library/user-event": "^12.1.10",
     "eslint": "^7.19.0",
     "eslint-plugin-react": "^7.22.0",
-    "worker-loader": "^3.0.8"
+    "worker-loader": "^3.0.8",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-prettier": "^4.0.0"
   }
 }
