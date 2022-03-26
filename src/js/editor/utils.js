@@ -1,4 +1,5 @@
-import Math from "./math.js"
+// eslint-disable-next-line import/no-cycle
+import Math from "./math"
 
 /**
  * Editor utility functions
@@ -15,11 +16,11 @@ const Utils = {
      * @param {HTMLAnchorElement} node Node to get the index of
      * @returns {number}
      */
-    getNodeIndex(list, node){
-        if(!(list instanceof HTMLElement)) throw console.error("[ EDITOR ] List provided to getNodeIndex is not an instance of HTMLElement.")
+    getNodeIndex(list, node) {
+        if (!(list instanceof HTMLElement)) throw console.error("[ EDITOR ] List provided to getNodeIndex is not an instance of HTMLElement.")
         let index = 0
-        for(const childNode of list.childNodes){
-            if(childNode === node) break
+        for (const childNode of list.childNodes) {
+            if (childNode === node) break
             index += 1
         }
         return index
@@ -31,9 +32,9 @@ const Utils = {
      * @param {number} index Index to read from the childNodes of the parent element
      * @returns {Node|null}
      */
-    getNodeByIndex(list, index){
-        if(!(list instanceof HTMLElement)) throw console.error("[ EDITOR ] List given to getNodeByIndex is not an instance of HTMLElement.")
-        if(list.childNodes.length - 1 < index) throw console.error("[ EDITOR ] Selection given to getNodeByIndex is out of range.")
+    getNodeByIndex(list, index) {
+        if (!(list instanceof HTMLElement)) throw console.error("[ EDITOR ] List given to getNodeByIndex is not an instance of HTMLElement.")
+        if (list.childNodes.length - 1 < index) throw console.error("[ EDITOR ] Selection given to getNodeByIndex is out of range.")
         return list.childNodes[index]
     },
 
@@ -43,11 +44,11 @@ const Utils = {
      * @param {boolean} mode True/false to set mode state
      * @returns {Promise<void>}
      */
-    async toggleAnchorMode(list, mode){
+    async toggleAnchorMode(list, mode) {
         // Todo: This is a very hacky way to do this
         //       and it WILL NOT scale well
-        return new Promise(resolve => {
-            for(const item of list){
+        return new Promise((resolve) => {
+            for (const item of list) {
                 item.contentEditable = mode
             }
             // Request frames
@@ -65,14 +66,14 @@ const Utils = {
 
     /**
      * See if a node is under some other node in the DOM
-     * @param {Node} node 
-     * @param {Node} parent 
+     * @param {Node} node
+     * @param {Node} parent
      * @returns {boolean}
      */
-    isSomeParent(node, parent){
-        if(!(node instanceof Node)) throw console.error("[ EDITOR ] Node given to isSomeParent is not instance of Node.")
-        if(parent === null) return false
-        /*const traverse = (innerNode) => {
+    isSomeParent(node, parent) {
+        if (!(node instanceof Node)) throw console.error("[ EDITOR ] Node given to isSomeParent is not instance of Node.")
+        if (parent === null) return false
+        /* const traverse = (innerNode) => {
             if(innerNode.parentNode === parent){
                 return true
             }else {
@@ -80,28 +81,26 @@ const Utils = {
                 if(innerNode.parentNode !== null) return traverse(innerNode.parentNode)
                 return false
             }
-            
+
         }
-        return traverse(node)*/
+        return traverse(node) */
         return parent.contains(node) // Faster & More efficient!
     },
 
     /**
      * Find the parent line of a node in content-editable
      * @param {Node} node
-     * @returns {Node|null} 
+     * @returns {Node|null}
      */
-    getParentLine(node){
-        if(!(node instanceof Node)) throw console.error("[ EDITOR ] Node given to getParentLine is not instance of Node.")
+    getParentLine(node) {
+        if (!(node instanceof Node)) throw console.error("[ EDITOR ] Node given to getParentLine is not instance of Node.")
         const traverse = (innerNode) => {
-            if(innerNode.parentNode.nodeName.toLowerCase() === "div"){
+            if (innerNode.parentNode.nodeName.toLowerCase() === "div") {
                 return innerNode.parentNode
-            }else {
-                // Check other parent
-                if(innerNode.parentNode !== null) return traverse(innerNode.parentNode)
-                return null
             }
-            
+            // Check other parent
+            if (innerNode.parentNode !== null) return traverse(innerNode.parentNode)
+            return null
         }
         return traverse(node)
     },
@@ -112,20 +111,20 @@ const Utils = {
      * @param {Node} node Node on insert
      * @returns {void}
      */
-    insertNodeAt(range, node){
-        if(!(range instanceof Range)) throw console.error("[ EDITOR ] Range given to insertNodeAt is not instance of Range.")
-        if(!(node instanceof Node)) throw console.error("[ EDITOR ] Node given to insertNodeAt is not instance of Node.")
+    insertNodeAt(range, node) {
+        if (!(range instanceof Range)) throw console.error("[ EDITOR ] Range given to insertNodeAt is not instance of Range.")
+        if (!(node instanceof Node)) throw console.error("[ EDITOR ] Node given to insertNodeAt is not instance of Node.")
         range.insertNode(node)
     },
 
     /**
      * Convert a node list to an array
-     * @param {NodeListOf} list 
+     * @param {NodeListOf} list
      * @returns {Node[]}
      */
-    listToArray(list){
+    listToArray(list) {
         const array = []
-        for(const entry of list){
+        for (const entry of list) {
             array.push(entry)
         }
         return array
@@ -138,13 +137,13 @@ const Utils = {
      */
     /**
      * Wait for an event from a given event target
-     * @param {EventTarget} from 
-     * @param {string} event 
+     * @param {EventTarget} from
+     * @param {string} event
      * @returns {Promise<void>}
      */
-    waitForEvent(from, event){
-        if(!(from instanceof EventTarget)) throw console.error("[ EDITOR ] Event target given to waitForEvent is not instance of EventTarget.")
-        if(typeof event !== "string") throw console.error("[ EDITOR ] Event name given to waitForEvent is not a type of string.")
+    waitForEvent(from, event) {
+        if (!(from instanceof EventTarget)) throw console.error("[ EDITOR ] Event target given to waitForEvent is not instance of EventTarget.")
+        if (typeof event !== "string") throw console.error("[ EDITOR ] Event name given to waitForEvent is not a type of string.")
         return new Promise((resolve) => {
             const handler = async () => {
                 from.removeEventListener(event, handler)
@@ -156,17 +155,18 @@ const Utils = {
 
     /**
      * Execute a function & await a promise in async context
-     * @param {function} input 
+     * @param {function} input
      * @param {Promise} promise
      * @returns {Promise<any>}
      */
-    async asyncTrigger(input, promise){
-        if(typeof input !== "function") throw console.error("[ EDITOR ] Input given to asyncTrigger is not typeof function.")
-        if(!(promise instanceof Promise)) throw console.error("[ EDITOR ] Promise given to asyncTrigger is not instance of Promise.")
+    async asyncTrigger(input, promise) {
+        if (typeof input !== "function") throw console.error("[ EDITOR ] Input given to asyncTrigger is not typeof function.")
+        if (!(promise instanceof Promise)) throw console.error("[ EDITOR ] Promise given to asyncTrigger is not instance of Promise.")
         return new Promise((resolve, reject) => {
             promise.then((...args) => {
                 resolve(...args)
             }).catch((...args) => {
+                // eslint-disable-next-line prefer-promise-reject-errors
                 reject(...args)
             })
             input()
@@ -182,22 +182,23 @@ const Utils = {
      * Get current selection as a node
      * @returns {Node}
      */
-    getSelectedNode(){
+    getSelectedNode() {
         const node = document.getSelection().focusNode
-        if(node === null) return null // No selection 
-        return (node.nodeType == 3 ? node.parentNode : node)
+        if (node === null) return null // No selection
+        return (node.nodeType === 3 ? node.parentNode : node)
     },
 
     /**
      * Select a part of the given element
-     * @param {HTMLElement|Node} element 
-     * @param {number} index 
+     * @param {HTMLElement|Node} element
+     * @param {number} index
      * @returns {void}
      */
-    select(element, index){
-        if(!(element instanceof HTMLElement) && !(element instanceof Node)) throw console.error("[ EDITOR ] Element/Node given to select is not instance of HTMLElement/Node.")
-        if(typeof index !== "number") throw console.error("[ EDITOR ] Index given to select is not type of number.")
-        if(element.childNodes.length - 1 < index) return console.error("[ EDITOR ] Selection given to select is out of range!")
+    // eslint-disable-next-line consistent-return
+    select(element, index) {
+        if (!(element instanceof HTMLElement) && !(element instanceof Node)) throw console.error("[ EDITOR ] Element/Node given to select is not instance of HTMLElement/Node.")
+        if (typeof index !== "number") throw console.error("[ EDITOR ] Index given to select is not type of number.")
+        if (element.childNodes.length - 1 < index) return console.error("[ EDITOR ] Selection given to select is out of range!")
         const range = document.createRange()
         const selection = window.getSelection()
         range.setStart(element, index)
@@ -208,12 +209,14 @@ const Utils = {
 
     /**
      * Select an element by it's index in the DOM (contents)
-     * @param {number} index 
-     * @param {HTMLElement} element 
+     * @param {number} index
+     * @param {HTMLElement} element
      * @returns {void}
      */
-    selectByIndex(index, element, collapse){
-        if(element.childNodes.length - 1 < index) throw console.error("[ EDITOR ] Selection given to selectByIndex is out of range!")
+    selectByIndex(
+        index, element, collapse
+    ) {
+        if (element.childNodes.length - 1 < index) throw console.error("[ EDITOR ] Selection given to selectByIndex is out of range!")
         const range = document.createRange()
         const sel = document.getSelection()
         range.selectNodeContents(element.childNodes[index])
@@ -225,7 +228,7 @@ const Utils = {
     /**
      * Move caret to a certain position with an element
      */
-    selectEndOf(node){
+    selectEndOf(node) {
         const range = document.createRange()
         const sel = document.getSelection()
         range.setStartAfter(node)
@@ -239,13 +242,13 @@ const Utils = {
      * Get current caret position
      * @returns {Range}
      */
-    getCaretPosition(){
+    getCaretPosition() {
         const selection = window.getSelection()
         let range
-        if(selection){
+        if (selection) {
             range = selection.getRangeAt(0)
             range.deleteContents()
-        }else {
+        } else {
             range = document.selection.createRange()
         }
         return range
@@ -253,11 +256,11 @@ const Utils = {
 
     /**
      * Copy HTML to the cursor position
-     * @param {string} html 
+     * @param {string} html
      * @param {Array} files Blob references of files included in the html
      * @returns {Promise<void>}
      */
-    /*async _copyToCursor(html, files){
+    /* async _copyToCursor(html, files){
         return new Promise(resolve => {
             // Get cursor position as a range
             const sel = document.getSelection()
@@ -337,9 +340,9 @@ const Utils = {
                 resolve()
             }
         })
-    },*/
+    }, */
 
-    copyToCursor(text, files){
+    copyToCursor(text, files) {
         return new Promise((resolve) => {
             // Get cursor position as a range
             const sel = document.getSelection()
@@ -349,21 +352,22 @@ const Utils = {
             range.collapse(true)
             sel.removeAllRanges()
             sel.addRange(range)
-            if(files.length !== 0){
+            if (files.length !== 0) {
                 let last = null
-                for(const file of files){
-                    if(file.type.startsWith("image/")){
+                for (const file of files) {
+                    if (file.type.startsWith("image/")) {
                         // We can copy this
                         const reader = new FileReader()
+                        // eslint-disable-next-line no-loop-func
                         reader.onload = () => {
                             const img = document.createElement("img")
                             const container = document.createElement("attachment")
                             container.contentEditable = false
-                            if(!window.browser !== "browser") img.contentEditable = false
+                            if (!window.browser !== "browser") img.contentEditable = false
                             container.draggable = true
                             container.appendChild(img)
                             img.src = reader.result
-                            if(!last) range.insertNode(container)
+                            if (!last) range.insertNode(container)
                             else last.after(container)
                             last = container
                         }
@@ -372,7 +376,7 @@ const Utils = {
                 }
                 sel.collapseToEnd()
                 resolve()
-            }else {
+            } else {
                 const node = document.createTextNode(text)
                 range.insertNode(node)
                 sel.collapseToEnd()
@@ -383,19 +387,21 @@ const Utils = {
 
     /**
      * Check if the parent was clicked. In this case, the parent inherits all of the child node click events.
-     * 
+     *
      * NOTE: This function forces 3 animation frames!
-     * @param {HTMLElement|Node} parent 
+     * @param {HTMLElement|Node} parent
      */
-    async wasParentClicked(parent){
-        return new Promise(resolve => {
+    async wasParentClicked(parent) {
+        return new Promise((resolve) => {
             requestAnimationFrame(() => {
                 const activeElement = Utils.getSelectedNode()
-                //console.log("ACTIVE", activeElement)
-                console.log("Was parent clicked?", activeElement, parent)
-                if(this.isSomeParent(activeElement, parent) || activeElement === parent){
+                // console.log("ACTIVE", activeElement)
+                console.log(
+                    "Was parent clicked?", activeElement, parent
+                )
+                if (this.isSomeParent(activeElement, parent) || activeElement === parent) {
                     resolve(true)
-                }else {
+                } else {
                     resolve(false)
                 }
             })
@@ -409,92 +415,96 @@ const Utils = {
      */
     /**
      * Read value of object's objects and return them as an array
-     * @param {{}} obj 
-     * @param {string} property 
+     * @param {{}} obj
+     * @param {string} property
      * @returns {[...any]}
      */
-    getObjectPropertyArray(obj, property){
-        if(typeof obj !== "object") throw console.error("[ EDITOR ] Object given to getObjectPropertyArray is not type of object.")
-        if(typeof property !== "string") throw console.error("[ EDITOR ] Property given to getObjectPropertyArray is not type of string.")
+    getObjectPropertyArray(obj, property) {
+        if (typeof obj !== "object") throw console.error("[ EDITOR ] Object given to getObjectPropertyArray is not type of object.")
+        if (typeof property !== "string") throw console.error("[ EDITOR ] Property given to getObjectPropertyArray is not type of string.")
         const keys = Object.keys(obj)
         const list = []
-        for(const key of keys){
-            if(obj[key][property] !== undefined) list.push(obj[key][property])
+        for (const key of keys) {
+            if (obj[key][property] !== undefined) list.push(obj[key][property])
         }
         return list
     },
 
     /**
      * Read a value of array's object and return them as an array
-     * @param {Array} array 
-     * @param {string} property 
+     * @param {Array} array
+     * @param {string} property
      * @returns {[...any]}
      */
-    getArrayItemPropertyArray(array, property){
-        if(!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to getArrayItemPropertyArray is not an array.")
-        if(typeof property !== "string") throw console.error("[ EDITOR ] Property given to getArrayItemPropertyArray is not type of string.")
-        let list = []
-        for(const entry of array){
-            if(entry[property] !== undefined) list.push(entry[property])
+    getArrayItemPropertyArray(array, property) {
+        if (!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to getArrayItemPropertyArray is not an array.")
+        if (typeof property !== "string") throw console.error("[ EDITOR ] Property given to getArrayItemPropertyArray is not type of string.")
+        const list = []
+        for (const entry of array) {
+            if (entry[property] !== undefined) list.push(entry[property])
         }
         return list
     },
 
     /**
      * Find next instance of a string in an array
-     * @param {string} string 
-     * @param {[]} array 
-     * @param {number} index 
+     * @param {string} string
+     * @param {[]} array
+     * @param {number} index
      * @returns {number}
      */
-    findNextOf(string, array, index){
-        if(typeof string !== "string") throw console.error("[ EDITOR ] String given to findNextOf is not type of string.")
-        if(!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to findNextOf is not an array.")
-        if(typeof index !== "number") throw console.error("[ EDITOR ] Index given to findNextOf is not type of number.")
-        if(index) array = array.slice(index)
-        return array.indexOf(string) // -1 is already also false
+    findNextOf(
+        string, array, index
+    ) {
+        if (typeof string !== "string") throw console.error("[ EDITOR ] String given to findNextOf is not type of string.")
+        if (!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to findNextOf is not an array.")
+        if (typeof index !== "number") throw console.error("[ EDITOR ] Index given to findNextOf is not type of number.")
+        // -1 is already also false
+        return index ? array.slice(index).indexOf(string) : array.indexOf(string)
     },
 
     // TODO: Indexes or what?
     /**
      * Read data between two array indexes
-     * @param {[]} array 
-     * @param {number} start 
-     * @param {number} end 
+     * @param {[]} array
+     * @param {number} start
+     * @param {number} end
      * @returns {[..any]}
      */
-    readBetweenIndexes(array, start, end){
-        if(!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to readBetweenIndexes is not an array.")
-        if(typeof start !== "number") throw console.error("[ EDITOR ] Start given to readBetweenIndexes is not type of number.")
-        if(typeof end !== "number") throw console.error("[ EDITOR ] End given to readBetweenIndexes is not type of number.")
+    readBetweenIndexes(
+        array, start, end
+    ) {
+        if (!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to readBetweenIndexes is not an array.")
+        if (typeof start !== "number") throw console.error("[ EDITOR ] Start given to readBetweenIndexes is not type of number.")
+        if (typeof end !== "number") throw console.error("[ EDITOR ] End given to readBetweenIndexes is not type of number.")
         const arrayClone = JSON.parse(JSON.stringify(array))
         return arrayClone.splice(start, end - start)
     },
 
     /**
      * Get new clone of an array with a start index
-     * @param {[]} array 
-     * @param {number} index 
+     * @param {[]} array
+     * @param {number} index
      * @returns {[...any]}
      */
-    getCloneFromIndex(array, index){
-        if(!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to getCloneFromIndex is not an array.")
-        if(typeof index !== "number") throw console.error("[ EDITOR ] Index given to getCloneFromIndex is not type of number.")
-        let arrayClone = JSON.parse(JSON.stringify(array))
+    getCloneFromIndex(array, index) {
+        if (!Array.isArray(array)) throw console.error("[ EDITOR ] Array given to getCloneFromIndex is not an array.")
+        if (typeof index !== "number") throw console.error("[ EDITOR ] Index given to getCloneFromIndex is not type of number.")
+        const arrayClone = JSON.parse(JSON.stringify(array))
         return arrayClone.slice(index)
     },
 
     /**
      * Compare 2 arrays
-     * @param {Array} array1 
-     * @param {Array} array2 
+     * @param {Array} array1
+     * @param {Array} array2
      * @returns {Boolean}
      */
-    areEqual(array1, array2){
-        if(
+    areEqual(array1, array2) {
+        if (
             Array.isArray(array1) &&
             Array.isArray(array2)
-        ){
+        ) {
             return array1.length === array2.length && array1.every((val, i) => array2[i] === val)
         }
         return false
@@ -507,10 +517,10 @@ const Utils = {
      */
     /**
      * Remove double quotes from the start & end of the string while maintaining \""
-     * @param {string} string 
+     * @param {string} string
      * @returns {string}
      */
-    removeDoubleQuotes(string){
+    removeDoubleQuotes(string) {
         return string.replace(/\\"/g, "\\'").replace(/"/g, "").replace(/\\'/g, "\"")
     },
 
@@ -521,14 +531,14 @@ const Utils = {
      */
     /**
      * Read embedded element data from the official save format
-     * @param {string} data 
+     * @param {string} data
      * @returns {EditorElementList}
      */
-    parseEmbedded(data){
-        if(typeof data !== "string") throw console.error("[ EDITOR ] Data given to parseEmbedded is not type of string.")
-        
+    parseEmbedded(data) {
+        if (typeof data !== "string") throw console.error("[ EDITOR ] Data given to parseEmbedded is not type of string.")
+        // eslint-disable-next-line no-param-reassign
         data = data.split("")
-        let elements = []
+        const elements = []
         let raw = []
         let i = 0
 
@@ -539,9 +549,9 @@ const Utils = {
         const read = () => {
             const char = data[i]
             // New element?
-            if(char === "<"){
+            if (char === "<") {
                 // Dump cache
-                if(raw.length !== 0) {
+                if (raw.length !== 0) {
                     // Any random text data will be formatted as a text element
                     elements.push({
                         name: "text",
@@ -551,36 +561,41 @@ const Utils = {
                     })
                     raw = []
                 }
-                
+
                 // Find closing > tag
-                let nextTagIndex, tagData, tagName, attributeData, elementData
+                let nextTagIndex; let tagData; let tagName; let attributeData
                 const attributes = {}
                 try {
                     // Read and format element tag data
-                    nextTagIndex = i + this.findNextOf(">", this.getCloneFromIndex(data, 0), i)
-                    tagData = this.readBetweenIndexes(data, i + 1, nextTagIndex).join("")
-                    tagName = tagData.split(" ")[0]
+                    nextTagIndex = i + this.findNextOf(
+                        ">", this.getCloneFromIndex(data, 0), i
+                    )
+                    tagData = this.readBetweenIndexes(
+                        data, i + 1, nextTagIndex
+                    ).join("");
+                    [tagName] = tagData.split(" ")
                     attributeData = tagData.replace(tagName, "")
-                    if(attributeData !== ""){
+                    if (attributeData !== "") {
                         // Remove possible leading space
-                        if(attributeData.startsWith(" ")) attributeData = attributeData.replace(" ", "")
+                        if (attributeData.startsWith(" ")) attributeData = attributeData.replace(" ", "")
                         attributeData = attributeData.split(" ")
-                        for(let val of attributeData){
-                            let parts = val.split("=")
-                            attributes[this.removeDoubleQuotes(parts[0])] = this.removeDoubleQuotes(parts[1]) 
+                        for (const val of attributeData) {
+                            const parts = val.split("=")
+                            attributes[this.removeDoubleQuotes(parts[0])] = this.removeDoubleQuotes(parts[1])
                         }
                     }
-                }
-                catch(e){
-                    console.error("[ EDITOR ] ParseEmbedded failed to read tag data that started at", i, "of", data, "err:", e)
+                } catch (e) {
+                    console.error(
+                        "[ EDITOR ] ParseEmbedded failed to read tag data that started at", i, "of", data, "err:", e
+                    )
                 }
 
                 // Find closing element tag
-                const splitByTag = this.getCloneFromIndex(data, nextTagIndex + 1).join("").split("</" + tagName + ">")
-                elementData = splitByTag[0]
+                const splitByTag = this.getCloneFromIndex(data, nextTagIndex + 1).join("").split(`</${tagName}>`)
+                const [elementData] = splitByTag
 
                 // Update index number
-                i += ("<" + tagData + ">" + elementData + "</" + tagName + ">").length - 1
+                i += (`<${tagData}>${elementData}</${tagName}>`).length - 1
 
                 // Create element construct
                 const element = {
@@ -594,7 +609,7 @@ const Utils = {
 
                 console.debug("[ EDITOR ] Element parsed", element)
                 elements.push(element)
-            }else {
+            } else {
                 // No element qualification, dump to cache
                 raw.push(char)
             }
@@ -606,13 +621,12 @@ const Utils = {
         // Reader loop
         const reader = () => {
             const readToIndex = read()
-            if(readToIndex < data.length){
+            if (readToIndex < data.length) {
                 // More to read
-                ++i
-                reader()
-            }else {
-                return true
+                i += 1
+                return reader()
             }
+            return true
         }
 
         reader()
@@ -621,34 +635,35 @@ const Utils = {
 
     /**
      * Format HTML editor data to the official save format
-     * @param {HTMLElement} element 
+     * @param {HTMLElement} element
      * @returns {string}
      */
-    toEmbedded(element){
+    toEmbedded(elements) {
         const format = []
         let redo = false
-        if(!(element instanceof HTMLElement)) throw console.error("[ EDITOR ] Element given to toEmbedded is not instance of HTMLElement.")
-        for(let i = 0; i < element.childNodes.length; i++){
-            const line = element.childNodes[i]
+        if (!(elements instanceof HTMLElement)) throw console.error("[ EDITOR ] Element given to toEmbedded is not instance of HTMLElement.")
+        // eslint-disable-next-line no-plusplus
+        for (let i = 0; i < elements.childNodes.length; i++) {
+            const line = elements.childNodes[i]
             // Create line
             format.push("")
-            for(const element of line.childNodes){
-                switch(element.nodeName.toLowerCase()){
+            for (const element of line.childNodes) {
+                switch (element.nodeName.toLowerCase()) {
                 case "#text": {
                     // This is plain text
-                    format[format.length - 1] += "<text>" + btoa(element.textContent) + "</text>"
+                    format[format.length - 1] += `<text>${btoa(element.textContent)}</text>`
                     break
                 }
                 case "math": {
                     // Math container
                     // TODO: Escape this
-                    format[format.length - 1] += "<math>" + element.getAttribute("math") + "</math>"
+                    format[format.length - 1] += `<math>${element.getAttribute("math")}</math>`
                     break
                 }
                 case "br": {
                     // Manual line-break
                     // Only handled as an activator now
-                    if(window.browser !== "firefox" && element.parentNode.childNodes.length !== 1){
+                    if (window.browser !== "firefox" && element.parentNode.childNodes.length !== 1) {
                         // No meaning for firefox & does not change anything on chromium if by itself in a line
                         format.push("")
                     }
@@ -669,9 +684,9 @@ const Utils = {
                 }
                 case "attachment": {
                     // Responsive image
-                    if(element.childNodes[0].nodeName.toLowerCase() === "img"){
-                        format[format.length - 1] += "<img height=\"" + element.style.height + "\" width=\"" + element.style.width + "\">" + (element.children[0].src ?? "unset") + "</img>"
-                    }else {
+                    if (element.childNodes[0].nodeName.toLowerCase() === "img") {
+                        format[format.length - 1] += `<img height="${element.style.height}" width="${element.style.width}">${element.children[0].src ?? "unset"}</img>`
+                    } else {
                         console.warn("[ EDITOR ] Unknown attachment type")
                     }
 
@@ -680,7 +695,7 @@ const Utils = {
                 case "div": {
                     // Line within a line
                     // This may be caused by a bug, or a browser content editable related inconsistency
-                    for(const child of line.childNodes) line.after(child)
+                    for (const child of line.childNodes) line.after(child)
                     line.remove()
                     i = 0
                     console.warn("[ Editor ] Line structure changes were required! Redoing the getContent...")
@@ -693,7 +708,7 @@ const Utils = {
                 }
             }
         }
-        if(redo) return this.toEmbedded(element)
+        if (redo) return this.toEmbedded(elements)
         return format.length === 0 ? "" : format
     },
 
@@ -702,18 +717,18 @@ const Utils = {
      * @param {EditorElement} element
      * @returns {HTMLElement | Node}
      */
-    fill(element){
+    fill(element) {
         let html = null
-        switch(element.name){
+        switch (element.name) {
         case "meta": {
             // Not an element
             break
         }
         case "text": {
             // Basic text
-            if(element.data === ""){
+            if (element.data === "") {
                 html = document.createElement("br")
-            }else {
+            } else {
                 html = document.createTextNode(atob(element.data))
             }
             break
@@ -734,19 +749,21 @@ const Utils = {
             img.contentEditable = false
             container.appendChild(img)
             img.src = element.data
-            if(element.attributes.height) container.style.height = element.attributes.height
-            if(element.attributes.width) container.style.width = element.attributes.width
+            if (element.attributes.height) container.style.height = element.attributes.height
+            if (element.attributes.width) container.style.width = element.attributes.width
             container.draggable = true
             html = container
             break
         }
         default: {
-            console.error("[ EDITOR ]", "Unknown element type of \"" + element.name + "\" cannot be processed. Raw:", element)
+            console.error(
+                "[ EDITOR ]", `Unknown element type of "${element.name}" cannot be processed. Raw:`, element
+            )
         }
         }
-        if(element.tree !== undefined && element.tree !== 0){
+        if (element.tree !== undefined && element.tree !== 0) {
             // This element has children
-            for(const child of element.tree){
+            for (const child of element.tree) {
                 element.appendChild(this.fill(child))
             }
         }

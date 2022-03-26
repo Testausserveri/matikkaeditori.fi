@@ -1,52 +1,52 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
-import React, { useState } from "react"
-import { useRef, useEffect, useCallback } from "react"
+import React, { useRef, useEffect } from "react"
 
 import "../css/editor.css"
 import "../css/tooltip.css"
 import "../js/editor/input.css"
-import Editor from "../js/editor/editor.js"
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faChevronLeft, faDownload } from "@fortawesome/free-solid-svg-icons"
+import { faDownload } from "@fortawesome/free-solid-svg-icons"
+import Skeleton from "react-loading-skeleton"
+import Editor from "../js/editor/editor"
 
 import Dropdown from "./Dropdown"
 
-import Export from "../js/export"
+import exportUtil from "../js/export"
 import useActiveItem from "../utils/useActiveItem"
-import Skeleton from "react-loading-skeleton"
 import "react-loading-skeleton/dist/skeleton.css"
 
-
 // eslint-disable-next-line react/prop-types
-export default function Document({createdItem, setActiveItem, activeItem, level, setLevel, setMobileViewState, isMobile, fsPath, openFolder}) {
+export default function Document({
+    // eslint-disable-next-line no-unused-vars
+    createdItem, setActiveItem, activeItem, level, setLevel, setMobileViewState, isMobile, fsPath, openFolder
+}) {
     const answerRef = useRef()
     const resultRef = useRef()
     const titleRef = useRef()
-    const [activeItemData, saveActiveItemData] = useActiveItem(activeItem, level, setLevel)
+    const [activeItemData, saveActiveItemData] = useActiveItem(
+        activeItem, level, setLevel
+    )
 
     const exportDropdown = [
         {
             text: "Tallenna leikepöydälle",
-            action: () => {Export("image-clipboard")}
+            action: () => { exportUtil("image-clipboard") }
         },
         {
             text: "Tallenna PDF",
-            action: () => {Export("pdf")}
+            action: () => { exportUtil("pdf") }
         },
         {
             text: "Tallenna kuvana",
-            action: () => {Export("image")}
+            action: () => { exportUtil("image") }
         }
-        
+
     ]
 
     useEffect(async () => {
         // Load answer into editor here
         answerRef.current.contentEditable = false
 
-        if(!window.internal.ui.editor){
+        if (!window.internal.ui.editor) {
             // Initialize editor
             window.internal.ui.editor = new Editor(answerRef.current)
             await window.internal.ui.editor.init()
@@ -55,53 +55,57 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
 
         // Load active item
         window.internal.ui.activeLocation = activeItem
-        if(activeItemData?.i) {
+        if (activeItemData?.i) {
             await window.internal.ui.editor.setContent(activeItemData.data)
             window.internal.ui.saved = true
         }
     }, [resultRef, activeItemData?.i])
 
-    useEffect(() => {
-        window.internal.ui.editor.hook.oninput = save
-    }, [activeItemData])
-
     const save = async () => {
         // TODO: Getting the content on every oninput causes massive lag
         const format = await window.internal.ui.editor.getContent()
         document.getElementById("saveIndicator").className = "saveIndicator"
-        
-        let copy = {...activeItemData}
+
+        const copy = { ...activeItemData }
         copy.data = format
         saveActiveItemData(copy)
     }
+
+    useEffect(() => {
+        window.internal.ui.editor.hook.oninput = save
+    }, [activeItemData])
 
     async function saveTitle(event) {
         event.target.blur()
         answerRef.current.focus()
         event.preventDefault()
 
-        let copy = activeItemData
+        const copy = activeItemData
         copy.name = event.target.innerText
-        saveActiveItemData({...copy})
+        saveActiveItemData({ ...copy })
 
-        if (event.target.innerHTML.trim() == "") {
+        if (event.target.innerHTML.trim() === "") {
             event.target.innerHTML = "Nimetön vastaus"
         }
         console.log("[ EDITOR ] Updating document title...")
-        await window.internal.workers.api("Filesystem", "write", {
-            instance: window.internal.ui.activeFilesystemInstance,
-            id: window.internal.ui.activeLocation,
-            write: {
-                name: event.target.innerText,
-                type: 0
+        await window.internal.workers.api(
+            "Filesystem", "write", {
+                instance: window.internal.ui.activeFilesystemInstance,
+                id: window.internal.ui.activeLocation,
+                write: {
+                    name: event.target.innerText,
+                    type: 0
+                }
             }
-        })
+        )
     }
 
     useEffect(() => {
-        if (createdItem == activeItem && activeItemData?.t == 0) {
+        if (createdItem === activeItem && activeItemData?.t === 0) {
             titleRef.current.focus()
-            document.execCommand("selectAll",false,null)
+            document.execCommand(
+                "selectAll", false, null
+            )
         }
     }, [createdItem, activeItemData?.i])
 
@@ -109,30 +113,34 @@ export default function Document({createdItem, setActiveItem, activeItem, level,
         <div className="document">
             <div className="head">
                 <div className="headMain">
-                    {/*isMobile ? 
+                    {/* isMobile ?
                         <button className="mobileBack" onClick={() => {
                             setMobileViewState(0)
                         }}>
                             <FontAwesomeIcon icon={faChevronLeft} />
                         </button>
-                    : null*/}
-                    
-                    <span className={"documentPath" + (fsPath.length > 1 ? " expanded" : "")}>{fsPath.map(item => (
+                    : null */}
+
+                    <span className={`documentPath${fsPath.length > 1 ? " expanded" : ""}`}>{fsPath.map((item) => (
                         <>
                             <span className="documentPathItem" onClick={() => openFolder(item.id)}>{item.name}</span>
                             &nbsp;›&nbsp;
                         </>
                     ))}</span>
-                
-                    <h2 
-                        spellCheck={false} 
-                        contentEditable={true} 
+
+                    <h2
+                        spellCheck={false}
+                        contentEditable={true}
                         className={fsPath.length > 1 ? "slimmer" : ""}
-                        id="documentTitle" 
-                        suppressContentEditableWarning={true} 
-                        onClick={() => {document.execCommand("selectAll",false,null)}}
-                        onKeyDown={(event) => {if (event.key == "Enter") {saveTitle(event)}} } 
-                        onBlur={(event) => {saveTitle(event)}}
+                        id="documentTitle"
+                        suppressContentEditableWarning={true}
+                        onClick={() => {
+                            document.execCommand(
+                                "selectAll", false, null
+                            )
+                        }}
+                        onKeyDown={(event) => { if (event.key === "Enter") { saveTitle(event) } } }
+                        onBlur={(event) => { saveTitle(event) }}
                         ref={titleRef}>
                         {activeItemData?.name ?? <Skeleton style={{ width: "12rem", height: "2rem", background: "white" }}/>}
                     </h2>

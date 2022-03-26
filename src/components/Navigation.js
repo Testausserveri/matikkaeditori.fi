@@ -1,14 +1,14 @@
 /* eslint-disable react/react-in-jsx-scope */
 
-import testausserveriLogo from "../assets/testausserveri.svg"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDiscord } from "@fortawesome/free-brands-svg-icons"
-import Dropdown from "../components/Dropdown"
-import logo from "../assets/icon.svg"
 import { faExclamationTriangle, faPray } from "@fortawesome/free-solid-svg-icons"
 import { useState } from "react"
+import Dropdown from "./Dropdown"
+import logo from "../assets/icon.svg"
+import testausserveriLogo from "../assets/testausserveri.svg"
 
-export function Navigation() {
+export default function Navigation() {
     const [thanksDisabled, setThanksDisabled] = useState(false)
     return (
         <div className="navigation">

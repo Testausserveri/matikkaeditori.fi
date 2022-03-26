@@ -4,37 +4,40 @@
 import React, { useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import "../css/sidebar.css"
-import formatDate from "../utils/date"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlus, faFolder, faEllipsisH, faLevelUpAlt } from "@fortawesome/free-solid-svg-icons"
+import {
+    faPlus, faFolder, faEllipsisH, faLevelUpAlt
+} from "@fortawesome/free-solid-svg-icons"
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
-import useActiveItem from "../utils/useActiveItem"
-import Dropdown from "./Dropdown"
 import Skeleton from "react-loading-skeleton"
+import useActiveItem from "../utils/useActiveItem"
+import dropdown from "./Dropdown"
+import formatDate from "../utils/date"
 import "react-loading-skeleton/dist/skeleton.css"
 
 function FilesystemItem(props) {
     if (!props.data) return null
-    
+
     const itemRef = useRef()
+    const folderTitleRef = useRef()
 
     useEffect(() => {
-        if (props.createdItem == props.data.i) {
+        if (props.createdItem === props.data.i) {
             itemRef.current.dataset.animation = "fadeInDown"
             setTimeout(() => {
                 itemRef.current.dataset.animation = ""
             }, 300)
 
-            if (props.data.t == 1) {
+            if (props.data.t === 1) {
                 folderTitleRef.current.focus()
-                document.execCommand("selectAll",false,null)
+                document.execCommand(
+                    "selectAll", false, null
+                )
             }
-            
         }
     }, [props.createdItem])
-    
-    const folderTitleRef = useRef()
+
     async function saveFolderTitle(event) {
         event.target.blur()
         document.getElementById("editor-element").focus()
@@ -42,34 +45,40 @@ function FilesystemItem(props) {
 
         console.log("[ SIDEBAR ] Updating folder title...")
 
-        if (event.target.innerText.trim() == "") {
+        if (event.target.innerText.trim() === "") {
             event.target.innerText = "Nimetön kansio"
         }
 
-        let copy = [...props.level]
-        let i = copy.findIndex(item => item.i === props.data.i)
+        const copy = [...props.level]
+        const i = copy.findIndex((item) => item.i === props.data.i)
         copy[i].name = event.target.innerText
-        props.setLevel(copy)  // save client-side
+        props.setLevel(copy) // save client-side
 
-        await window.internal.workers.api("Filesystem", "write", {
-            instance: window.internal.ui.activeFilesystemInstance,
-            id: props.data.i,
-            write: {
-                name: event.target.innerText,
-                type: 1
+        await window.internal.workers.api(
+            "Filesystem", "write", {
+                instance: window.internal.ui.activeFilesystemInstance,
+                id: props.data.i,
+                write: {
+                    name: event.target.innerText,
+                    type: 1
+                }
             }
-        })
+        )
     }
     const dropdownData = [
         {
             text: "Uudelleennimeä",
             action: () => {
-                if (props.data.t == 0) {
+                if (props.data.t === 0) {
                     document.getElementById("documentTitle").focus()
-                    document.execCommand("selectAll",false,null)
+                    document.execCommand(
+                        "selectAll", false, null
+                    )
                 } else {
                     folderTitleRef.current.focus()
-                    document.execCommand("selectAll",false,null)
+                    document.execCommand(
+                        "selectAll", false, null
+                    )
                 }
             }
         },
@@ -81,7 +90,8 @@ function FilesystemItem(props) {
             text: "Poista",
             action: () => {
                 // Note: Should there be a dialog to ask if you are sure?
-                if(confirm("Haluatko varmasti poistaa \"" + props.data.name + "\"?")){
+                // eslint-disable-next-line no-restricted-globals, no-alert
+                if (confirm(`Haluatko varmasti poistaa "${props.data.name}"?`)) {
                     props.deleteDocument(props.data.i)
                 }
             }
@@ -92,11 +102,11 @@ function FilesystemItem(props) {
         },
         {
             text: "Näytä ID",
-            action: () => {alert(props.data.i)}
+            action: () => { alert(props.data.i) }
         }
     ]
 
-    const [DropdownComponent, toggleDropdown] = Dropdown({
+    const [DropdownComponent, toggleDropdown] = dropdown({
         data: dropdownData,
         origin: "left",
         children: <button className="ellipsis">
@@ -105,29 +115,33 @@ function FilesystemItem(props) {
     }, true)
 
     const handleClick = (event) => {
-        console.log(event.type)
-        if (event.type == "contextmenu") {
-            event.preventDefault() 
+        if (event.type === "contextmenu") {
+            event.preventDefault()
             toggleDropdown(event, true)
         } else {
             props.onClick(event)
         }
     }
-    if (props.data.t == 1) { // folder
+    if (props.data.t === 1) { // folder
         return (
-            <li ref={itemRef} className={"fsFolder" + (props.selected ? " selected" : "")} onKeyPress={(event) => {if (event.key == "Enter") { handleClick(event) }}} onClick={handleClick} onContextMenu={handleClick} tabIndex="-1">
+            <li ref={itemRef}
+                className={`fsFolder${props.selected ? " selected" : ""}`}
+                onKeyPress={(event) => { if (event.key === "Enter") { handleClick(event) } }}
+                onClick={handleClick}
+                onContextMenu={handleClick}
+                tabIndex="-1">
                 {<div className="fsIcon">
                     <FontAwesomeIcon icon={faOutlineFolder} />
                 </div>}
                 <div className="content">
                     <span
                         className="editableName"
-                        spellCheck={false} 
-                        contentEditable={true} 
-                        suppressContentEditableWarning={true} 
+                        spellCheck={false}
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
                         ref={folderTitleRef}
-                        onKeyDown={(event) => {if (event.key == "Enter") {saveFolderTitle(event)}} } 
-                        onBlur={(event) => {saveFolderTitle(event)}}
+                        onKeyDown={(event) => { if (event.key === "Enter") { saveFolderTitle(event) } } }
+                        onBlur={(event) => { saveFolderTitle(event) }}
                     >{props.data.name}</span>
                 </div>
                 <div className="action">
@@ -135,13 +149,13 @@ function FilesystemItem(props) {
                 </div>
             </li>
         )
-    } else if (props.data.t == 0) { // file
+    } if (props.data.t === 0) { // file
         return (
             <li ref={itemRef} className={(props.selected ? "selected" : "")} onClick={handleClick} onContextMenu={handleClick} tabIndex="-1">
                 <div className="content">
                     <span>{props.data.name}</span>
                     <span className="date">{props.data.date ? formatDate(props.data.date).pretty : ""}</span>
-                    
+
                 </div>
                 <div className="action">
                     {DropdownComponent}
@@ -160,13 +174,15 @@ FilesystemItem.propTypes = filesystemItemType
 export default function Sidebar(props) {
     // todo implement subtrees
     const level = (props.level ? [...props.level] : null)
-    
-    const [activeItemData] = useActiveItem(props.activeItem, props.level, props.setLevel)
+
+    const [activeItemData] = useActiveItem(
+        props.activeItem, props.level, props.setLevel
+    )
 
     if (level) level.reverse()
 
-    if(document.getElementById("sidebar") && document.getElementById("sidebar").childNodes[0].nodeName.toLowerCase() !== "span") {
-        document.getElementById("sidebar").childNodes.forEach(node => {
+    if (document.getElementById("sidebar") && document.getElementById("sidebar").childNodes[0].nodeName.toLowerCase() !== "span") {
+        document.getElementById("sidebar").childNodes.forEach((node) => {
             if (node.nodeName.toLowerCase() === "span" && level !== null) node.style.display = "none"
         })
     }
@@ -176,29 +192,29 @@ export default function Sidebar(props) {
     useEffect(() => {
         treeRef.current.classList.add("fadeInDown")
         setTimeout(() => {
-            treeRef.current.classList.remove("fadeInDown")
+            if (treeRef.current) treeRef.current.classList.remove("fadeInDown")
         }, 300)
     }, [currentLevelId])
 
     const open = async (item, event) => {
         // to-do: save document before unload.
-        if (item.t == 0) {
+        if (item.t === 0) {
             props.setCreatedItem("")
             props.setActiveItem(item.i)
             window.internal.ui.activeLocation = item.id // Todo: Move to place
             if (event?.isTrusted) window.internal.ui.editor.hook.focus()
-        } else if (item.t == 1) {
+        } else if (item.t === 1) {
             props.openFolder(item.i, item.name)
         }
     }
     return (
         <div className="sidebar" style={props.style}>
             <div className="head">
-                <button id="newAnswerBtn" className="primary" onClick={() => {props.newFsItem(0)}}>
+                <button id="newAnswerBtn" className="primary" onClick={() => { props.newFsItem(0) }}>
                     <FontAwesomeIcon icon={faPlus} />&nbsp;
                     Uusi vastaus
                 </button>
-                <button id="newFolderBtn" className="folderSmall" onClick={() => {props.newFsItem(1)}}>
+                <button id="newFolderBtn" className="folderSmall" onClick={() => { props.newFsItem(1) }}>
                     <FontAwesomeIcon icon={faFolder} />
                 </button>
             </div>
@@ -210,11 +226,19 @@ export default function Sidebar(props) {
                         }} tabIndex="-1">
                             <FontAwesomeIcon icon={faLevelUpAlt} />&nbsp;&nbsp;
                             {props.fsPath[props.fsPath.length - 2].name}
-                        </button>
-                        : null}
+                        </button> :
+                        null}
                     {level ? level.map((item) => {
-                        const selected = activeItemData?.i == item.i
-                        return <FilesystemItem createdItem={props.createdItem} level={props.level} setLevel={props.setLevel} deleteDocument={props.deleteDocument} key={item.i} data={selected ? activeItemData : item} selected={selected} onClick={(event) => open(item, event)}
+                        const selected = activeItemData?.i === item.i
+                        return <FilesystemItem
+                            createdItem={props.createdItem}
+                            level={props.level}
+                            setLevel={props.setLevel}
+                            deleteDocument={props.deleteDocument}
+                            key={item.i}
+                            data={selected ? activeItemData : item}
+                            selected={selected}
+                            onClick={(event) => open(item, event)}
                         />
                     }) : null}
                     <Skeleton count={20}/>

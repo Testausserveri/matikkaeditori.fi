@@ -1,8 +1,11 @@
-/*globals MathQuill, MathJax */
+/* eslint-disable new-cap */
+/* globals MathQuill, MathJax */
 // Todo: Move from worker components to here
-import * as uuid from "./uuid.js"
-import Utils from "./utils.js"
-import Input from "./input.js"
+import * as uuid from "./uuid"
+// TODO: This should be fixed?
+// eslint-disable-next-line import/no-cycle
+import Utils from "./utils"
+import input from "./input"
 
 // Assets
 import errorIcon from "./error.svg"
@@ -21,7 +24,7 @@ import errorIcon from "./error.svg"
  * @property {[]} flags List of temporary flags
  */
 /**
- * @typedef {{MathElement}} MathElementList List of math elements 
+ * @typedef {{MathElement}} MathElementList List of math elements
  */
 
 /**
@@ -40,7 +43,7 @@ const Math = {
      * Create a new math element
      * @returns {MathElement}
      */
-    create(){
+    create() {
         // Create construct
         /**
          * @type {MathElement}
@@ -59,7 +62,7 @@ const Math = {
         //  container: Parent of all elements
         //  inputElement: Reference to the raw element
         //  image: Reference to the image stand-in for the input when it's closed
-        Object.assign(obj, Input())
+        Object.assign(obj, input())
 
         // Initialize MathQuill
         const mathQuillInterface = MathQuill.getInterface(2)
@@ -68,20 +71,24 @@ const Math = {
             spaceBehavesLikeTab: false,
             handlers: {
                 edit: async () => {
-                    if(obj.flags.includes("ignoreInputDynamic")){
+                    if (obj.flags.includes("ignoreInputDynamic")) {
                         obj.flags.splice(obj.flags.indexOf("ignoreInputDynamic"), 1)
                         return
                     }
-                    if(obj.data !== obj.dynamicInterface.latex()) this.write(obj.id, obj.dynamicInterface.latex(), "dynamic")
+                    if (obj.data !== obj.dynamicInterface.latex()) {
+                        this.write(
+                            obj.id, obj.dynamicInterface.latex(), "dynamic"
+                        )
+                    }
                     obj.dynamicInterface.focus()
                 },
-                moveOutOf: async direction => {
+                moveOutOf: async (direction) => {
                     this.events.dispatchEvent(new CustomEvent("moveOut", { detail: obj }))
                     this.close(obj.id)
                     const line = Utils.getParentLine(obj.container)
                     let outsideNodeIndex = Utils.getNodeIndex(line, obj.container)
-                    if(direction > 0) outsideNodeIndex += 1
-                    if(line.childNodes[line.childNodes.length - 1] === obj.container) {
+                    if (direction > 0) outsideNodeIndex += 1
+                    if (line.childNodes[line.childNodes.length - 1] === obj.container) {
                         obj.container.after(document.createElement("br"))
                     }
                     Utils.select(line, outsideNodeIndex)
@@ -93,23 +100,27 @@ const Math = {
         // TODO: Move out with arrow keys for raw stuff...?
         obj.latexInput.oninput = async () => {
             // No skipping needed
-            /*if(obj.flags.includes("ignoreInputLatex")){
+            /* if(obj.flags.includes("ignoreInputLatex")){
                 obj.flags.splice(obj.flags.indexOf("ignoreInputLatex"), 1)
                 //return
-            }*/
-            if(obj.latexInput.value !== obj.data) this.write(obj.id, obj.latexInput.value, "latex")
+            } */
+            if (obj.latexInput.value !== obj.data) {
+                this.write(
+                    obj.id, obj.latexInput.value, "latex"
+                )
+            }
         }
 
         // Listen for close events
-        /*obj.dynamicInput.children[0].children[0].onblur = async () => { // Not a listener -> Not a memory leak.
+        /* obj.dynamicInput.children[0].children[0].onblur = async () => { // Not a listener -> Not a memory leak.
             if(obj.isOpen && !Utils.wasParentClicked(obj.container)) this.close(obj.id)
         }
         obj.latexInput.onblur = async () => { // Not a listener -> Not a memory leak.
             if(obj.isOpen && !Utils.wasParentClicked(obj.container)) this.close(obj.id)
-        }*/
+        } */
 
         // Finalize
-        //obj.image.setAttribute("onclick", "window.internal.ui.editor.local.Math.open(\"" + obj.id + "\")")
+        // obj.image.setAttribute("onclick", "window.internal.ui.editor.local.Math.open(\"" + obj.id + "\")")
         obj.container.setAttribute("math", "") // TODO: This change has to be propagated
         obj.container.setAttribute("math-id", obj.id)
         obj.container.style.display = "none"
@@ -121,13 +132,13 @@ const Math = {
      * @param {string} id
      * @returns {void}
      */
-    open(id){
+    open(id) {
         const obj = this.collection[id]
-        if(obj.isOpen) return
+        if (obj.isOpen) return
 
         // Open the element
         // TODO: Refactor this
-        if(obj.isOpen === null){
+        if (obj.isOpen === null) {
             // Never opened or closed before, element is ready
             obj.container.style.display = ""
             obj.container.className = "inputContainer open"
@@ -137,16 +148,16 @@ const Math = {
             // MathQuill weirdness
             obj.dynamicInterface.focus()
             obj.dynamicInterface.reflow()
-        }else {
+        } else {
             obj.container.removeAttribute("style")
             obj.image.removeAttribute("style")
             // Get elements from cache
-            if(this.cache[id] !== undefined){
-                while(obj.container.firstChild) {
+            if (this.cache[id] !== undefined) {
+                while (obj.container.firstChild) {
                     obj.container.lastChild.remove()
-                    if(!obj.container.firstChild) break
+                    if (!obj.container.firstChild) break
                 }
-                for(const child of this.cache[id]) obj.container.appendChild(child)
+                for (const child of this.cache[id]) obj.container.appendChild(child)
                 obj.isOpen = true
                 obj.container.className = "inputContainer open"
                 // Set values
@@ -156,46 +167,45 @@ const Math = {
                 // MathQuill weirdness
                 obj.dynamicInterface.focus()
                 obj.dynamicInterface.reflow()
-            }else {
-                throw "Cache miss"
+            } else {
+                throw new Error("Cache miss")
             }
         }
 
         obj.container.contentEditable = false
-        
+
         // Todo: This should not live in here. This component is dynamic.
-        if(window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(true)
+        if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(true)
         this.events.dispatchEvent(new CustomEvent("focus", { detail: obj }))
-        return
     },
 
     /**
      * Remove a math element
-     * @param {string} id 
+     * @param {string} id
      * @returns {void}
      */
-    remove(id){
+    remove(id) {
         const obj = this.collection[id]
-        if(obj === undefined) throw "Math element \"" + id + "\" does not exist"
+        if (obj === undefined) throw new Error(`Math element "${id}" does not exist`)
         // Remove all children
-        for(const child of obj.container.childNodes) child.remove()
+        for (const child of obj.container.childNodes) child.remove()
         // Remove from memory
         delete this.collection[id]
         this.events.dispatchEvent(new CustomEvent("remove", { detail: id })) // Future-proofing
-        return
     },
 
     /**
      * Write data to a math element
-     * @param {string} id 
+     * @param {string} id
      * @param {string} data
      * @param {string} from
      */
-    write(id, data, from){
-        if(!this.collection[id]) throw "Math element \"" + id + "\" does not exist"
+    write(
+        id, data, from = ""
+    ) {
+        if (!this.collection[id]) throw new Error(`Math element "${id}" does not exist`)
         const obj = this.collection[id]
-        if(!obj.writable) return
-        if(from === undefined) from = ""
+        if (!obj.writable) return
 
         obj.data = data
         obj.container.setAttribute("math", btoa(data))
@@ -206,30 +216,30 @@ const Math = {
         this.domCache.appendChild(obj.dynamicInput)
 
         // Write the actual data, finally
-        if(from !== "dynamic"){
+        if (from !== "dynamic") {
             obj.flags.push("ignoreInputDynamic")
             obj.dynamicInterface.latex(data)
             obj.dynamicInterface.reflow()
         }
-        if(from !== "latex") {
-            //obj.flags.push("ignoreInputLatex")
+        if (from !== "latex") {
+            // obj.flags.push("ignoreInputLatex")
             obj.latexInterface.latex(data)
         }
 
         // Pop-out of cache
         placeholder.before(obj.dynamicInput)
-        placeholder.remove() 
+        placeholder.remove()
     },
-    
+
     /**
      * Close a math element
      * @param {string} id
      * @returns {void}
      */
-    close(id){
+    close(id) {
         const obj = this.collection[id]
-        if(obj === undefined) throw "Math element \"" + id + "\" does not exist"
-        if(!obj.isOpen) return
+        if (obj === undefined) throw new Error(`Math element "${id}" does not exist`)
+        if (!obj.isOpen) return
 
         // Close the element
         obj.isOpen = false
@@ -239,12 +249,12 @@ const Math = {
 
         // Remove if empty
         let removed = false
-        if(obj.data === ""){
+        if (obj.data === "") {
             this.remove(id)
             removed = true
-        }else {
+        } else {
             // Invalid latex?
-            if(obj.dynamicInterface.latex() !== obj.data) {
+            if (obj.dynamicInterface.latex() !== obj.data) {
                 // Add error icon
                 obj.image.src = `${errorIcon}`
                 // TODO: Move to css
@@ -252,15 +262,15 @@ const Math = {
                 obj.image.style.width = "20px"
                 // Remove every element from container
                 this.cache[id] = []
-                for(const child of obj.container.children) this.cache[id].push(child)
-                while(obj.container.firstChild) {
+                for (const child of obj.container.children) this.cache[id].push(child)
+                while (obj.container.firstChild) {
                     obj.container.lastChild.remove()
-                    if(!obj.container.firstChild) break
+                    if (!obj.container.firstChild) break
                 }
 
                 // Add image
                 obj.container.appendChild(obj.image)
-            }else {
+            } else {
                 // Render latex in the form of an SVG
                 // Handle umlauts
                 let formattedData = obj.data
@@ -273,66 +283,66 @@ const Math = {
                 const svg = render.getElementsByTagName("svg")[0].outerHTML
 
                 // Display rendered svg
-                obj.image.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)))
+                obj.image.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`
 
                 // Remove every element from container
                 this.cache[id] = []
-                for(const child of obj.container.children) this.cache[id].push(child)
-                while(obj.container.firstChild) {
+                for (const child of obj.container.children) this.cache[id].push(child)
+                while (obj.container.firstChild) {
                     obj.container.lastChild.remove()
-                    if(!obj.container.firstChild) break
+                    if (!obj.container.firstChild) break
                 }
 
                 // Add image
                 obj.container.appendChild(obj.image)
             }
             // Todo: This should not live in here. This component is dynamic.
-            if(window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
+            if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
         }
         obj.container.contentEditable = true
         this.events.dispatchEvent(new CustomEvent("blur", { detail: obj }))
-        if(removed) delete this.collection[id]
+        if (removed) delete this.collection[id]
         obj.container.setAttribute("math", btoa(obj.data))
-        return
     },
 
     /**
      * Flush math related memory
      * @returns {void}
      */
-    flush(){
+    flush() {
         this.cache = {}
-        for(const id in this.collection){
+        for (const id of Object.keys(this.collection)) {
             this.remove(id)
         }
         delete this.collection
         this.domCache.innerHTML = ""
         this.collection = {}
-        return
     },
 
-    init(){
-        // This needs to exist for now, as mathquill needs to do some svg calculations.
+    init() {
+        // This needs to exist for now, as MathQuill needs to do some svg calculations.
         // Without this the elements won't have the appropriate prototypes
         // A cleaner solution will be explored when I decide to have time for that :p
         Math.domCache.style.display = "none"
         document.body.appendChild(Math.domCache)
 
         // Listener to open stuff
-        window.addEventListener("click", async e => {
+        window.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("math-id") ?? e.target.parentElement.getAttribute("math-id")
-            if(id && !this.collection[id].isOpen){
+            if (id && !this.collection[id].isOpen) {
                 this.open(id)
             }
         })
 
         // Listener to close stuff
-        window.addEventListener("mousedown", async e => {
+        window.addEventListener("mousedown", async (e) => {
             const id = e.target.getAttribute("math-id") ?? e.target.parentElement.getAttribute("math-id")
             // Close all open math
             const closeThese = Object.keys(this.collection)
                 .filter((_id) => _id !== id)
+                // eslint-disable-next-line no-underscore-dangle
                 .filter((_id) => this.collection[_id].isOpen)
+                // eslint-disable-next-line no-underscore-dangle
                 .filter((_id) => !Utils.isSomeParent(e.target, this.collection[_id].container))
             closeThese.forEach((_id) => this.close(_id))
         })
