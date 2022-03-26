@@ -10,6 +10,7 @@
     "@fortawesome/react-fontawesome": "^0.1.14",
     "comlink": "^4.3.1",
     "jquery": "^3.6.0",
+    "lodash": "^4.17.21",
     "mathjax-node": "^2.1.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -47,10 +48,10 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "eslint": "^7.19.0",
-    "eslint-plugin-react": "^7.22.0",
-    "worker-loader": "^3.0.8",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-prettier": "^4.0.0"
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.22.0",
+    "worker-loader": "^3.0.8"
   }
 }
