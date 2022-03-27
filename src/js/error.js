@@ -12,4 +12,6 @@ export default async function error(source, message) {
     console.log(
         `%c-------------------------\nError (${source}):\n\n%c%s\n%c-------------------------`, css, "color: unset;", message, css
     )
+    // eslint-disable-next-line no-console
+    console.trace()
 }

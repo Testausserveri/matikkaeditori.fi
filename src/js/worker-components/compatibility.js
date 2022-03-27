@@ -1,3 +1,5 @@
+import { Buffer } from "buffer"
+
 // Check compatibility and availability of required browser supplied components
 export default () => {
     // Set browser type
