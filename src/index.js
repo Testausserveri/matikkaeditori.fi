@@ -53,7 +53,7 @@ async function declareGlobals() {
             .then((res) => res.text())
             .then((res) => {
                 if (res.startsWith("VERSION: ")) {
-                    [window.internal.versionHash] = res.split(": ")
+                    [window.internal.versionHash] = res.split(": ").shift()
                 } else {
                     window.internal.versionHash = "Development version"
                 }
