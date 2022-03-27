@@ -4,3 +4,5 @@ package.json
 package-lock.json
 yarn.lock
 public/3rd-party/
+scripts
+config

@@ -5,9 +5,9 @@ import * as Comlink from "comlink"
 
 // TODO: Can this be done dynamically?
 // eslint-disable-next-line import/no-webpack-loader-syntax, import/no-unresolved
-import Filesystem from "./workers/filesystem"
+import Filesystem from "worker-loader!./workers/filesystem"
 // eslint-disable-next-line import/no-webpack-loader-syntax, import/no-unresolved
-import CloudStorage from "./workers/cloud-storage"
+import CloudStorage from "worker-loader!./workers/cloud-storage"
 // eslint-disable-next-line import/no-webpack-loader-syntax, import/no-unresolved
 import * as uuid from "./worker-components/uuid"
 
