@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* eslint-disable no-console */
 /**
  * Upgrade utility to convert old saves to new saves
@@ -54,26 +55,48 @@ async function ui(version) {
  * @param {string} message
  * @param {boolean} noNewLine
  * @param {boolean} noPrefix
+ * @param {string} safe
  */
 async function updateProgress(
-    message, noNewLine, noPrefix
+    message, noNewLine, noPrefix, safe
 ) {
     const prefix = `[ <a style="color: limegreen;">${((new Date().getTime() - timeSinceRender) / 1000).toFixed(3)} s</a> ]`
-    document.getElementById("progress").innerHTML += (noNewLine ? "" : "<br>") + (noPrefix ? "" : `${prefix} `) + message
+    const safeMessage = safe ? message.replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;") : message
+    document.getElementById("progress").innerHTML += (noNewLine ? "" : "<br>") + (noPrefix ? "" : `${prefix} `) + safeMessage
     document.getElementById("progress").parentElement.scrollTop = document.getElementById("progress").parentElement.scrollHeight
 }
 
 function format(html) {
+    // Group orphan elements in line 0
+    const newLines = [[]]
+    for (const element of html.body.children[0].childNodes) {
+        if (element.nodeName.toLowerCase() !== "div") {
+            if (element.nodeName.toLowerCase() === "br") newLines.push([])
+            newLines[newLines.length - 1 < 0 ? 0 : newLines.length - 1].push(element)
+        }
+    }
+    for (const line of newLines.reverse()) {
+        const lineElement = document.createElement("div")
+        lineElement.append(...line)
+        html.body.children[0].children[0].before(lineElement)
+    }
     for (const line of html.body.children[0].children) {
         if (line.className.includes("math-editor")) {
             // Broken math element, cannot be converted
-            return
+            continue
         }
+        // Ignore hidden elements
+        if (line.style.display === "none") continue
+
         // Handle possible math / image in line structure (bug in legacy editor)
         if (line.tagName.toLowerCase() === "img") {
             if (line.hasAttribute("style")) {
                 // Math
-                const math = document.createElement("a")
+                const math = document.createElement("math")
                 math.setAttribute("data", btoa(line.getAttribute("alt") !== null && line.getAttribute("alt").length !== 0 ? line.getAttribute("alt") : "Unset"))
                 const nLine = document.createElement("div")
                 nLine.appendChild(math)
@@ -89,12 +112,19 @@ function format(html) {
 
         // Handle line elements
         for (const child of line.children) {
+            if (line.style.display === "none") continue
             if (child.tagName.toLowerCase() === "img" && child.hasAttribute("style")) {
                 // Math
-                const math = document.createElement("a")
-                math.setAttribute("data", btoa(child.getAttribute("alt") !== null && child.getAttribute("alt").length !== 0 ? child.getAttribute("alt") : "Unset"))
+                const math = document.createElement("math")
+                math.setAttribute("math", btoa(child.getAttribute("alt") !== null && child.getAttribute("alt").length !== 0 ? child.getAttribute("alt") : "Unset"))
                 child.after(math)
                 child.remove()
+            }
+            if (child.tagName.toLowerCase() === "#text") {
+                // Decode text
+                child.textContent = new DOMParser().parseFromString(child.textContent, "text/html")?.documentElement?.textContent ?? ""
+                // Trim text
+                child.textContent = child.textContent.trimRight()
             }
         }
     }
@@ -122,7 +152,7 @@ export default {
     // Process to upgrade legacy version to current latest
     async legacy() {
         // eslint-disable-next-line no-async-promise-executor
-        return new Promise(async () => {
+        return new Promise(async (resolve) => {
             ui("legacy")
             updateProgress("Käynnistetään tiedostojärjestelmää...", true)
 
@@ -160,7 +190,9 @@ export default {
                         // Get data
                         const parser = new DOMParser()
                         const html = parser.parseFromString(`<body><div>${saveData.answer}<div></body>`, "text/html")
-                        updateProgress(`&nbsp;&nbsp;&nbsp;&nbsp;> "${title}" (${id}) -> ${newId}`)
+                        updateProgress(
+                            `&nbsp;&nbsp;&nbsp;&nbsp;> (${id}) -> ${newId}`, undefined, undefined
+                        )
                         const embedded = format(html)
                         updateProgress(
                             " <b>Luettu.</b>", true, true
@@ -202,15 +234,16 @@ export default {
 
             // Refresh and update version field
             localStorage.setItem("version", window.internal.version)
-            updateProgress("Päivitys valmis. Ladataan sivu uudelleen...")
+            updateProgress("Päivitys valmis. Käynnistetään editori...")
             let count = 6
-            setInterval(() => {
+            const counter = setInterval(() => {
                 count -= 1
                 if (count === 0) {
                     updateProgress(
                         "Nyt!", false, true
                     )
-                    window.location.reload()
+                    clearInterval(counter)
+                    resolve()
                 } else {
                     updateProgress(
                         count, false, true

@@ -80,7 +80,7 @@ async function declareGlobals() {
                     window.location.reload()
                 }
                 upgrade[currentVersion]().then(() => {
-                    console.log(`Upgraded to ${window.internal.version}`)
+                    console.log(`--- Upgraded to ${window.internal.version} ---`)
                     // Run the console component here
                     consoleComponent(window)
                     resolve()
