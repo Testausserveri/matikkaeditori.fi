@@ -208,6 +208,10 @@ export default function Sidebar(props) {
             props.openFolder(item.i, item.name)
         }
     }
+    const fsSort = (data) => (data
+        .sort((a, b) => (b.date - a.date)) // sort by date
+        .sort((a, b) => (a.t === 1 ? -1 : 0))) // folders first
+
     return (
         <div className="sidebar" style={props.style}>
             <div className="head">
@@ -229,7 +233,7 @@ export default function Sidebar(props) {
                             {props.fsPath[props.fsPath.length - 2].name}
                         </button> :
                         null}
-                    {level ? level.map((item) => {
+                    {level ? fsSort(level).map((item) => {
                         const selected = activeItemData?.i === item.i
                         return <FilesystemItem
                             createdItem={props.createdItem}

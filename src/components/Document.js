@@ -68,6 +68,8 @@ export default function Document({
 
         const copy = { ...activeItemData }
         copy.data = format
+        copy.date = new Date().getTime()
+
         saveActiveItemData(copy)
     }
 
