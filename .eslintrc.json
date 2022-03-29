@@ -27,6 +27,7 @@
             }
         ],
         "indent": ["error", 4],
+        "linebreak-style": ["error", "unix"],
         "quotes": ["error", "double"],
         "comma-dangle": ["error", "never"],
         "semi": ["error", "never"],
