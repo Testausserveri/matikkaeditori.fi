@@ -21,10 +21,9 @@ import errorIcon from "./error.svg"
  * @property {boolean} isOpen Is the math element open?
  * @property {string} data Element data
  * @property {string} id Math element's id
+ * @property {HTMLElement[]} labels Math element's selection labels
+ * @property {HTMLElement} infoElement Info element, text
  * @property {[]} flags List of temporary flags
- */
-/**
- * @typedef {{MathElement}} MathElementList List of math elements
  */
 
 /**
@@ -35,7 +34,7 @@ const Math = {
     cache: {}, // Cached editor elements
     domCache: document.createElement("interfaceCache"),
     /**
-     * @type {MathElementList}
+     * @type {Object.<string, MathElement>}
      */
     collection: {},
 
@@ -75,6 +74,7 @@ const Math = {
                         obj.flags.splice(obj.flags.indexOf("ignoreInputDynamic"), 1)
                         return
                     }
+                    if (obj.flags.includes("disableInputDynamic")) return
                     if (obj.data !== obj.dynamicInterface.latex()) {
                         this.write(
                             obj.id, obj.dynamicInterface.latex(), "dynamic"
@@ -174,6 +174,8 @@ const Math = {
 
         obj.container.contentEditable = false
 
+        if (obj.flags.includes("disableInputDynamic")) obj.labels[0].click() // Forces the raw latex view to open
+
         // Todo: This should not live in here. This component is dynamic.
         if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(true)
         this.events.dispatchEvent(new CustomEvent("focus", { detail: obj }))
@@ -220,6 +222,18 @@ const Math = {
             obj.flags.push("ignoreInputDynamic")
             obj.dynamicInterface.latex(data)
             obj.dynamicInterface.reflow()
+            if (obj.dynamicInterface.latex() !== data) {
+                if (obj.flags.includes("disableInputDynamic")) return
+                obj.dynamicInput.style.pointerEvents = "none"
+                obj.dynamicInput.style.userSelect = "none"
+                obj.infoElement.innerText = "LaTex syntax error"
+                obj.flags.push("disableInputDynamic")
+            } else {
+                obj.dynamicInput.style.pointerEvents = ""
+                obj.dynamicInput.style.userSelect = ""
+                obj.infoElement.innerText = ""
+                if (obj.flags.includes("disableInputDynamic")) obj.flags.splice(obj.flags.indexOf("disableInputDynamic"), 1)
+            }
         }
         if (from !== "latex") {
             // obj.flags.push("ignoreInputLatex")

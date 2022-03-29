@@ -51,6 +51,11 @@ export default () => {
         "section", "inputSection labels", container
     )
 
+    // Notification bar (text)
+    const info = createElement(
+        "p", "inputSection info", container
+    )
+
     // Dynamic latex input field & label
     const dynamicLatex = createElement(
         "span", "mathQuillField", section1
@@ -101,6 +106,8 @@ export default () => {
         container,
         dynamicInput: dynamicLatex,
         latexInput: rawLatex,
-        latexInterface: interfaceDummy
+        latexInterface: interfaceDummy,
+        labels: [rawLatexLabel, dynamicLatexLabel],
+        infoElement: info
     }
 }
