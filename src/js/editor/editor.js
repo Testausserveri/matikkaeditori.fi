@@ -362,6 +362,24 @@ class Editor {
                 // event.preventDefault()
                 const selection = Utils.getCaretPosition()
                 if (selection.startOffset === 0) {
+                    const tmpElementTable = {}
+                    // Callback after edit
+                    const m = new MutationObserver(async () => {
+                        m.disconnect()
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                // Change math back
+                                for (const id of Object.keys(Math.collection)) {
+                                    const dummy = document.querySelectorAll(`[dummy-id="${id}"]`)[0]
+                                    const math = Math.collection[id]
+                                    dummy.after(math.container)
+                                    dummy.remove()
+                                }
+                            })
+                        })
+                    })
+
+                    // Do the edits
                     const ids = Object.keys(Math.collection)
                     let index = ids.length
                     while (index !== 0) { // Ha! You can freeze the UI thread with this!
@@ -374,24 +392,16 @@ class Editor {
                         tmpElement.style.width = `${dimensions.width}px`
                         tmpElement.style.height = `${dimensions.height}px`
                         tmpElement.style.border = "unset"
+                        // tmpElement.style.padding = "5px"
                         tmpElement.style.display = "inline-flex"
                         tmpElement.style.verticalAlign = "middle"
                         tmpElement.setAttribute("dummy-id", id)
                         const math = Math.collection[id]
                         math.container.after(tmpElement)
+                        tmpElementTable[id] = tmpElement
                         Math.domCache.appendChild(math.container)
                     }
-                    // Callback after edit
-                    const m = new MutationObserver(async () => {
-                        m.disconnect()
-                        // Change math back
-                        for (const id of Object.keys(Math.collection)) {
-                            const dummy = document.querySelectorAll(`[dummy-id="${id}"]`)[0]
-                            const math = Math.collection[id]
-                            dummy.after(math.container)
-                            dummy.remove()
-                        }
-                    })
+
                     // Hook to line above
                     m.observe(this.hook.childNodes[Utils.getNodeIndex(this.hook, this.activeLine) - 1] ?? this.hook.childNodes[0], { subtree: true, childList: true, characterData: true })
                 }
@@ -423,9 +433,13 @@ class Editor {
                 const parentLine = Utils.getParentLine(this.activeMathElement.container)
                 if (
                     this.watchHook && // Editor is active
-                    !this.moveOutOfThisEvent && // No move-out with arrow keys (other portion of code handles the selection)
-                    parentLine.childNodes.length - 1 <= Utils.getNodeIndex(parentLine, this.activeMathElement.container) + 1 // Selection exists
-                ) Utils.select(parentLine, Utils.getNodeIndex(parentLine, this.activeMathElement.container) + 1)
+                    !this.moveOutOfThisEvent// && // No move-out with arrow keys (other portion of code handles the selection)
+                    // Note: Is this check needed?
+                    // parentLine.childNodes.length - 1 <= Utils.getNodeIndex(parentLine, this.activeMathElement.container) + 1 // Selection exists
+                ) {
+                    if (parentLine.childNodes[parentLine.childNodes.length - 1] === this.activeMathElement.container) Utils.selectEndOf(this.activeMathElement.container)
+                    else Utils.select(parentLine, Utils.getNodeIndex(parentLine, this.activeMathElement.container) + 1)
+                }
             }
 
             // Unset active math element

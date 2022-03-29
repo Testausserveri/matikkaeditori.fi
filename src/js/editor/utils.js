@@ -226,7 +226,7 @@ const Utils = {
     },
 
     /**
-     * Move caret to a certain position with an element
+     * Move caret to the end within an element
      */
     selectEndOf(node) {
         const range = document.createRange()

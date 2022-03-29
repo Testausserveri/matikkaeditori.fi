@@ -343,7 +343,7 @@ const Math = {
         // Listener to open stuff
         window.addEventListener("click", async (e) => {
             const id = e.target.getAttribute("math-id") ?? e.target.parentElement.getAttribute("math-id")
-            if (id && !this.collection[id].isOpen) {
+            if (id && this.collection[id] && !this.collection[id].isOpen) {
                 this.open(id)
             }
         })
