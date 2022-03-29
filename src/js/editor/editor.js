@@ -123,7 +123,6 @@ class Editor {
      */
     init() {
         let lastSelection = null // Last selected node (during keydown event)
-        let arrowKeyDoubleTap = false // Changes to the relevant function call for double tap
         let holdKeydown = false // Skip the next keydown event
 
         // Global keyboard listener
@@ -160,17 +159,8 @@ class Editor {
             // Ignore input
             if (holdKeydown) { event.preventDefault(); return }
 
-            // Special left double tap (2 hits in a row means we want to move, otherwise do nothing)
-            if (arrowKeyDoubleTap !== false && event.code === "ArrowLeft") {
-                arrowKeyDoubleTap()
-                arrowKeyDoubleTap = false
-                return
-            }
-            if (event.code === "ArrowLeft") {
-                arrowKeyDoubleTap = false
-            }
-
             // Main arrow key control handler
+            // TODO: Refactor this
             if (!event.ctrlKey && (event.code === "ArrowLeft" || event.code === "ArrowRight")) {
                 // await Utils.toggleAnchorMode(Utils.getObjectPropertyArray(Math.collection, "container"), true)
                 const selection = Utils.getSelectedNode()
@@ -180,50 +170,60 @@ class Editor {
                 // Focus function for math
                 const direction = event.code === "ArrowLeft" ? "moveToRightEnd" : "moveToLeftEnd"
                 const focus = (toSelect = selectionClone) => {
-                    const id = toSelect.getAttribute("math-id") ?? toSelect.firstChild.onclick.toString().split("\"")[1].split("\"")[0]
+                    const id = toSelect.getAttribute("math-id") ?? toSelect.parentElement.getAttribute("math-id")
                     Utils.waitForEvent(Math.events, "focus").then(() => {
                         Math.collection[id].dynamicInterface[direction]()
-                    })
-                    toSelect.firstChild.click()
+                    });
+                    (toSelect.firstChild ?? toSelect).click()
                 }
 
+                // Firefox needs it's own method of detection
+                if (window.browser === "firefox") {
+                    const elementList = Utils.listToArray(documentSelection.anchorNode.parentElement.childNodes)
+                    const selectionIndex = Utils.getNodeIndex(documentSelection.anchorNode.parentElement, documentSelection.anchorNode)
+                    if ( // At start (from right)
+                        documentSelection.anchorNode.nodeName.toLowerCase() === "#text" &&
+                        elementList[selectionIndex - 1]?.nodeName === "MATH" &&
+                        documentSelection.anchorOffset === 0
+                    ) {
+                        focus(elementList[selectionIndex - 1])
+                    } else if ( // At end (from left)
+                        documentSelection.anchorNode.nodeName.toLowerCase() === "#text" &&
+                        elementList[selectionIndex + 1]?.nodeName === "MATH" &&
+                        documentSelection.anchorOffset === documentSelection.anchorNode.textContent.length
+                    ) {
+                        focus(elementList[selectionIndex + 1])
+                    }
+                }
+
+                // Normal ways of detection
                 // Detect by selection change
-                if (selection.nodeName.toLowerCase() === "math" && selection.getAttribute("math") !== null && this.activeMathElement === null) {
+                if (
+                    selection.nodeName.toLowerCase() === (window.browser === "firefox" ? "img" : "math") &&
+                    selection.getAttribute("math") !== null &&
+                    this.activeMathElement === null
+                ) {
                     event.preventDefault()
                     holdKeydown = true
-                    if (direction === "moveToRightEnd") {
-                        // Wait for same keycode again
-                        // TODO: Select start of text node right from math
-                        Utils.select(this.activeLine, Utils.getNodeIndex(this.activeLine, Utils.getSelectedNode()) + 1)
-                        if (window.browser !== "firefox" || this.moveOutOfThisEvent) focus(selection) // Double tap on firefox
-                        else arrowKeyDoubleTap = focus
-                    } else {
-                        focus(selection)
-                    }
+                    focus(selection)
                 } else {
                     // Detect by index jump
                     if (
                         // We need the last selection & this only affects moving to the left
                         lastSelection && event.code === "ArrowLeft" &&
-                        // Firefox patch: Only handle when text is selected
-                        (window.browser === "firefox" ? documentSelection.anchorNode.nodeName.toLowerCase() === "text" : true) &&
                         // Not in the start / end of a line
-                        Utils.getNodeIndex(this.activeLine, lastSelection.anchorNode) !== 0 && Utils.getNodeIndex(this.activeLine, lastSelection.anchorNode) !== lastSelection.anchorNode?.parentNode?.childNodes?.length
-                    ) {
+                        Utils.getNodeIndex(this.activeLine, lastSelection.anchorNode) !== 0 && Utils.getNodeIndex(this.activeLine, lastSelection.anchorNode) !== lastSelection.anchorNode?.parentNode?.childNodes?.length &&
                         // Detect the jump
-                        if (window.browser === "firefox" ? false :
-                            // On something else than Firefox
-                            lastSelection.anchorOffset < documentSelection.anchorOffset &&
-                            documentSelection.anchorOffset === documentSelection.anchorNode?.nodeValue?.length
-                        ) {
-                            let skippedNode = Utils.getNodeByIndex(this.activeLine, lastSelection.anchorOffset - 1)
-                            if (skippedNode) {
-                                if (skippedNode.nodeName.toLowerCase() === "math") {
-                                    focus(skippedNode)
-                                } else if (window.browser === "firefox") {
-                                    skippedNode = Utils.getNodeByIndex(this.activeLine, lastSelection.anchorOffset)
-                                    focus(skippedNode)
-                                }
+                        lastSelection.anchorOffset < documentSelection.anchorOffset &&
+                        documentSelection.anchorOffset === documentSelection.anchorNode?.nodeValue?.length
+                    ) {
+                        let skippedNode = Utils.getNodeByIndex(this.activeLine, lastSelection.anchorOffset - 1)
+                        if (skippedNode) {
+                            if (skippedNode.nodeName.toLowerCase() === "math") {
+                                focus(skippedNode)
+                            } else if (window.browser === "firefox") {
+                                skippedNode = Utils.getNodeByIndex(this.activeLine, lastSelection.anchorOffset)
+                                focus(skippedNode)
                             }
                         }
                     }
@@ -293,17 +293,17 @@ class Editor {
             // --------------------------------------------------------------------------------------------------------------
 
             // TODO: I forget what this does...
-            /* if(event.code === "Enter" && window.browser === "firefox"){
+            if (event.code === "Enter" && window.browser === "firefox") {
                 const selection = document.getSelection()
                 const direction = selection.anchorOffset // 0 is left, 1 is right
-                if(selection.anchorNode.nodeName.toLowerCase() === "a" && selection.anchorNode.childNodes.length === 1 && selection.anchorNode.childNodes[0].nodeName.toLowerCase() === "img"){
+                if (selection.anchorNode.nodeName.toLowerCase() === "a" && selection.anchorNode.childNodes.length === 1 && selection.anchorNode.childNodes[0].nodeName.toLowerCase() === "img") {
                     event.preventDefault()
-                    if(direction === 0){
+                    if (direction === 0) {
                         const line = document.createElement("div")
                         line.appendChild(document.createElement("br")) // this.activator
                         this.activeLine.before(line)
                         Utils.selectByIndex(0, line)
-                    }else {
+                    } else {
                         const line = document.createElement("div")
                         line.appendChild(document.createElement("br")) // this.activator
                         this.activeLine.after(line)
@@ -311,7 +311,7 @@ class Editor {
                     }
                     return // Forced to return
                 }
-            } */
+            }
             // Patch: <br> appears in the beginning of a new line when using enter. This breaks things, so we shall remove it.
             if (event.key === "Enter" && this.activeMathElement === null) {
                 // We can expect a new line is created here
