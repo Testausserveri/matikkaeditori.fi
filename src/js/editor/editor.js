@@ -83,6 +83,8 @@ class Editor {
             if (line.length === 0) {
                 lineElement = document.createElement("div")
                 lineElement.appendChild(document.createElement("br"))
+                this.hook.appendChild(lineElement)
+                if (!wrote) wrote = true
             } else {
                 for (const element of line) {
                     if (element.name === "meta") {
