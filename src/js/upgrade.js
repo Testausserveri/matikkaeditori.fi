@@ -186,6 +186,20 @@ export default {
                         const formattedDate = new Date(date)
                         let title = saveData.answer.split("<div>")[0].split("<br>")[0].replace(/&nbsp;/g, " ").trim()
                         if (title.length === 0) title = "Unnamed"
+                        if (title.includes("<img")) {
+                            // Remove math elements from the title
+                            const richTitle = document.createElement("p")
+                            richTitle.innerHTML = title
+                            for (const child of richTitle.children) {
+                                console.debug(child)
+                                if (child.hasAttribute("alt")) {
+                                    const text = document.createTextNode(child.getAttribute("alt"))
+                                    child.before(text)
+                                    child.remove()
+                                }
+                            }
+                            title = richTitle.innerHTML
+                        }
 
                         // Get data
                         const parser = new DOMParser()
