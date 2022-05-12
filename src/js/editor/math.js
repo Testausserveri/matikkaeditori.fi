@@ -55,6 +55,7 @@ const Math = {
             data: "",
             flags: []
         }
+        obj.image.setAttribute("draggable", "false")
         this.collection[obj.id] = obj
 
         // Create HTML elements
