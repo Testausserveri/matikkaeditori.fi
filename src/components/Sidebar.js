@@ -84,6 +84,23 @@ function FilesystemItem(props) {
         },
         {
             text: "Monista",
+            action: async () => {
+                await window.internal.workers.api(
+                    "Filesystem", "write", {
+                        instance: window.internal.ui.activeFilesystemInstance,
+                        id: props.data.i,
+                        write: {
+                            name: `${props.data.name}-kopio`,
+                            type: 0,
+                            data: props.data.name
+                        }
+                    }
+                )
+                // TODO: refresh filesystem view
+            }
+        },
+        {
+            text: "Siirrä",
             action: () => {}
         },
         {
