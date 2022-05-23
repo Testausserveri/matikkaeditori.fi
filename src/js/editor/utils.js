@@ -95,7 +95,7 @@ const Utils = {
     getParentLine(node) {
         if (!(node instanceof Node)) throw console.error("[ EDITOR ] Node given to getParentLine is not instance of Node.")
         const traverse = (innerNode) => {
-            if (innerNode.parentNode.nodeName.toLowerCase() === "div") {
+            if ((innerNode?.parentNode?.nodeName || "").toLowerCase() === "div") {
                 return innerNode.parentNode
             }
             // Check other parent
