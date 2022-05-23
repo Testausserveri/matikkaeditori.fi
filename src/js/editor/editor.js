@@ -112,7 +112,7 @@ class Editor {
             Math.collection[id].writable = false
             Math.open(id)
             Math.close(id)
-            Math.collection[id].writable = true
+            if (Math.collection[id] !== undefined) Math.collection[id].writable = true
         }
 
         this.watchHook = true
