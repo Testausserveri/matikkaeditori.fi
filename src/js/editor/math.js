@@ -351,6 +351,8 @@ const Math = {
 
         // Listener to close stuff
         window.addEventListener("mousedown", async (e) => {
+            // Don't hide for symbol clicks
+            if (e.target?.parentElement?.className === "symbols" || e.target?.parentElement?.parentElement?.className === "symbols") return
             const id = e.target.getAttribute("math-id") ?? e.target.parentElement.getAttribute("math-id")
             // Close all open math
             const closeThese = Object.keys(this.collection)
