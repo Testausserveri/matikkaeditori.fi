@@ -433,6 +433,7 @@ class Editor {
             // Note: Chrome should override this
             if (this.activeMathElement) {
                 const parentLine = Utils.getParentLine(this.activeMathElement.container)
+                console.debug("Handling blur in", parentLine, "to index", Utils.getNodeIndex(parentLine, this.activeMathElement.container) + 1, "while range is", parentLine.childNodes.length)
                 if (
                     this.watchHook && // Editor is active
                     !this.moveOutOfThisEvent// && // No move-out with arrow keys (other portion of code handles the selection)
