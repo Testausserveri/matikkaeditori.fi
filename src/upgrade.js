@@ -8,9 +8,9 @@
 // Dependencies
 import React from "react"
 import ReactDOM from "react-dom"
-import * as uuid from "./worker-components/uuid"
-import * as workers from "./workers"
-import Utils from "./editor/utils"
+import * as uuid from "./service-workers/components/uuid"
+import * as workers from "./service-workers/manager"
+import Utils from "./math-editor/utils"
 
 let timeSinceRender = null
 

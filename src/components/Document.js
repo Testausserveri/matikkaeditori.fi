@@ -2,15 +2,15 @@ import React, { useRef, useEffect } from "react"
 
 import "../css/editor.css"
 import "../css/tooltip.css"
-import "../js/editor/input.css"
+import "../math-editor/input.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDownload } from "@fortawesome/free-solid-svg-icons"
 import Skeleton from "react-loading-skeleton"
-import Editor from "../js/editor/editor"
+import Editor from "../math-editor/editor"
 
 import Dropdown from "./Dropdown"
 
-import exportUtil from "../js/export"
+import exportUtil from "../utils/export"
 import useActiveItem from "../utils/useActiveItem"
 import "react-loading-skeleton/dist/skeleton.css"
 

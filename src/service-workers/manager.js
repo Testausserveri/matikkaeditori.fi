@@ -9,7 +9,7 @@ import Filesystem from "worker-loader!./workers/filesystem"
 // eslint-disable-next-line import/no-webpack-loader-syntax, import/no-unresolved
 import CloudStorage from "worker-loader!./workers/cloud-storage"
 // eslint-disable-next-line import/no-webpack-loader-syntax, import/no-unresolved
-import * as uuid from "./worker-components/uuid"
+import * as uuid from "./components/uuid"
 
 // Message handlers
 /**

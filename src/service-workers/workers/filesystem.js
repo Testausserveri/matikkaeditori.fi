@@ -11,10 +11,10 @@
 import * as Comlink from "comlink"
 
 // Internal dependencies
-import * as uuid from "../worker-components/uuid"
-import hash from "../worker-components/hash"
-import com from "../worker-components/com"
-import consoleWrapper from "../console"
+import * as uuid from "../components/uuid"
+import hash from "../components/hash"
+import com from "../components/com"
+import consoleWrapper from "../../utils/console"
 
 // 3rd-party external dependencies
 importScripts(["/3rd-party/localforage.js"])
