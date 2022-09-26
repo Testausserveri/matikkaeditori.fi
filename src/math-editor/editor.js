@@ -174,6 +174,8 @@ class Editor {
                 const focus = (toSelect = selectionClone) => {
                     const id = toSelect.getAttribute("math-id") ?? toSelect.parentElement.getAttribute("math-id")
                     Utils.waitForEvent(Math.events, "focus").then(() => {
+                        Math.collection[id].labels[1].onclick() // Manually force the display the dynamic interface
+                        Math.collection[id].dynamicInterface.focus()
                         Math.collection[id].dynamicInterface[direction]()
                     });
                     (toSelect.firstChild ?? toSelect).click()
