@@ -9,6 +9,7 @@ import input from "./input"
 
 // Assets
 import errorIcon from "./error.svg"
+import specialChars from "./specialChars"
 
 /**
  * @typedef MathElement Matikkaeditori math element
@@ -287,11 +288,17 @@ const Math = {
                 obj.container.appendChild(obj.image)
             } else {
                 // Render latex in the form of an SVG
+
                 // Handle umlauts
                 let formattedData = obj.data
                 formattedData = formattedData.replace(/ö/g, "\\ddot{o}")
                 formattedData = formattedData.replace(/ä/g, "\\ddot{a}")
                 formattedData = formattedData.replace(/å/g, "\\mathring{a}")
+
+                // Handle special chars
+                for (const char of specialChars[0].characters) {
+                    formattedData = formattedData.split(char.character).join(char.latexCommand)
+                }
 
                 const render = MathJax.tex2svg(formattedData, { em: 10, ex: 5, display: true })
                 // Todo: Elements not removed -> Is the memory still freed?
