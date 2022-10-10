@@ -368,20 +368,41 @@ class Editor {
                 if (selection.startOffset === 0) {
                     const tmpElementTable = {}
                     // Callback after edit
-                    const m = new MutationObserver(async () => {
+                    const recover = async (m, timeout) => {
                         m.disconnect()
+                        clearInterval(timeout)
                         requestAnimationFrame(() => {
                             requestAnimationFrame(() => {
                                 // Change math back
                                 for (const id of Object.keys(Math.collection)) {
                                     const dummy = document.querySelectorAll(`[dummy-id="${id}"]`)[0]
+                                    if (!dummy) {
+                                        console.error("Unable to recover document math element", id)
+                                        // eslint-disable-next-line no-continue
+                                        continue
+                                    }
                                     const math = Math.collection[id]
                                     dummy.after(math.container)
                                     dummy.remove()
                                 }
+                                this.hook.oninput()
                             })
                         })
-                    })
+                    }
+
+                    let m
+
+                    // Fallback to timeout
+                    // TODO: Fallback is always triggered, mutation observer does not work?
+                    const timeout = setInterval(() => {
+                        if (document.querySelectorAll("[dummy-id]").length !== 0) {
+                            console.warn("Dummy recovery fallback timeout triggered!")
+                            recover(m, timeout)
+                        }
+                    }, 10)
+
+                    // Mutation observer
+                    m = new MutationObserver(() => recover(m, timeout))
 
                     // Do the edits
                     const ids = Object.keys(Math.collection)
@@ -389,15 +410,17 @@ class Editor {
                     while (index !== 0) { // Ha! You can freeze the UI thread with this!
                         index -= 1
                         const id = Object.keys(Math.collection)[index]
-                        const tmpElement = document.createElement("img")
+                        const tmpElement = Math.collection[id].image.cloneNode()
                         // When we match the size, it's impossible for the human eye to detect
                         // the math being gone for one frame, when the text does not reflow
-                        const dimensions = Math.collection[id].container.getBoundingClientRect()
-                        tmpElement.style.width = `${dimensions.width}px`
-                        tmpElement.style.height = `${dimensions.height}px`
-                        tmpElement.style.border = "unset"
-                        // tmpElement.style.padding = "5px"
+                        // const dimensions = Math.collection[id].image.getBoundingClientRect()
+                        // tmpElement.style.width = `${dimensions.width}px`
+                        // tmpElement.style.height = `${dimensions.height}px`
+                        // tmpElement.style.border = "unset"
+                        tmpElement.style.padding = "5px"
+                        tmpElement.style.margin = "0px 3px 3px 5px"
                         tmpElement.style.display = "inline-flex"
+                        tmpElement.style.border = "border: 1px solid #d5e0e5"
                         tmpElement.style.verticalAlign = "middle"
                         tmpElement.setAttribute("dummy-id", id)
                         const math = Math.collection[id]

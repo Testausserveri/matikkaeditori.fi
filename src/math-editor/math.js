@@ -147,12 +147,14 @@ const Math = {
             obj.container.removeAttribute("style")
             obj.image.removeAttribute("style")
             obj.isOpen = true
+
             // MathQuill weirdness
             obj.dynamicInterface.focus()
             obj.dynamicInterface.reflow()
         } else {
             obj.container.removeAttribute("style")
             obj.image.removeAttribute("style")
+
             // Get elements from cache
             if (this.cache[id] !== undefined) {
                 while (obj.container.firstChild) {
@@ -162,10 +164,12 @@ const Math = {
                 for (const child of this.cache[id]) obj.container.appendChild(child)
                 obj.isOpen = true
                 obj.container.className = "inputContainer open"
+
                 // Set values
                 obj.flags.push("ignoreInputDynamic")
                 obj.dynamicInterface.latex(obj.data)
                 obj.latexInterface.latex(obj.data)
+
                 // MathQuill weirdness
                 obj.dynamicInterface.focus()
                 obj.dynamicInterface.reflow()
@@ -264,66 +268,65 @@ const Math = {
         obj.image.removeAttribute("style")
 
         // Remove if empty
-        let removed = false
-        if (obj.data === "") {
+        if (obj.data.length === 0) {
             this.remove(id)
-            removed = true
-        } else {
-            // Invalid latex?
-            if (obj.dynamicInterface.latex() !== obj.data) {
-                // Add error icon
-                obj.image.src = `${errorIcon}`
-                // TODO: Move to css
-                obj.image.style.display = "inline"
-                obj.image.style.width = "20px"
-                // Remove every element from container
-                this.cache[id] = []
-                for (const child of obj.container.children) this.cache[id].push(child)
-                while (obj.container.firstChild) {
-                    obj.container.lastChild.remove()
-                    if (!obj.container.firstChild) break
-                }
-
-                // Add image
-                obj.container.appendChild(obj.image)
-            } else {
-                // Render latex in the form of an SVG
-
-                // Handle umlauts
-                let formattedData = obj.data
-                formattedData = formattedData.replace(/ö/g, "\\ddot{o}")
-                formattedData = formattedData.replace(/ä/g, "\\ddot{a}")
-                formattedData = formattedData.replace(/å/g, "\\mathring{a}")
-
-                // Handle special chars
-                for (const char of specialChars[0].characters) {
-                    formattedData = formattedData.split(char.character).join(char.latexCommand)
-                }
-
-                const render = MathJax.tex2svg(formattedData, { em: 10, ex: 5, display: true })
-                // Todo: Elements not removed -> Is the memory still freed?
-                const svg = render.getElementsByTagName("svg")[0].outerHTML
-
-                // Display rendered svg
-                obj.image.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`
-
-                // Remove every element from container
-                this.cache[id] = []
-                for (const child of obj.container.children) this.cache[id].push(child)
-                while (obj.container.firstChild) {
-                    obj.container.lastChild.remove()
-                    if (!obj.container.firstChild) break
-                }
-
-                // Add image
-                obj.container.appendChild(obj.image)
-            }
-            // Todo: This should not live in here. This component is dynamic.
-            if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
+            return
         }
+
+        // Invalid latex?
+        if (obj.dynamicInterface.latex() !== obj.data) {
+            // Add error icon
+            obj.image.src = `${errorIcon}`
+            // TODO: Move to css
+            obj.image.style.display = "inline"
+            obj.image.style.width = "20px"
+            // Remove every element from container
+            this.cache[id] = []
+            for (const child of obj.container.children) this.cache[id].push(child)
+            while (obj.container.firstChild) {
+                obj.container.lastChild.remove()
+                if (!obj.container.firstChild) break
+            }
+
+            // Add image
+            obj.container.appendChild(obj.image)
+        } else {
+            // Render latex in the form of an SVG
+
+            // Handle umlauts
+            let formattedData = obj.data
+            formattedData = formattedData.replace(/ö/g, "\\ddot{o}")
+            formattedData = formattedData.replace(/ä/g, "\\ddot{a}")
+            formattedData = formattedData.replace(/å/g, "\\mathring{a}")
+
+            // Handle special chars
+            for (const char of specialChars[0].characters) {
+                formattedData = formattedData.split(char.character).join(char.latexCommand)
+            }
+
+            const render = MathJax.tex2svg(formattedData, { em: 10, ex: 5, display: true })
+            // Todo: Elements not removed -> Is the memory still freed?
+            const svg = render.getElementsByTagName("svg")[0].outerHTML
+
+            // Display rendered svg
+            obj.image.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`
+
+            // Remove every element from container
+            this.cache[id] = []
+            for (const child of obj.container.children) this.cache[id].push(child)
+            while (obj.container.firstChild) {
+                obj.container.lastChild.remove()
+                if (!obj.container.firstChild) break
+            }
+
+            // Add image
+            obj.container.appendChild(obj.image)
+        }
+        // Todo: This should not live in here. This component is dynamic.
+        if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
+
         obj.container.contentEditable = true
         this.events.dispatchEvent(new CustomEvent("blur", { detail: obj }))
-        if (removed) delete this.collection[id]
         obj.container.setAttribute("math", btoa(obj.data))
     },
 
