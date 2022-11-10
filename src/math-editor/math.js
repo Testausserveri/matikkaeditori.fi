@@ -195,8 +195,8 @@ const Math = {
     remove(id) {
         const obj = this.collection[id]
         if (obj === undefined) throw new Error(`Math element "${id}" does not exist`)
-        // Remove all children
-        for (const child of obj.container.childNodes) child.remove()
+        // Remove the container
+        obj.container.remove()
         // Remove from memory
         delete this.collection[id]
         this.events.dispatchEvent(new CustomEvent("remove", { detail: id })) // Future-proofing
