@@ -82,8 +82,8 @@ body {
     border: 4px solid #d5e0e5;
     border-top: 4px solid #2FA3CF;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
     margin-right: 15px;
     animation: fullSpin 2.2s linear infinite;
 }
