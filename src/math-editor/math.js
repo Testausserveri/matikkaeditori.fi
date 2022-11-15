@@ -270,6 +270,8 @@ const Math = {
         // Remove if empty
         if (obj.data.length === 0) {
             this.remove(id)
+            obj.container.contentEditable = true
+            this.events.dispatchEvent(new CustomEvent("blur", { detail: null }))
             return
         }
 
