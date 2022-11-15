@@ -76,12 +76,7 @@ export default async (format) => {
 
         console.debug(parsedData)
 
-        const element = document.createElement("a")
-        element.setAttribute("href", `data:text/plain;charset=utf-8,${encodeURIComponent(parsedData)}`)
-        element.setAttribute("download", "vastaus.txt")
-        element.style.display = "none"
-        document.body.appendChild(element)
-        element.click()
+        saveAs(`data:text/plain;charset=utf-8,${encodeURIComponent(parsedData)}`, "vastaus.txt")
 
         break
     }
