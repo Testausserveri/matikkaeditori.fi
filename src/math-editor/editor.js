@@ -125,7 +125,7 @@ class Editor {
      */
     init() {
         let lastSelection = null // Last selected node (during keydown event)
-        let holdKeydown = false // Skip the next keydown event
+        let holdKeydown = false // Ignore the keyboard event
 
         // Global keyboard listener
         document.addEventListener("keydown", (event) => {
@@ -364,6 +364,7 @@ class Editor {
             // Patch: Dummy text in front of math if backspace used in front of row
             if (event.key === "Backspace" && this.activeMathElement === null) {
                 // event.preventDefault()
+                holdKeydown = true
                 const selection = Utils.getCaretPosition()
                 if (selection.startOffset === 0) {
                     const tmpElementTable = {}
@@ -386,6 +387,7 @@ class Editor {
                                     dummy.remove()
                                 }
                                 this.hook.oninput()
+                                holdKeydown = false
                             })
                         })
                     }
