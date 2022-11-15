@@ -32,6 +32,10 @@ export default function Document({
             action: () => { exportUtil("image-clipboard") }
         },
         {
+            text: "Kopioi leikepöydälle",
+            action: () => { exportUtil("txt-clipboard") }
+        },
+        {
             text: "Tallenna PDF",
             action: () => { exportUtil("pdf") }
         },
