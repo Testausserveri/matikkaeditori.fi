@@ -457,7 +457,7 @@ class Editor {
             // Select end of math element
             // Note: Chrome should override this
             // TODO: If the element is removed, what should we select? For now we select nothing
-            if (this.activeMathElement && this.local.Math.collection[this.activeMathElement]) {
+            if (this.activeMathElement && this.local.Math.collection[this.activeMathElement.id]) {
                 const parentLine = Utils.getParentLine(this.activeMathElement.container)
                 console.debug(
                     "Handling blur in", parentLine, "to index", Utils.getNodeIndex(parentLine, this.activeMathElement.container) + 1, "while range is", parentLine.childNodes.length

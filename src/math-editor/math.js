@@ -267,14 +267,6 @@ const Math = {
         obj.container.removeAttribute("style")
         obj.image.removeAttribute("style")
 
-        // Remove if empty
-        if (obj.data.length === 0) {
-            this.remove(id)
-            obj.container.contentEditable = true
-            this.events.dispatchEvent(new CustomEvent("blur", { detail: null }))
-            return
-        }
-
         // Invalid latex?
         if (obj.dynamicInterface.latex() !== obj.data) {
             // Add error icon
@@ -326,6 +318,14 @@ const Math = {
         }
         // Todo: This should not live in here. This component is dynamic.
         if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(false)
+
+        // Remove if empty
+        if (obj.data.length === 0) {
+            this.events.dispatchEvent(new CustomEvent("blur", { detail: obj }))
+            Utils.waitForEvent(this.events, "blur").then(() => {
+                this.remove(id)
+            })
+        }
 
         obj.container.contentEditable = true
         this.events.dispatchEvent(new CustomEvent("blur", { detail: obj }))
