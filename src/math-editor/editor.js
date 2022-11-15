@@ -364,9 +364,10 @@ class Editor {
             // Patch: Dummy text in front of math if backspace used in front of row
             if (event.key === "Backspace" && this.activeMathElement === null) {
                 // event.preventDefault()
-                holdKeydown = true
                 const selection = Utils.getCaretPosition()
                 if (selection.startOffset === 0) {
+                    holdKeydown = true
+
                     const tmpElementTable = {}
                     // Callback after edit
                     const recover = async (m, timeout) => {
@@ -397,10 +398,8 @@ class Editor {
                     // Fallback to timeout
                     // TODO: Fallback is always triggered, mutation observer does not work?
                     const timeout = setInterval(() => {
-                        if (document.querySelectorAll("[dummy-id]").length !== 0) {
-                            console.warn("Dummy recovery fallback timeout triggered!")
-                            recover(m, timeout)
-                        }
+                        console.warn("Dummy recovery fallback timeout triggered!")
+                        recover(m, timeout)
                     }, 10)
 
                     // Mutation observer
