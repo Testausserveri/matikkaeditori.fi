@@ -25,7 +25,7 @@ export async function saveAs(url, filename) {
 
 /**
  * Export loaded answer
- * By: @Esinko
+ * By: @Esinko and @antoKeinanen
  * @param {*} format
  */
 export default async (format) => {
