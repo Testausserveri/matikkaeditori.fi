@@ -22,7 +22,7 @@ export default () => new Promise((resolve) => {
             editor: null,
             saved: false
         },
-        time_at_live: new Date().getTime(), // Time since code first started to run
+        timeAtLive: new Date().getTime(), // Time since code first started to run
         /**
              * --------------------------------------------------
              * Very important version field!

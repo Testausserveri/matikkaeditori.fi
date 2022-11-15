@@ -99,7 +99,7 @@ export default (window) => {
             // TODO: Parse css (style) code from the args?
             if (!window.isDummy) { // True for workers
                 const formattedArgs = argsToString(args)
-                window.internal.console.logs.push(`[ ${new Date().getTime() - window.internal.time_at_live}s - ${func.toUpperCase()} ] ${formattedArgs.join(" ")}`)
+                window.internal.console.logs.push(`[ ${new Date().getTime() - window.internal.timeAtLive}s - ${func.toUpperCase()} ] ${formattedArgs.join(" ")}`)
                 // Max length is 1000 messages
                 if (window.internal.console.logs.length > 1000) window.internal.console.logs.shift()
             }
