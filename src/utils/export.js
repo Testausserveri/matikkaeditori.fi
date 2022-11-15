@@ -46,7 +46,18 @@ export default async (format) => {
         break
     }
     case "txt-clipboard": {
-        // TODO: Read raw save
+        const data = await window.internal.ui.editor.getContent()
+
+        data.shift()
+        let parsedData = ""
+        data.forEach((line) => {
+            const strippedLine = line.replace(/<[^>]*>/g, "")
+            parsedData = `${parsedData}\n${atob(strippedLine)}`
+        })
+        parsedData = parsedData.slice(1)
+
+        navigator.clipboard.writeText(parsedData)
+
         break
     }
     case "txt-file": {
