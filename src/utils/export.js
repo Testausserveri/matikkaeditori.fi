@@ -56,6 +56,8 @@ export default async (format) => {
         })
         parsedData = parsedData.slice(1)
 
+        console.debug(parsedData)
+
         navigator.clipboard.writeText(parsedData)
 
         break
@@ -70,6 +72,8 @@ export default async (format) => {
             parsedData = `${parsedData}\n${atob(strippedLine)}`
         })
         parsedData = parsedData.slice(1)
+
+        console.debug(parsedData)
 
         const element = document.createElement("a")
         element.setAttribute("href", `data:text/plain;charset=utf-8,${encodeURIComponent(parsedData)}`)
