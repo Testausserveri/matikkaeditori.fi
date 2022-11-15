@@ -321,7 +321,7 @@ class Editor {
                 // We can expect a new line is created here
                 requestAnimationFrame(() => {
                     const newline = Utils.listToArray(this.hook.childNodes)[Utils.getNodeIndex(this.hook, this.activeLine)]
-                    if (newline.childNodes[0].nodeName.toLowerCase() === "br" && newline.childNodes.length > 1) newline.childNodes[0].remove()
+                    if (newline.childNodes.length > 1 && newline.childNodes[0].nodeName.toLowerCase() === "br") newline.childNodes[0].remove()
                 })
             }
 
