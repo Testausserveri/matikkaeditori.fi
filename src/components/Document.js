@@ -36,6 +36,10 @@ export default function Document({
             action: () => { exportUtil("pdf") }
         },
         {
+            text: "Tallenna Tekstinä",
+            action: () => { exportUtil("txt-file") }
+        },
+        {
             text: "Tallenna kuvana",
             action: () => { exportUtil("image") }
         }
