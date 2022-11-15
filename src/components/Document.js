@@ -28,11 +28,11 @@ export default function Document({
 
     const exportDropdown = [
         {
-            text: "Tallenna leikepöydälle",
+            text: "Tallenna kuva leikepöydälle",
             action: () => { exportUtil("image-clipboard") }
         },
         {
-            text: "Kopioi leikepöydälle",
+            text: "Kopioi teksti leikepöydälle",
             action: () => { exportUtil("txt-clipboard") }
         },
         {
