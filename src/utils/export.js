@@ -50,7 +50,23 @@ export default async (format) => {
         break
     }
     case "txt-file": {
-        // TODO: Read raw save
+        const data = await window.internal.ui.editor.getContent()
+
+        data.shift()
+        let parsedData = ""
+        data.forEach((line) => {
+            const strippedLine = line.replace(/<[^>]*>/g, "")
+            parsedData = `${parsedData}\n${atob(strippedLine)}`
+        })
+        parsedData = parsedData.slice(1)
+
+        const element = document.createElement("a")
+        element.setAttribute("href", `data:text/plain;charset=utf-8,${encodeURIComponent(parsedData)}`)
+        element.setAttribute("download", "vastaus.txt")
+        element.style.display = "none"
+        document.body.appendChild(element)
+        element.click()
+
         break
     }
     case "pdf": {
