@@ -1,4 +1,5 @@
 /* globals html2canvas, ClipboardItem, html2pdf */
+import { Buffer } from "buffer"
 
 /**
  * Save files (utility)
@@ -52,7 +53,7 @@ export default async (format) => {
         let parsedData = ""
         data.forEach((line) => {
             const strippedLine = line.replace(/<[^>]*>/g, "")
-            parsedData = `${parsedData}\n${atob(strippedLine)}`
+            parsedData = `${parsedData}\n${Buffer.from(strippedLine, "base64")}`
         })
         parsedData = parsedData.slice(1)
 
@@ -69,7 +70,7 @@ export default async (format) => {
         let parsedData = ""
         data.forEach((line) => {
             const strippedLine = line.replace(/<[^>]*>/g, "")
-            parsedData = `${parsedData}\n${atob(strippedLine)}`
+            parsedData = `${parsedData}\n${Buffer.from(strippedLine, "base64")}`
         })
         parsedData = parsedData.slice(1)
 
