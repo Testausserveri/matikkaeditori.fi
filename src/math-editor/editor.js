@@ -365,6 +365,7 @@ class Editor {
             if (event.key === "Backspace" && this.activeMathElement === null) {
                 // event.preventDefault()
                 const selection = Utils.getCaretPosition()
+                // TODO: Ignore on first line, causes fallback to trigger
                 if (selection.startOffset === 0) {
                     holdKeydown = true
 
