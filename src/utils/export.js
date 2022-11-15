@@ -57,7 +57,7 @@ export default async (format) => {
         })
         parsedData = parsedData.slice(1)
 
-        console.debug(parsedData)
+        console.debug("[ EXPORT ] Data to be copied to clipboard:\n", parsedData)
 
         navigator.clipboard.writeText(parsedData)
 
@@ -74,7 +74,7 @@ export default async (format) => {
         })
         parsedData = parsedData.slice(1)
 
-        console.debug(parsedData)
+        console.debug("[ EXPORT ] Data to be saved to text file:\n", parsedData)
 
         saveAs(`data:text/plain;charset=utf-8,${encodeURIComponent(parsedData)}`, "vastaus.txt")
 
