@@ -2,11 +2,12 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDiscord } from "@fortawesome/free-brands-svg-icons"
-import { faExclamationTriangle, faPray } from "@fortawesome/free-solid-svg-icons"
+import { faExclamationTriangle, faFileText, faPray } from "@fortawesome/free-solid-svg-icons"
 import { useState } from "react"
 import Dropdown from "./Dropdown"
 import logo from "../assets/icon.svg"
 import testausserveriLogo from "../assets/testausserveri.svg"
+import { saveAs } from "../utils/export"
 
 export default function Navigation() {
     const [thanksDisabled, setThanksDisabled] = useState(false)
@@ -52,6 +53,12 @@ export default function Navigation() {
                             },
                             icon: <FontAwesomeIcon icon={faPray} />,
                             disabled: thanksDisabled
+                        }, {
+                            text: "Vie loki",
+                            action: async () => {
+                                saveAs(`data:text/plain;charset=utf-8,${window.internal.console.logs.join("\n")}`, "logs.txt")
+                            },
+                            icon: <FontAwesomeIcon icon={faFileText} />
                         }
                     ]}>
                         Kehittäjä

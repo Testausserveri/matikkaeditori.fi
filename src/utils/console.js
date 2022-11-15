@@ -13,7 +13,8 @@ export function consoleConfig() {
             "error",
             "info",
             "trace",
-            "warn"
+            "warn",
+            "debug"
         ],
         cache: {},
         logs: [],
@@ -24,6 +25,30 @@ export function consoleConfig() {
             default: "limegreen"
         }
     }
+}
+
+/**
+ * Try to stringify an object
+ * @param {Object} obj
+ */
+function tryStringify(obj) {
+    try {
+        const str = JSON.stringify(obj)
+        return str
+    } catch (e) {
+        return "{ stringify failed }"
+    }
+}
+
+function argsToString(args) {
+    if (typeof args === "string") return [args]
+    if (typeof args === "object" && !Array.isArray(args)) return [tryStringify(args)]
+    return args
+        // eslint-disable-next-line no-nested-ternary
+        .map((arg) => (typeof arg === "object" && !Array.isArray(arg) ? tryStringify(arg) : Array.isArray(arg) ? argsToString(arg) : arg))
+        .filter((arg) => arg.length !== 0)
+        .map((arg) => arg.toString())
+        .map((arg) => arg.replace(/\\"/g, "\""))
 }
 
 /**
@@ -72,13 +97,11 @@ export default (window) => {
             }
             // Write the data to the cache
             // TODO: Parse css (style) code from the args?
-            // console.warn("[ " + (new Date().getTime() - window.internal.time_at_live) + "s - " + func.toUpperCase() + " ]" + args)
-            if (window.isDummy === true) {
-                // const id = uuid.v4()
-                // Send message
-                // postMessage(JSON.stringify({ type: "log", content: args, id }))
-            } else {
-                window.internal.console.logs.push(`[ ${new Date().getTime() - window.internal.time_at_live}s - ${func.toUpperCase()} ] ${args}`)
+            if (!window.isDummy) { // True for workers
+                const formattedArgs = argsToString(args)
+                window.internal.console.logs.push(`[ ${new Date().getTime() - window.internal.time_at_live}s - ${func.toUpperCase()} ] ${formattedArgs.join(" ")}`)
+                // Max length is 1000 messages
+                if (window.internal.console.logs.length > 1000) window.internal.console.logs.shift()
             }
         }
     }

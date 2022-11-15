@@ -5,7 +5,7 @@
  * @param {*} url
  * @param {*} filename
  */
-async function saveAs(url, filename) {
+export async function saveAs(url, filename) {
     try {
         const link = document.createElement("a")
         if (typeof link.download === "string") {
