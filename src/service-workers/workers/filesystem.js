@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-/* global importScripts */
+/* global importScripts, localforage */
 /**
  * Main filesystem worker made to handle all tasks related to answer saving.
  * Uses LocalForage to store data in the browsers indexDB while automatically
@@ -18,7 +18,6 @@ import consoleWrapper from "../../utils/console"
 
 // 3rd-party external dependencies
 importScripts(["/3rd-party/localforage.js"])
-// eslint-disable-next-line no-undef
 const localForage = localforage
 
 // Configure console
