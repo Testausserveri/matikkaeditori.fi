@@ -56,7 +56,7 @@ export default function Navigation() {
                         }, {
                             text: "Vie loki",
                             action: async () => {
-                                saveAs(`data:text/plain;charset=utf-8,${window.internal.console.logs.join("\n")}`, "logs.txt")
+                                saveAs(`data:text/plain;charset=utf-8,${encodeURIComponent(window.internal.console.logs.join("\n"))}`, "logs.txt")
                             },
                             icon: <FontAwesomeIcon icon={faFileText} />
                         }
