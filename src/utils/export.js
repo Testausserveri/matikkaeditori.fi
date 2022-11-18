@@ -1,4 +1,5 @@
 /* globals html2canvas, ClipboardItem, html2pdf */
+import { Buffer } from "buffer"
 
 /**
  * Save files (utility)
@@ -24,7 +25,7 @@ export async function saveAs(url, filename) {
 
 /**
  * Export loaded answer
- * By: @Esinko
+ * By: @Esinko and @antoKeinanen
  * @param {*} format
  */
 export default async (format) => {
@@ -46,11 +47,37 @@ export default async (format) => {
         break
     }
     case "txt-clipboard": {
-        // TODO: Read raw save
+        const data = await window.internal.ui.editor.getContent()
+
+        data.shift()
+        let parsedData = ""
+        data.forEach((line) => {
+            const strippedLine = line.replace(/<[^>]*>/g, "")
+            parsedData = `${parsedData}\n${Buffer.from(strippedLine, "base64")}`
+        })
+        parsedData = parsedData.slice(1)
+
+        console.debug("[ EXPORT ] Data to be copied to clipboard:\n", parsedData)
+
+        navigator.clipboard.writeText(parsedData)
+
         break
     }
     case "txt-file": {
-        // TODO: Read raw save
+        const data = await window.internal.ui.editor.getContent()
+
+        data.shift()
+        let parsedData = ""
+        data.forEach((line) => {
+            const strippedLine = line.replace(/<[^>]*>/g, "")
+            parsedData = `${parsedData}\n${Buffer.from(strippedLine, "base64")}`
+        })
+        parsedData = parsedData.slice(1)
+
+        console.debug("[ EXPORT ] Data to be saved to text file:\n", parsedData)
+
+        saveAs(`data:text/plain;charset=utf-8,${encodeURIComponent(parsedData)}`, "vastaus.txt")
+
         break
     }
     case "pdf": {

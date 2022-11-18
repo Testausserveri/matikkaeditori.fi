@@ -28,12 +28,20 @@ export default function Document({
 
     const exportDropdown = [
         {
-            text: "Tallenna leikepöydälle",
+            text: "Tallenna kuva leikepöydälle",
             action: () => { exportUtil("image-clipboard") }
+        },
+        {
+            text: "Kopioi teksti leikepöydälle",
+            action: () => { exportUtil("txt-clipboard") }
         },
         {
             text: "Tallenna PDF",
             action: () => { exportUtil("pdf") }
+        },
+        {
+            text: "Tallenna Tekstinä",
+            action: () => { exportUtil("txt-file") }
         },
         {
             text: "Tallenna kuvana",
