@@ -16,7 +16,8 @@
     "module": "ES6",
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "moduleResolution": "node",
   },
   "include": [
     "src"

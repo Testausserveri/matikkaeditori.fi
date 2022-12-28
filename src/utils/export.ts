@@ -1,12 +1,13 @@
-/* globals html2canvas, ClipboardItem, html2pdf */
 import { Buffer } from "buffer"
+import html2canvas from "html2canvas"
+// TODO: html2pdf.js doesn't have typescript definitions. We should probably consider using another library for pdf generation.
+// @ts-ignore
+import html2pdf from "html2pdf.js"
 
 /**
  * Save files (utility)
- * @param {*} url
- * @param {*} filename
  */
-export async function saveAs(url, filename) {
+export async function saveAs(url: string, filename: string) {
     try {
         const link = document.createElement("a")
         if (typeof link.download === "string") {
@@ -23,34 +24,45 @@ export async function saveAs(url, filename) {
     }
 }
 
+type ExportFormat = "image-clipboard" | "image" | "txt-clipboard" | "txt-file" | "pdf"
+
 /**
  * Export loaded answer
  * By: @Esinko and @antoKeinanen
- * @param {*} format
  */
-export default async (format) => {
+export default async (format: ExportFormat) => {
     // TODO: Implement watermark
     switch (format) {
     case "image-clipboard": {
-        const canvas = await html2canvas(document.getElementById("editor-element"), { useCORS: true })
-        canvas.toBlob(async (blob) => {
-            const item = new ClipboardItem({
-                "image/png": blob
+        const editorElement = document.getElementById("editor-element")
+        if (editorElement) {
+            const canvas = await html2canvas(editorElement, { useCORS: true })
+            canvas.toBlob(async (blob) => {
+                if (blob) {
+                    const item = new ClipboardItem({
+                        "image/png": blob
+                    })
+                    navigator.clipboard.write([item])
+                }
             })
-            navigator.clipboard.write([item])
-        })
+        }
         break
     }
     case "image": {
-        const canvas = await html2canvas(document.getElementById("editor-element"), { useCORS: true })
-        saveAs(canvas.toDataURL(), "vastaus.png")
+        const editorElement = document.getElementById("editor-element")
+        if (editorElement) {
+            const canvas = await html2canvas(editorElement, { useCORS: true })
+            saveAs(canvas.toDataURL(), "vastaus.png")
+        }
         break
     }
     case "txt-clipboard": {
+        // @ts-ignore
         const data = await window.internal.ui.editor.getContent()
 
         data.shift()
         let parsedData = ""
+        // @ts-ignore
         data.forEach((line) => {
             const strippedLine = line.replace(/<[^>]*>/g, "")
             parsedData = `${parsedData}\n${Buffer.from(strippedLine, "base64")}`
@@ -64,10 +76,12 @@ export default async (format) => {
         break
     }
     case "txt-file": {
+        // @ts-ignore
         const data = await window.internal.ui.editor.getContent()
 
         data.shift()
         let parsedData = ""
+        // @ts-ignore
         data.forEach((line) => {
             const strippedLine = line.replace(/<[^>]*>/g, "")
             parsedData = `${parsedData}\n${Buffer.from(strippedLine, "base64")}`
