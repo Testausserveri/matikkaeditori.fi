@@ -8,12 +8,14 @@
         "plugin:react/recommended",
         "airbnb-base"
     ],
+    "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaFeatures": {
             "jsx": true
         },
         "ecmaVersion": 12,
-        "sourceType": "module"
+        "sourceType": "module",
+        "project": "./tsconfig.json"
     },
     "plugins": [
         "react"
@@ -40,6 +42,19 @@
         "function-paren-newline": ["warn", { "minItems": 3 }],
         "react/prop-types": [0],
         "no-restricted-syntax": ["error", "LabeledStatement", "WithStatement"],
-        "react/no-unknown-property": ["error", { "ignore": ["x-tooltip"] }]
+        "react/no-unknown-property": ["error", { "ignore": ["x-tooltip"] }],
+        "import/extensions": 0
+    },
+    "settings": {
+        "import/resolver": {
+            "node": {
+                "extensions": [
+                    ".js",
+                    ".jsx",
+                    ".ts",
+                    ".tsx"
+                ]
+            }
+        }
     }
 }
