@@ -6,6 +6,11 @@ declare global {
     internal: {
       workers: {
         api: (worker: any, type: any, message: any) => Promise<any>
+      },
+      ui: {
+        saved: boolean,
+        activeFilesystemInstance: any,
+        activeLocation: any
       }
     }
   }

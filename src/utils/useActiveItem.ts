@@ -3,13 +3,14 @@ import { useEffect, useState, useCallback } from "react"
 import { debounce } from "lodash"
 
 export default function useActiveItem(
-    activeItem, level, setLevel
+    // eslint-disable-next-line no-unused-vars
+    activeItem: any, level: any, setLevel: (newLevel: any) => void
 ) {
     const [data, setData] = useState({})
 
     useEffect(() => {
         if (!level || activeItem.length === 0) return
-        const item = level.find((itemEntry) => itemEntry.i === activeItem)
+        const item = level.find((itemEntry: any) => itemEntry.i === activeItem)
         setData(item)
     }, [activeItem, level])
 
@@ -27,14 +28,17 @@ export default function useActiveItem(
         ).then(() => {
             // Save success
             window.internal.ui.saved = true
-            document.getElementById("saveIndicator").className = "savedIndicator"
+            const saveIndicatorElement = document.getElementById("saveIndicator")
+            if (saveIndicatorElement) {
+                saveIndicatorElement.className = "savedIndicator"
+            }
         }).catch(() => {
             // eslint-disable-next-line no-alert
             alert("Tallentaminen epäonnistui.")
         })
     }, 1000), [activeItem])
 
-    const modify = async (newData) => {
+    const modify = async (newData: any) => {
         const copy = [...level]
         const i = copy.findIndex((item) => item.i === activeItem)
         copy[i] = newData
