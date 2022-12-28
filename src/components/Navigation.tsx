@@ -5,7 +5,9 @@ import { faDiscord } from "@fortawesome/free-brands-svg-icons"
 import { faExclamationTriangle, faFileText, faPray } from "@fortawesome/free-solid-svg-icons"
 import { useState } from "react"
 import Dropdown from "./Dropdown"
+// @ts-ignore
 import logo from "../assets/icon.svg"
+// @ts-ignore
 import testausserveriLogo from "../assets/testausserveri.svg"
 import { saveAs } from "../utils/export"
 
@@ -25,6 +27,7 @@ export default function Navigation() {
                     <img src={testausserveriLogo} />
                 </a>
                 <a className="navLink">
+                    {/* @ts-ignore */}
                     <Dropdown className="navLink" data={[
                         {
                             text: "Tyhjennä data",
@@ -38,7 +41,7 @@ export default function Navigation() {
                             text: "Kiitä kehittäjiä",
                             action: async () => {
                                 // eslint-disable-next-line no-alert
-                                const thanksFrom = prompt("Keneltä kiitokset?").trim() || "nimetön"
+                                const thanksFrom = prompt("Keneltä kiitokset?")?.trim() || "nimetön"
                                 await fetch("https://takahuone.matikkaeditori.fi/shawarma", {
                                     method: "POST",
                                     mode: "no-cors",
