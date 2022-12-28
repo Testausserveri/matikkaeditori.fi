@@ -22,9 +22,9 @@ export default () => {
     if (Buffer !== undefined) {
         console.log("[ Compatibility ] Using Buffer instead of btoa/atob...")
         // eslint-disable-next-line no-global-assign
-        window.btoa = (string) => new Buffer.from(string, "utf8").toString("base64")
+        window.btoa = (string) => Buffer.from(string, "utf8").toString("base64")
 
-        window.atob = (string) => new Buffer.from(string, "base64").toString("utf8")
+        window.atob = (string) => Buffer.from(string, "base64").toString("utf8")
     // eslint-disable-next-line max-len, no-alert, no-restricted-globals
     } else if (confirm("Your browser does not support the \"Buffer class\". Which is a required component for this application to handle not LATIN-1 (ISO-8859) characters. Please update your browser. The application will continue to function, but unexpected behavior and at the risk of data integrity it is not recommended.")) {
         console.warn("[ Compatibility ] Running in Buffer compatibility mode")
