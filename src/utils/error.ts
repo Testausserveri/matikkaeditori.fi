@@ -6,7 +6,7 @@
  * @param {*} source
  * @param {*} message
  */
-export default async function error(source, message) {
+export default async function error(source: string, message: string) {
     console.warn("[ Deprecation ] The error component will soon be removed.")
     const css = "color: #d42c2c; font-size: 33px; font-family: Inconsolata, monospace; font-weight: bold;"
     console.log(
