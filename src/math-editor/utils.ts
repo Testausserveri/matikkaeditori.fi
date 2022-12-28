@@ -683,7 +683,9 @@ const Utils = {
             }
         }
         if (redo) return this.toEmbedded(elements)
-        return format.length === 0 ? "" : format.join()
+
+        // @ts-ignore
+        return format.length === 0 ? "" : format
     },
 
     /**
