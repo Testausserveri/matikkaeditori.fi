@@ -17,7 +17,8 @@ declare global {
         logs: any
       }
     },
-    browser: string
+    browser: string,
+    id: string,
   }
 }
 

@@ -7,11 +7,12 @@
 import com from "./com"
 
 export default class hash {
+    input: string = ""
+
     /**
      * The input for the hashing algorithm
-     * @param {String} input The string to hash
      */
-    constructor(input) {
+    constructor(input: string) {
         (async () => {
             let id = null
             if (typeof window === "undefined") {
@@ -33,9 +34,14 @@ export default class hash {
      */
     async sha1() {
         try {
-            return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder("utf-8").encode(this.input)))).map((b) => (`00${b.toString(16)}`).slice(-2)).join("")
+            return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder().encode(this.input)))).map((b) => (`00${b.toString(16)}`).slice(-2)).join("")
         } catch (err) {
-            throw `Failed to hash data: ${err.stack}` !== undefined ? err.stack : err
+            if (typeof err === "object" && err && "stack" in err) {
+                // eslint-disable-next-line no-throw-literal
+                throw `Failed to hash data: ${err.stack}`
+            }
+            // eslint-disable-next-line no-throw-literal
+            throw `Failed to hash data: ${err}`
         }
     }
 }
