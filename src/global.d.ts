@@ -12,7 +12,8 @@ declare global {
         activeFilesystemInstance: any,
         activeLocation: any
       }
-    }
+    },
+    browser: string
   }
 }
 
