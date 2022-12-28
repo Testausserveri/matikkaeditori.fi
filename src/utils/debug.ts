@@ -1,6 +1,5 @@
 // Handy global tools for debugging purposes
 
-/* eslint-disable no-unused-vars */
 window.reset = async () => {
     // This deletes everything
     localStorage.clear()
@@ -10,7 +9,12 @@ window.reset = async () => {
         // Chromium
         window.indexedDB.databases().then((r) => {
             // eslint-disable-next-line no-plusplus
-            for (let i = 0; i < r.length; i++) window.indexedDB.deleteDatabase(r[i].name)
+            for (let i = 0; i < r.length; i++) {
+                const databaseName = r[i].name
+                if (databaseName !== undefined) {
+                    window.indexedDB.deleteDatabase(databaseName)
+                }
+            }
         }).then(() => {
             window.location.reload()
         })
@@ -30,3 +34,5 @@ window.api = async (
     )
     console.log("Response:", req)
 }
+
+export { }
