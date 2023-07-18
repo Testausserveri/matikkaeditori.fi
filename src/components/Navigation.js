@@ -64,12 +64,14 @@ export default function Navigation() {
                         Kehittäjä
                     </Dropdown>
                 </a>
-                <a className="navLink">
-                    Kaavakirja
+                <a href="https://kaava.matikkaeditori.fi" target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                    <a className="navLink">
+                        Kaavakirja
+                    </a>
                 </a>
-                <a className="navLink">
+                {/* <a className="navLink">
                     Asetukset
-                </a>
+                </a> */}
             </div>
         </div>
     )

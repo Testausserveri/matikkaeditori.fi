@@ -26,16 +26,16 @@ async function ui(version) {
         }}>
             <div style={{ position: "fixed", background: "#edf9ff", height: "40%" }}>
                 <h1>
-                        Päivitetään &quot;{version}&quot; tallennetta...
+                        Päivitetään &quot;{version}&quot; tallennetta uudempaan versioon. Odota hetki, siirrämme sinut kohta Matikkaeditori.fi-sovellukseen.
                 </h1>
                 <h3>
-                        Jos sivu jäätyy tai saat virheilmoituksen, ota yhteyttä <b>eemil@testausserveri.fi</b> tai Discordissa <b>Esinko#7976</b>
+                        Jos sivu jäätyy tai saat virheilmoituksen, ota yhteyttä <b>masterminds@testausserveri.fi</b>.
                 </h3>
                 <p>
                     <i>
                             Upgrading &quot;{version}&quot; save data!
                         <br></br>
-                            If the page freezes, contact eemil@testausserveri.fi or Esinko#7976 on Discord.
+                            If the page freezes, contact masterminds@testausserveri.fi.
                     </i>
                 </p>
             </div>

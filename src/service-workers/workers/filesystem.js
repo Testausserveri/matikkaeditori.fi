@@ -427,10 +427,7 @@ class Filesystem {
                             date: new Date().getTime(),
                             // eslint-disable-next-line no-undef
                             // running btoa here fucks up charset äöå, so hardcoding the gibberish here
-                            data: ["<text>VGVydmV0dWxvYSBrw6R5dHTDpG3DpMOkbiBNYXRpa2thZWRpdG9yaS5maXTDpCEg8J+OiQ==</text>",
-                                "<text></text>",
-                                // eslint-disable-next-line max-len
-                                "<text>SHVvbWFhdGhhbiwgZXR0w6QgdMOkbcOkIG9uIGJldGF2ZXJzaW8uIEFzaWF0IHNhYXR0YXZhdCB2aWVsw6QgbXV1dHR1YSB0YWkgcmlra291dHVhIHJhZGlrYWFsaXN0aSwgdGFpa2thIGRhdGFzaSBow6R2aXTDpCBrb2tvbmFhbiBiaXR0aWF2YXJ1dXRlZW4u</text>"],
+                            data: ["<text>VGVydmV0dWxvYSBrw6R5dHTDpG3DpMOkbiBNYXRpa2thZWRpdG9yaS5maXTDpCEg8J+OiQ==</text>"],
                             checksum: null,
                             type: 0
                         }
