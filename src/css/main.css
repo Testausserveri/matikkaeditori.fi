@@ -10,12 +10,13 @@ body {
 
 .app {
     display: flex;
+    height: 100%;
 }
 
 .document {
     flex: 1;
     padding: 0;
-    overflow-x: scroll;
+    overflow: hidden;
 }
 
 .document .head {

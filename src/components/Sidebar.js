@@ -4,6 +4,7 @@
 import React, { useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import "../css/sidebar.css"
+import "../css/scrollbar.css"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import {
@@ -66,6 +67,7 @@ function FilesystemItem(props) {
         )
     }
     const dropdownData = [
+        // TODO: Lots of features are missing from here!
         {
             text: "Uudelleennimeä",
             action: () => {
@@ -82,7 +84,7 @@ function FilesystemItem(props) {
                 }
             }
         },
-        {
+        /* {
             text: "Monista",
             action: async () => {
                 await window.internal.workers.api(
@@ -98,11 +100,11 @@ function FilesystemItem(props) {
                 )
                 // TODO: refresh filesystem view
             }
-        },
-        {
+        }, */
+        /* {
             text: "Siirrä",
             action: () => {}
-        },
+        }, */
         {
             text: "Poista",
             action: () => {
@@ -113,10 +115,10 @@ function FilesystemItem(props) {
                 }
             }
         },
-        {
+        /* {
             text: "Eliminoi", // tähä sellane hauska jekku et se tekee saman ku poista mut antaa full screen räjähdyksen äänen kaa
             action: () => {}
-        },
+        }, */
         {
             text: "Näytä ID",
             // eslint-disable-next-line no-alert
@@ -126,7 +128,7 @@ function FilesystemItem(props) {
 
     const [DropdownComponent, toggleDropdown] = dropdown({
         data: dropdownData,
-        origin: "left",
+        origin: "right",
         children: <button className="ellipsis">
             <FontAwesomeIcon icon={faEllipsisH} />
         </button>
@@ -240,7 +242,7 @@ export default function Sidebar(props) {
                     <FontAwesomeIcon icon={faFolder} />
                 </button>
             </div>
-            <div ref={treeRef}>
+            <div ref={treeRef} className="filesystemLevelParent clean-scrollbar">
                 <ul className="filesystemLevel" id="sidebar">
                     {props.fsPath.length > 1 ?
                         <button className="folderUpButton" onClick={() => {

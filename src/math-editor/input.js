@@ -43,6 +43,7 @@ export default () => {
     const section1 = createElement(
         "section", "inputSection inputs", container
     )
+    section1.contentEditable = false
     // eslint-disable-next-line no-unused-vars
     const limit = createElement(
         "section", "inputSection limit", container
@@ -50,11 +51,13 @@ export default () => {
     const section0 = createElement(
         "section", "inputSection labels", container
     )
+    section0.contentEditable = false
 
     // Notification bar (text)
     const info = createElement(
         "p", "inputSection info", container
     )
+    info.contentEditable = false
 
     // Dynamic latex input field & label
     const dynamicLatex = createElement(

@@ -37,7 +37,11 @@ export default function Dropdown(props, deconstructable) {
     const hasIcons = !!(props.data.find((item) => item.icon !== undefined))
     const DropdownComponent = (
         <span ref={dropdownRef} className="dropdownContainer">
-            <div className={`dropdown${props.origin === "left" ? " leftOrigin" : ""}${hasIcons ? " hasIcons" : ""}`} style={dropdownOpened ? { transform: "scale(1)", opacity: "1" } : { transform: "scale(0)", opacity: "0" }}>
+            <div
+                // eslint-disable-next-line no-nested-ternary
+                className={`dropdown${props.origin === "left" ? " leftOrigin" : ""}${props.origin === "right" ? " rightOrigin" : ""}${hasIcons ? " hasIcons" : ""}`}
+                style={dropdownOpened ? { transform: "scale(1)", opacity: "1" } : { transform: "scale(0)", opacity: "0" }}
+            >
                 <ul>
                     {props.data.map((option) => (
                         <li key={option.text} onClick={(event) => {

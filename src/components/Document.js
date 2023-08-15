@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react"
 
 import "../css/editor.css"
 import "../css/tooltip.css"
+import "../css/scrollbar.css"
 import "../math-editor/input.css"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faDownload } from "@fortawesome/free-solid-svg-icons"
@@ -168,7 +169,7 @@ export default function Document({
             </div>
             <h1 className="droptext" id="droptext" >Pudota kuva tai gif ja lisää se editoriin!</h1>
             <div className="page" spellCheck={false}>
-                <div autoFocus="true" ref={answerRef} className="editor" id="editor-element" contentEditable="false"></div>
+                <div autoFocus="true" ref={answerRef} className="editor clean-scrollbar add-scrollbar-padding-with-border" id="editor-element" contentEditable="false"></div>
             </div>
         </div>
     )

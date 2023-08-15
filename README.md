@@ -1,4 +1,8 @@
-# Matikkaeditori.fi
+# Matikkaeditori.fi-v3
+
+> Project information is available on our project page: [here](https://testausserveri.fi/projects/matikkaeditori-fi)
+
+# Development
 
 ## Available Scripts
 
@@ -14,7 +18,7 @@ You will also see any lint errors in the console.
 
 # License
 ```
-Copyright (C) 2022 Testausserveri ry, Eemil Sinkko, Mikael Hannolainen and contributors
+Copyright (C) 2023 Testausserveri ry, Eemil Sinkko, Mikael Hannolainen and contributors
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

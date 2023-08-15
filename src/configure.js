@@ -93,7 +93,7 @@ export default () => new Promise((resolve) => {
         }
     } else {
         localStorage.setItem("version", window.internal.version)
-        consoleComponent()
+        consoleComponent(window)
         resolve(window)
     }
 })

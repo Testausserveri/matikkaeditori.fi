@@ -9,6 +9,9 @@
     top: 0;*/
 }
 
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
 
 @media only screen and (max-width: 1140px) {
     .sidebar {
@@ -26,6 +29,15 @@
     padding: 0;
     margin: 0;
     list-style-type: none;
+}
+
+.filesystemLevelParent {
+    height: calc(100% - 6rem - 75px);
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding-right: 8px;
 }
 
 @-webkit-keyframes fadeInDown {

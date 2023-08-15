@@ -21,6 +21,11 @@
     right: auto;
     left: 0;
 }
+.dropdown.rightOrigin {
+    transform-origin: top right;
+    right: 0;
+    left: auto;
+}
 .dropdown ul {
     list-style-type: none;
     margin: 0; padding: 0;

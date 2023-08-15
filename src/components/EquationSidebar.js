@@ -58,7 +58,7 @@ SymbolGroup.propTypes = {
 export function MobileEquationToolbar() {
     return (
         <div className="mobileToolbar">
-            hello
+            Kokeile avata sivu leveämmässä näkymässä!
         </div>
     )
 }

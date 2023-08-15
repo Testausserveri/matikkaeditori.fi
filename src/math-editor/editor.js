@@ -507,8 +507,14 @@ class Editor {
             console.debug("[ EDITOR ] Active line change to", this.activeLine)
         })
 
-        // Shift copied math back
-        this.hook.addEventListener("paste", async () => {
+        // Handle paste event
+        // TODO: Something is wrong with this!
+        this.hook.addEventListener("paste", async (/* event */) => {
+            // Remove styling from pasted data
+            // TODO: Insert the copied data
+            // const clipboardData = event.clipboardData || window.clipboardData
+
+            // Shift copied math back
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     // Fix math elements

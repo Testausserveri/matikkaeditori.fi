@@ -22,14 +22,14 @@ async function ui(version) {
     timeSinceRender = new Date().getTime()
     ReactDOM.render(<React.StrictMode>
         <div id="main" style={{
-            padding: "50px", height: "100%", width: "100%", overflow: "hidden"
+            padding: "50px", height: "calc(100% - 100px)", width: "calc(100% - 100px)", overflow: "hidden"
         }}>
-            <div style={{ position: "fixed", background: "#edf9ff", height: "40%" }}>
-                <h1>
-                        Päivitetään &quot;{version}&quot; tallennetta uudempaan versioon. Odota hetki, siirrämme sinut kohta Matikkaeditori.fi-sovellukseen.
+            <div style={{ background: "#edf9ff", height: "40%" }}>
+                <h1 style={{ fontSize: "1.2rem" }}>
+                    Päivitetään &quot;{version}&quot; tallennetta uudempaan versioon. Odota hetki, siirrämme sinut kohta Matikkaeditori.fi-sovellukseen.
                 </h1>
                 <h3>
-                        Jos sivu jäätyy tai saat virheilmoituksen, ota yhteyttä <b>masterminds@testausserveri.fi</b>.
+                    Jos sivu jäätyy tai saat virheilmoituksen, ota yhteyttä <b>masterminds@testausserveri.fi</b>.
                 </h3>
                 <p>
                     <i>
