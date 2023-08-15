@@ -4,7 +4,6 @@
   "license": "GPLv3",
   "private": "true",
   "author": "Eemil Sinkko, Mikael Hannolainen and contributors",
-  "homepage": "https://testausserveri.fi/projects/matikkaeditori-fi",
   "dependencies": {
     "@babel/core": "^7.16.0",
     "@fortawesome/fontawesome-svg-core": "^6.1.1",
