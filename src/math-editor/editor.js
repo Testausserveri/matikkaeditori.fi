@@ -188,13 +188,15 @@ class Editor {
                     if ( // At start (from right)
                         documentSelection.anchorNode.nodeName.toLowerCase() === "#text" &&
                         elementList[selectionIndex - 1]?.nodeName === "MATH" &&
-                        documentSelection.anchorOffset === 0
+                        documentSelection.anchorOffset === 0 &&
+                        event.code === "ArrowLeft"
                     ) {
                         focus(elementList[selectionIndex - 1])
                     } else if ( // At end (from left)
                         documentSelection.anchorNode.nodeName.toLowerCase() === "#text" &&
                         elementList[selectionIndex + 1]?.nodeName === "MATH" &&
-                        documentSelection.anchorOffset === documentSelection.anchorNode.textContent.length
+                        documentSelection.anchorOffset === documentSelection.anchorNode.textContent.length &&
+                        event.code === "ArrowRight"
                     ) {
                         focus(elementList[selectionIndex + 1])
                     }
