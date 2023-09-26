@@ -172,7 +172,7 @@ export default {
                     const raw = localStorage.getItem("data").split("")
                     if (raw[0] === "\"") raw.splice(0, 1)
                     if (raw[raw.length - 1] === "\"") raw.pop()
-                    const data = JSON.parse(raw.join(""))
+                    const data = JSON.parse(raw.join("") || "[]")
                     updateProgress("<b>Onnistui!</b>")
                     updateProgress(`Löydettiin ${Object.keys(data).length} tallenne(tta). Päivitetään...`)
 
