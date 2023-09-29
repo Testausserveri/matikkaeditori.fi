@@ -9,7 +9,7 @@ import { faDownload } from "@fortawesome/free-solid-svg-icons"
 import Skeleton from "react-loading-skeleton"
 import Editor from "../math-editor/editor"
 
-import Dropdown from "./Dropdown"
+import Dropdown from "./Dropdown.jsx"
 
 import exportUtil from "../utils/export"
 import useActiveItem from "../utils/useActiveItem"

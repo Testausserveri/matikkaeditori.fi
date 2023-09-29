@@ -13,7 +13,7 @@ import {
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 import Skeleton from "react-loading-skeleton"
 import useActiveItem from "../utils/useActiveItem"
-import dropdown from "./Dropdown"
+import dropdown from "./Dropdown.jsx"
 import formatDate from "../utils/date"
 import "react-loading-skeleton/dist/skeleton.css"
 
@@ -231,7 +231,7 @@ export default function Sidebar(props) {
         .sort((a, b) => (b.date - a.date)) // sort by date
         .sort((a, b) => (a.t === 1 ? -1 : 0))) // folders first
 
-        return (
+    return (
         <div className="sidebar" style={props.style}>
             <div className="head">
                 <button id="newAnswerBtn" className="primary" onClick={() => { props.newFsItem(0) }}>
