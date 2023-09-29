@@ -231,7 +231,7 @@ export default function Sidebar(props) {
         .sort((a, b) => (b.date - a.date)) // sort by date
         .sort((a, b) => (a.t === 1 ? -1 : 0))) // folders first
 
-    return (
+        return (
         <div className="sidebar" style={props.style}>
             <div className="head">
                 <button id="newAnswerBtn" className="primary" onClick={() => { props.newFsItem(0) }}>

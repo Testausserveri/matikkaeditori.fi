@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import React, { useEffect, useState } from "react"
 import "../css/sidebar.css"
 import "../css/equationsidebar.css"
