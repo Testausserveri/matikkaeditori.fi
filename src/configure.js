@@ -2,7 +2,7 @@
 // This runs pre-react render
 
 import * as uuid from "./service-workers/components/uuid"
-import upgrade from "./upgrade"
+import upgrade from "./upgrade.jsx"
 import * as Workers from "./service-workers/manager"
 import consoleComponent, { consoleConfig } from "./utils/console"
 

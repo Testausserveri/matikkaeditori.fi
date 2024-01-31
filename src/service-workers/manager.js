@@ -2,14 +2,11 @@
  * Worker-handler: Register workers, handle events etc.
  */
 import * as Comlink from "comlink"
+import * as uuid from "./components/uuid"
 
 // TODO: Can this be done dynamically?
-// eslint-disable-next-line import/no-webpack-loader-syntax, import/no-unresolved
-import Filesystem from "worker-loader!./workers/filesystem"
-// eslint-disable-next-line import/no-webpack-loader-syntax, import/no-unresolved
-import CloudStorage from "worker-loader!./workers/cloud-storage"
-// eslint-disable-next-line import/no-webpack-loader-syntax, import/no-unresolved
-import * as uuid from "./components/uuid"
+const Filesystem = new Worker(new URL("./workers/filesystem", import.meta.url), { type: "module" })
+const CloudStorage = new Worker(new URL("./workers/cloud-storage", import.meta.url), { type: "module" })
 
 // Message handlers
 /**
@@ -115,8 +112,7 @@ async function onMessage(event, name) {
  * @param {string} name Worker name
  */
 export async function createWorker(name) {
-    const Worker = { Filesystem, CloudStorage }[name]
-    const worker = new Worker()
+    const worker = { Filesystem, CloudStorage }[name]
     // Standard: { init: <promise to resolve when ready>, share: <data to be added to global memory> }
     const Core = Comlink.wrap(worker)
     window.internal.workers.shared[name] = Core.shared

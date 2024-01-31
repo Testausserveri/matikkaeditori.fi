@@ -2,35 +2,34 @@ name: React app deployement
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v2
 
-    - name: Restore CI Cache
-      uses: actions/cache@v2
-      id: cache
-      with:
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Restore CI Cache
+        uses: actions/cache@v2
+        id: cache
+        with:
           path: node_modules
           key: ${{ runner.os }}-16-${{ hashFiles('**/yarn.lock') }}
 
-    - name: Install Dependencies
-      if: ${{ !steps.cache.outputs.cache-hit }}
-      run: yarn --frozen-lockfile
-      
-    - run: |
+      - name: Install Dependencies
+        if: ${{ !steps.cache.outputs.cache-hit }}
+        run: yarn --frozen-lockfile
+
+      - run: |
           npm ci
           npm run build
-          echo "matikkaeditori.fi" >> build/CNAME
+          echo "matikkaeditori.fi" >> dist/CNAME
           echo "VERSION: " >> build/VERSION
-          echo $(git rev-parse --short "$GITHUB_SHA") >> build/VERSION
+          echo $(git rev-parse --short "$GITHUB_SHA") >> dist/VERSION
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git --work-tree build add --all
+          git --work-tree dist add --all
           git commit -m "Automatic React build & deploy"
           git push origin HEAD:gh-pages --force

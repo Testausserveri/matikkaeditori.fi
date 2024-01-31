@@ -1,5 +1,4 @@
 /* eslint-disable class-methods-use-this */
-/* global importScripts, localforage */
 /**
  * Main filesystem worker made to handle all tasks related to answer saving.
  * Uses LocalForage to store data in the browsers indexDB while automatically
@@ -9,16 +8,13 @@
 
 // 3rd-party internal dependencies
 import * as Comlink from "comlink"
+import localForage from "localforage"
 
 // Internal dependencies
 import * as uuid from "../components/uuid"
 import hash from "../components/hash"
 import com from "../components/com"
 import consoleWrapper from "../../utils/console"
-
-// 3rd-party external dependencies
-importScripts(["/3rd-party/localforage.js"])
-const localForage = localforage
 
 // Configure console
 consoleWrapper()
@@ -195,10 +191,10 @@ class Filesystem {
             console.debug("[ Filesystem ] Index after update:", this.index)
             switch (this.type) {
             /**
-            * -----------------------------------------------
-            * Implement filesystem index update for each type here
-            * -----------------------------------------------
-            */
+                * -----------------------------------------------
+                * Implement filesystem index update for each type here
+                * -----------------------------------------------
+                */
             case 0: {
                 await localForage.setItem("matikkaeditori-checksums", JSON.stringify(hashData))
                 await localForage.setItem("matikkaeditori-index", JSON.stringify(this.index))
@@ -293,10 +289,10 @@ class Filesystem {
             try {
                 switch (this.type) {
                 /**
-                 * -----------------------------------------------
-                 * Implement filesystem writing for each type here
-                 * -----------------------------------------------
-                 */
+                     * -----------------------------------------------
+                     * Implement filesystem writing for each type here
+                     * -----------------------------------------------
+                     */
                 case 0: {
                     console.log("[ Filesystem ] Preparing write task...")
                     let json = JSON.parse(await localForage.getItem(id))
@@ -358,10 +354,10 @@ class Filesystem {
             try {
                 switch (this.type) {
                 /**
-                 * -----------------------------------------------
-                 * Implement filesystem deletion for each type here
-                 * -----------------------------------------------
-                 */
+                     * -----------------------------------------------
+                     * Implement filesystem deletion for each type here
+                     * -----------------------------------------------
+                     */
                 case 0: {
                     console.log("[ Filesystem ] Preparing remove task...")
                     // Remove from database
@@ -399,10 +395,10 @@ class Filesystem {
             try {
                 switch (this.type) {
                 /**
-                 * ------------------------------------------------------
-                 * Implement filesystem initialization for each type here
-                 * ------------------------------------------------------
-                 */
+                     * ------------------------------------------------------
+                     * Implement filesystem initialization for each type here
+                     * ------------------------------------------------------
+                     */
                 case 0: {
                     let index = await localForage.getItem("matikkaeditori-index")
                     let checksums = await localForage.getItem("matikkaeditori-checksums")

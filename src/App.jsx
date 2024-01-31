@@ -4,12 +4,12 @@
 // Main app function
 import "./css/main.css"
 import { useEffect, useState } from "react"
-import Document from "./components/Document"
-import Sidebar from "./components/Sidebar"
-import { EquationSidebar, MobileEquationToolbar } from "./components/EquationSidebar"
-import MathTools from "./components/MathTools"
+import Document from "./components/Document.jsx"
+import Sidebar from "./components/Sidebar.jsx"
+import { EquationSidebar, MobileEquationToolbar } from "./components/EquationSidebar.jsx"
+import MathTools from "./components/MathTools.jsx"
 import useWindowDimensions from "./utils/useWindowDimensions"
-import Navigation from "./components/Navigation"
+import Navigation from "./components/Navigation.jsx"
 
 function App() {
     // Return base page

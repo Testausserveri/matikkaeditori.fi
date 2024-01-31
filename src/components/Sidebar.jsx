@@ -13,7 +13,7 @@ import {
 import { faFolder as faOutlineFolder } from "@fortawesome/free-regular-svg-icons"
 import Skeleton from "react-loading-skeleton"
 import useActiveItem from "../utils/useActiveItem"
-import dropdown from "./Dropdown"
+import dropdown from "./Dropdown.jsx"
 import formatDate from "../utils/date"
 import "react-loading-skeleton/dist/skeleton.css"
 
