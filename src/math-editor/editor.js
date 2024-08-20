@@ -327,7 +327,16 @@ class Editor {
                 })
             }
 
-            // Patch: Manually implement shift+Enter
+            // Patch: Implement regular enter manually
+            if (window.browser === "chrome" && event.key === "Enter" && this.activeMathElement === null) {
+                event.preventDefault()
+                const newLine = document.createElement("div")
+                newLine.innerHTML = "<br>"
+                this.activeLine.after(newLine)
+                Utils.selectByIndex(Utils.getNodeIndex(this.hook, newLine), this.hook)
+            }
+
+            // Patch: Manually implement shift+Enter in regular text editing
             if (event.shiftKey && event.key === "Enter" && this.activeMathElement === null) {
                 // Causes issues at least on chromium, prevention is required
                 event.preventDefault()
