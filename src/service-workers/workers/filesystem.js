@@ -99,6 +99,10 @@ class Filesystem {
                     const isValid = await this.validate(JSON.stringify(jsonData), json.checksum)
                     if (isValid) {
                         console.debug("[ Filesystem ] Checksum valid, read task concluded successfully.")
+                        if (!json.name) {
+                            console.warn("[ Filesystem ] Name is missing from item!")
+                            json.name = `Nimeämätön ${json.t === 0 ? "tiedosto" : "kansio"}`
+                        }
                         resolve(json)
                     } else {
                         // TODO: Handle this better
