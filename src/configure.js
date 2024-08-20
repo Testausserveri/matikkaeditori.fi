@@ -43,7 +43,7 @@ export default () => new Promise((resolve) => {
         .then((res) => res.text())
         .then((res) => {
             if (res.startsWith("VERSION: ")) {
-                window.internal.versionHash = res.split(": ").pop()
+                window.internal.versionHash = res.replace(/\n/g, "").trim().split(": ").pop()
             } else {
                 window.internal.versionHash = "Development version"
             }
