@@ -10,7 +10,7 @@ body {
 
 .app {
     display: flex;
-    height: 100%;
+    height: calc(100% - 52px);
 }
 
 .document {
