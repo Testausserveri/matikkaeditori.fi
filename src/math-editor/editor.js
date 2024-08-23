@@ -251,7 +251,22 @@ class Editor {
                 event.preventDefault()
                 if (this.activeMathElement !== null) return // No math inside math
                 const mathElement = Math.create()
-                Utils.insertNodeAt(Utils.getCaretPosition(), mathElement.container)
+
+                // If we are inside a math element, insert the new math after it
+                const selection = document.getSelection()
+                if (selection.anchorNode.nodeName.toLowerCase() === "math") {
+                    // Should only occur when math is only element in line
+                    // So this is OK
+                    this.activeLine.appendChild(mathElement.container)
+
+                    // Check for BR elements inside activeLine and remove them
+                    // They appear between elements and we don't want them
+                    for (const element of this.activeLine.childNodes) {
+                        if (element.nodeName.toLowerCase() === "br") element.remove()
+                    }
+                } else {
+                    Utils.insertNodeAt(Utils.getCaretPosition(), mathElement.container)
+                }
                 Math.open(mathElement.id)
                 return
             }

@@ -104,7 +104,7 @@ export default function Document({
                 instance: window.internal.ui.activeFilesystemInstance,
                 id: window.internal.ui.activeLocation,
                 write: {
-                    name: event.target.innerText,
+                    name: event.target.innerText.trim(),
                     type: 0
                 }
             }
