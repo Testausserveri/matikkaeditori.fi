@@ -256,7 +256,7 @@ const Math = {
      * @param {string} id
      * @returns {void}
      */
-    close(id) {
+    async close(id) {
         const obj = this.collection[id]
         if (obj === undefined) throw new Error(`Math element "${id}" does not exist`)
         if (!obj.isOpen) return
@@ -293,17 +293,23 @@ const Math = {
             formattedData = formattedData.replace(/ä/g, "\\ddot{a}")
             formattedData = formattedData.replace(/å/g, "\\mathring{a}")
 
+            // Handle some specific units
+            formattedData = formattedData.replace(/€/g, "\\unicode{0x20AC}") // €
+
             // Handle special chars
             for (const char of specialChars[0].characters) {
                 formattedData = formattedData.split(char.character).join(char.latexCommand)
             }
 
-            const render = MathJax.tex2svg(formattedData, { em: 10, ex: 5, display: true })
+            const initialOptions = MathJax.getMetricsFor(obj.latexInput)
+
+            const render = await MathJax.tex2svgPromise(formattedData, initialOptions)
+
             // Todo: Elements not removed -> Is the memory still freed?
             const svg = render.getElementsByTagName("svg")[0].outerHTML
 
             // Display rendered svg
-            obj.image.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`
+            obj.image.src = `data:image/svg+xml;base64,${btoa(unescape(svg))}`
 
             // Remove every element from container
             this.cache[id] = []
