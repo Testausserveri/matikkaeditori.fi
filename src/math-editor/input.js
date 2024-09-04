@@ -37,7 +37,7 @@ function createElement(
 export default () => {
     // Parent
     const container = createElement("math", "inputContainer")
-    container.contentEditable = true
+    container.contentEditable = false
 
     // Sections
     const section1 = createElement(
@@ -75,6 +75,7 @@ export default () => {
     const rawLatex = createElement(
         "input", "rawLatex", section1
     )
+    rawLatex.type = "text"
     rawLatex.style.display = "none"
     const rawLatexLabel = createElement(
         "p", "inputLabel", section0
