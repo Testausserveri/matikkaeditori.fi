@@ -15,6 +15,7 @@ export default function useActiveItem(
 
     const fsSave = useCallback(debounce((newData, targetId) => {
         if (!newData) return
+        console.log("Saving ...")
         window.internal.workers.api(
             "Filesystem", "write", {
                 instance: window.internal.ui.activeFilesystemInstance,
@@ -24,7 +25,16 @@ export default function useActiveItem(
                     type: 0
                 }
             }
-        ).then(() => {
+        ).then((msg) => {
+            if (msg.error) {
+                console.error("Failed to save:", msg.error)
+                console.debug("Target:", targetId)
+                console.debug("Data:", newData.data)
+                // eslint-disable-next-line no-alert
+                alert("Dokumentti on virheellinen ja sitä ei voitu tallentaa! Ota yhteys kehittäjiin ja lähetä heille loki: Kehittäjä -> Vie loki -osiosta!")
+                return
+            }
+
             // Save success
             window.internal.ui.saved = true
             document.getElementById("saveIndicator").className = "savedIndicator"

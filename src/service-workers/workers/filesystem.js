@@ -310,6 +310,15 @@ class Filesystem {
                         name: data.name ?? json.name,
                         date: data.date ?? new Date().getTime()
                     }
+
+                    if (!base.name || base.name.trim().length === 0) {
+                        reject(new Error("Invalid name provided!"))
+                        break
+                    }
+
+                    reject("Write fail")
+                    break
+
                     if (data.type === 0) {
                         // Files have data
                         base.data = data.data ?? json.data
@@ -342,8 +351,8 @@ class Filesystem {
                     throw new Error("Unknown filesystem type")
                 }
             } catch (e) {
-                console.debug(e)
-                reject(new Error(`Failed to write: ${e.stack}`))
+                console.debug(new Error(`Failed to write: ${e.stack}`))
+                reject(e.toString())
             }
         })
     }
@@ -482,10 +491,11 @@ com.onMessage.addEventListener("message", async (e) => {
             console.error("No such filesystem instance")
             break
         }
-        const write = await instance.write(
+        instance.write(
             e.content.id, e.content.write, e.content.location
         )
-        com.send("callback", { id: e.id, write })
+            .then((write) => com.send("callback", { id: e.id, write }))
+            .catch((error) => com.send("callback", { id: e.id, error }))
         break
     }
     case "callback": {
