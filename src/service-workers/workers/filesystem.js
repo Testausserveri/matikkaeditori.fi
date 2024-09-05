@@ -316,9 +316,6 @@ class Filesystem {
                         break
                     }
 
-                    reject("Write fail")
-                    break
-
                     if (data.type === 0) {
                         // Files have data
                         base.data = data.data ?? json.data
