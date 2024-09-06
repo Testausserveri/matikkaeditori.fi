@@ -220,6 +220,7 @@ export default function Sidebar(props) {
         // to-do: save document before unload.
         if (item.t === 0) {
             props.setCreatedItem("")
+            console.log("[ SIDEBAR ] Set active item to:", item.i)
             props.setActiveItem(item.i)
             window.internal.ui.activeLocation = item.id // Todo: Move to place
             if (event?.isTrusted) window.internal.ui.editor.hook.focus()

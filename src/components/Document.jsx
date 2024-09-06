@@ -63,6 +63,7 @@ export default function Document({
         answerRef.current.contentEditable = true
 
         // Load active item
+        console.log("Loading item ...")
         window.internal.ui.activeLocation = activeItem
         if (activeItemData?.i) {
             await window.internal.ui.editor.setContent(activeItemData.data)
