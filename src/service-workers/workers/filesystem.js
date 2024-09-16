@@ -61,9 +61,9 @@ class Filesystem {
             try {
                 const hashObj = new hash(string)
                 const sha1 = await hashObj.sha1() // Is this enough?
-                console.debug(
+                /* console.debug(
                     "[ Filesystem ] Checksum calculation", string, checksum, sha1
-                )
+                ) */
                 if (checksum === sha1) {
                     resolve(true)
                 } else {
