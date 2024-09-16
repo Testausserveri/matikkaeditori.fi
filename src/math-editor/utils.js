@@ -607,7 +607,7 @@ const Utils = {
 
                 // Todo: Element tree will not be parsed, as an element with this feature is yet to be implemented
 
-                console.debug("[ EDITOR ] Element parsed", element)
+                // console.debug("[ EDITOR ] Element parsed", element)
                 elements.push(element)
             } else {
                 // No element qualification, dump to cache
@@ -736,7 +736,7 @@ const Utils = {
         case "math": {
             // Math element
             const mathElement = Math.create()
-            console.debug("READ DATA", element.data)
+            // console.debug("READ DATA", element.data)
             Math.write(mathElement.id, atob(element.data))
             html = mathElement.container
             break
