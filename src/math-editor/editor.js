@@ -671,21 +671,23 @@ class Editor {
             }
 
             // Patch: Do not let lines deactivate, when there's only a math/image element present
-            // TODO: Needed?
-            if (this.activeLine.childNodes.length === 1) {
-                if (
-                    this.activeLine.childNodes[0].nodeName.toLowerCase() === "math" ||
-                    this.activeLine.childNodes[0].nodeName.toLowerCase() === "attachment"
-                ) { // Left
-                    this.activeLine.childNodes[0].contentEditable = true
+            // TODO: Needed? For now causes issues on chromium.
+            /* if (window.browser === "firefox") {
+                if (this.activeLine.childNodes.length === 1) {
+                    if (
+                        this.activeLine.childNodes[0].nodeName.toLowerCase() === "math" ||
+                        this.activeLine.childNodes[0].nodeName.toLowerCase() === "attachment"
+                    ) { // Left
+                        this.activeLine.childNodes[0].contentEditable = true
+                    }
+                    if (
+                        this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "math" ||
+                        this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "attachment"
+                    ) { // Right
+                        this.activeLine.childNodes[this.activeLine.childNodes.length - 1].contentEditable = true
+                    }
                 }
-                if (
-                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "math" ||
-                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].nodeName.toLowerCase() === "attachment"
-                ) { // Right
-                    this.activeLine.childNodes[this.activeLine.childNodes.length - 1].contentEditable = true
-                }
-            }
+            } */
         }
         const observer = new MutationObserver(this.observerCallback)
         this.observerCallback()

@@ -138,6 +138,8 @@ const Math = {
         const obj = this.collection[id]
         if (obj.isOpen) return
 
+        // obj.container.contentEditable = false
+
         // Open the element
         // TODO: Refactor this
         if (obj.isOpen === null) {
@@ -147,10 +149,6 @@ const Math = {
             obj.container.removeAttribute("style")
             obj.image.removeAttribute("style")
             obj.isOpen = true
-
-            // MathQuill weirdness
-            obj.dynamicInterface.focus()
-            obj.dynamicInterface.reflow()
         } else {
             obj.container.removeAttribute("style")
             obj.image.removeAttribute("style")
@@ -169,22 +167,23 @@ const Math = {
                 obj.flags.push("ignoreInputDynamic")
                 obj.dynamicInterface.latex(obj.data)
                 obj.latexInterface.latex(obj.data)
-
-                // MathQuill weirdness
-                obj.dynamicInterface.focus()
-                obj.dynamicInterface.reflow()
             } else {
                 throw new Error("Cache miss")
             }
         }
 
-        obj.container.contentEditable = false
-
         if (obj.flags.includes("disableInputDynamic")) obj.labels[0].click() // Forces the raw latex view to open
 
-        // Todo: This should not live in here. This component is dynamic.
-        if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(true)
-        this.events.dispatchEvent(new CustomEvent("focus", { detail: obj }))
+        // NOTE: Mathquill requires a single frame (at least) to get ready
+        requestAnimationFrame(() => {
+            // MathQuill weirdness
+            obj.dynamicInterface.focus()
+            obj.dynamicInterface.reflow()
+
+            // Todo: This should not live in here. This component is dynamic.
+            if (window.setLatexCommandsVisibility) window.setLatexCommandsVisibility(true)
+            this.events.dispatchEvent(new CustomEvent("focus", { detail: obj }))
+        })
     },
 
     /**
@@ -333,7 +332,7 @@ const Math = {
             })
         }
 
-        obj.container.contentEditable = true
+        // obj.container.contentEditable = true
         this.events.dispatchEvent(new CustomEvent("blur", { detail: obj }))
         obj.container.setAttribute("math", btoa(obj.data))
     },
