@@ -18,7 +18,7 @@ export default function Navigation() {
             </div>
             <div>
                 <p>{window.internal.versionHash}</p>
-                <a href="https://discord.gg/testaus" target="_blank" rel="noreferrer" className="iconLink">
+                <a href="https://discord.testausserveri.fi" target="_blank" rel="noreferrer" className="iconLink">
                     <FontAwesomeIcon icon={faDiscord} />
                 </a>
                 <a href="https://testausserveri.fi" target="_blank" rel="noreferrer" className="iconLink">
