@@ -300,7 +300,12 @@ const Math = {
                 formattedData = formattedData.split(char.character).join(char.latexCommand)
             }
 
-            const initialOptions = MathJax.getMetricsFor(obj.latexInput)
+            const initialOptions = {
+                display: true,
+                em: 16,
+                ex: 8,
+                containerWidth: 1000000
+            } // Broken: MathJax.getMetricsFor(obj.latexInput, true)
 
             const render = await MathJax.tex2svgPromise(formattedData, initialOptions)
 
